@@ -14,13 +14,37 @@ const Register = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, text: '', color: 'var(--border)' });
+
+  // Evaluar seguridad de la contraseña
+  const evaluatePassword = (pass) => {
+    let score = 0;
+    if (!pass) return { score: 0, text: '', color: 'var(--border)' };
+    if (pass.length >= 8) score += 1;
+    if (/[A-Z]/.test(pass)) score += 1;
+    if (/[0-9]/.test(pass)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pass)) score += 1;
+
+    if (score <= 1) return { score: 25, text: 'Débil', color: 'var(--error)' };
+    if (score === 2) return { score: 50, text: 'Regular', color: '#F59E0B' }; // Orange
+    if (score === 3) return { score: 75, text: 'Buena', color: '#10B981' }; // Green
+    return { score: 100, text: 'Fuerte', color: '#059669' }; // Dark Green
+  };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+    const { id, value } = e.target;
+    setFormData({ ...formData, [id]: value });
+    if (id === 'password') {
+      setPasswordStrength(evaluatePassword(value));
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (passwordStrength.score < 75) {
+      alert('Por favor, ingresa una contraseña más segura (mínimo "Buena").');
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
       alert('Las contraseñas no coinciden');
       return;
@@ -121,8 +145,29 @@ const Register = () => {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.4rem', display: 'block' }}>
-                Debe contener al menos 8 caracteres.
+              
+              {/* Indicador de Fuerza de Contraseña */}
+              {formData.password && (
+                <div style={{ marginTop: '0.75rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '0.25rem' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Seguridad:</span>
+                    <span style={{ color: passwordStrength.color, fontWeight: 600 }}>{passwordStrength.text}</span>
+                  </div>
+                  <div style={{ height: '4px', background: 'var(--border)', borderRadius: '2px', overflow: 'hidden' }}>
+                    <div 
+                      style={{ 
+                        height: '100%', 
+                        width: `${passwordStrength.score}%`, 
+                        background: passwordStrength.color,
+                        transition: 'all 0.3s ease'
+                      }} 
+                    />
+                  </div>
+                </div>
+              )}
+
+              <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.5rem', display: 'block', lineHeight: 1.4 }}>
+                Requerido: Mín. 8 caracteres, 1 mayúscula, 1 número y 1 símbolo especial (!@#$%).
               </small>
             </div>
 

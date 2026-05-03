@@ -7,18 +7,39 @@ import {
   Award, 
   FileCheck, 
   Upload, 
-  Image as ImageIcon,
   CheckCircle,
-  Activity
+  Activity,
+  Map,
+  Search
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import './Login.css'; // Reutilizamos el estilo estéril y limpio
+import './Login.css'; 
+
+// Listas comunes (Ejemplo para México)
+const COMMON_SPECIALTIES = [
+  "Medicina General", "Pediatría", "Ginecología y Obstetricia", 
+  "Medicina Interna", "Cirugía General", "Cardiología", 
+  "Dermatología", "Psiquiatría", "Traumatología y Ortopedia",
+  "Oftalmología", "Otorrinolaringología", "Urología"
+];
+
+const COMMON_UNIVERSITIES = [
+  "Universidad Nacional Autónoma de México (UNAM)",
+  "Instituto Politécnico Nacional (IPN)",
+  "Universidad de Guadalajara (UdeG)",
+  "Universidad Autónoma de Nuevo León (UANL)",
+  "Tecnológico de Monterrey (ITESM)",
+  "Universidad Anáhuac",
+  "Universidad La Salle",
+  "Universidad Autónoma Metropolitana (UAM)"
+];
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [logoPreview, setLogoPreview] = useState(null);
+  const [isFetchingZip, setIsFetchingZip] = useState(false);
 
   const [formData, setFormData] = useState({
     specialty: '',
@@ -26,16 +47,49 @@ const Onboarding = () => {
     specialtyLicense: '',
     university: '',
     clinicName: '',
-    clinicAddress: '',
+    zipCode: '',
+    state: '',
+    city: '',
+    neighborhood: '',
+    street: '',
     phoneNumber: '',
-    logoBase64: '' // Aquí guardaremos la imagen en base64
+    logoBase64: ''
   });
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+
+    // Si es el Código Postal y tiene 5 dígitos (México)
+    if (id === 'zipCode' && value.length === 5) {
+      fetchLocationFromZip(value);
+    }
   };
 
-  // Manejar la carga y conversión a Base64
+  const fetchLocationFromZip = async (zip) => {
+    setIsFetchingZip(true);
+    try {
+      // Usamos zippopotam, una API pública gratuita para códigos postales
+      const res = await fetch(`https://api.zippopotam.us/mx/${zip}`);
+      if (res.ok) {
+        const data = await res.json();
+        const state = data.places[0].state;
+        const city = data.places[0]['place name']; // En Zippopotam a veces el place name es la colonia o municipio
+        
+        setFormData(prev => ({
+          ...prev,
+          state: state,
+          city: city,
+          // La colonia (neighborhood) y calle suelen dejarse al usuario o usar otra API más exacta como Sepomex
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching ZIP", error);
+    } finally {
+      setIsFetchingZip(false);
+    }
+  };
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -43,12 +97,10 @@ const Onboarding = () => {
         alert("El logo no debe superar los 2MB.");
         return;
       }
-      
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64String = reader.result;
-        setLogoPreview(base64String);
-        setFormData({ ...formData, logoBase64: base64String });
+        setLogoPreview(reader.result);
+        setFormData(prev => ({ ...prev, logoBase64: reader.result }));
       };
       reader.readAsDataURL(file);
     }
@@ -57,18 +109,16 @@ const Onboarding = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simular el guardado de datos en el backend (donde se subirá el base64 a Prisma/Supabase)
     setTimeout(() => {
       setIsLoading(false);
-      console.log('Datos de onboarding enviados:', formData);
+      console.log('Datos de onboarding:', formData);
       alert('¡Perfil configurado con éxito!');
-      // navigate('/dashboard'); // Redirigiríamos al panel de control
     }, 2000);
   };
 
   return (
     <div className="login-container" style={{ alignItems: 'flex-start', paddingTop: '3rem', paddingBottom: '3rem' }}>
-      <div className="login-content animate-fade-in" style={{ maxWidth: '600px' }}>
+      <div className="login-content animate-fade-in" style={{ maxWidth: '650px' }}>
         
         <div className="logo-container" style={{ marginBottom: '1.5rem' }}>
           <Activity size={32} strokeWidth={2.5} className="logo-icon" />
@@ -77,30 +127,34 @@ const Onboarding = () => {
 
         <div className="clean-panel login-card" style={{ padding: '2rem' }}>
           <div className="login-header" style={{ marginBottom: '1.5rem' }}>
-            <h2>Configuración del Consultorio</h2>
-            <p>Comencemos configurando los datos legales y estéticos para tus recetas médicas.</p>
+            <h2>Configuración del Perfil Profesional</h2>
+            <p>Completa tus datos médicos y del consultorio para emitir recetas.</p>
           </div>
 
           <form onSubmit={handleSubmit}>
-            {/* SECCIÓN: DATOS PROFESIONALES */}
+            {/* DATOS PROFESIONALES */}
             <h3 style={{ fontSize: '0.9rem', color: 'var(--primary)', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>
-              Datos Profesionales (Obligatorios para la receta)
+              Datos Académicos y Legales
             </h3>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div className="form-group">
-                <label htmlFor="specialty">Especialidad Principal</label>
+                <label htmlFor="specialty">Especialidad</label>
                 <div className="input-wrapper">
                   <Award size={18} className="input-icon" />
                   <input
                     type="text"
                     id="specialty"
+                    list="specialties-list"
                     className="form-input"
-                    placeholder="Ej. Pediatra, Medicina General"
+                    placeholder="Empieza a escribir..."
                     value={formData.specialty}
                     onChange={handleChange}
                     required
                   />
+                  <datalist id="specialties-list">
+                    {COMMON_SPECIALTIES.map(s => <option key={s} value={s} />)}
+                  </datalist>
                 </div>
               </div>
 
@@ -111,12 +165,16 @@ const Onboarding = () => {
                   <input
                     type="text"
                     id="university"
+                    list="universities-list"
                     className="form-input"
-                    placeholder="Ej. UNAM, UBA..."
+                    placeholder="Empieza a escribir..."
                     value={formData.university}
                     onChange={handleChange}
                     required
                   />
+                  <datalist id="universities-list">
+                    {COMMON_UNIVERSITIES.map(u => <option key={u} value={u} />)}
+                  </datalist>
                 </div>
               </div>
             </div>
@@ -130,7 +188,7 @@ const Onboarding = () => {
                     type="text"
                     id="licenseNumber"
                     className="form-input"
-                    placeholder="Obligatoria"
+                    placeholder="General (Ej. 1234567)"
                     value={formData.licenseNumber}
                     onChange={handleChange}
                     required
@@ -139,7 +197,7 @@ const Onboarding = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="specialtyLicense">Cédula de Especialidad (Opcional)</label>
+                <label htmlFor="specialtyLicense">Cédula de Especialidad</label>
                 <div className="input-wrapper">
                   <FileCheck size={18} className="input-icon" />
                   <input
@@ -154,69 +212,141 @@ const Onboarding = () => {
               </div>
             </div>
 
-            {/* SECCIÓN: CONSULTORIO */}
-            <h3 style={{ fontSize: '0.9rem', color: 'var(--primary)', marginTop: '2rem', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>
-              Datos del Consultorio o Clínica
+            {/* CONSULTORIO Y DIRECCIÓN */}
+            <h3 style={{ fontSize: '0.9rem', color: 'var(--primary)', marginTop: '1.5rem', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>
+              Ubicación y Contacto del Consultorio
             </h3>
 
-            <div className="form-group">
-              <label htmlFor="clinicName">Nombre de la Clínica o Consultorio</label>
-              <div className="input-wrapper">
-                <Building2 size={18} className="input-icon" />
-                <input
-                  type="text"
-                  id="clinicName"
-                  className="form-input"
-                  placeholder="Ej. Centro Médico San José"
-                  value={formData.clinicName}
-                  onChange={handleChange}
-                  required
-                />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-group">
+                <label htmlFor="clinicName">Nombre de Clínica / Consultorio</label>
+                <div className="input-wrapper">
+                  <Building2 size={18} className="input-icon" />
+                  <input
+                    type="text"
+                    id="clinicName"
+                    className="form-input"
+                    placeholder="Ej. Clínica San Miguel"
+                    value={formData.clinicName}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="phoneNumber">Teléfono del Consultorio</label>
+                <div className="input-wrapper">
+                  <Phone size={18} className="input-icon" />
+                  <input
+                    type="tel"
+                    id="phoneNumber"
+                    className="form-input"
+                    placeholder="(55) 1234 5678"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* DIRECCIÓN CON AUTOFILL */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
+              <div className="form-group">
+                <label htmlFor="zipCode">Código Postal</label>
+                <div className="input-wrapper">
+                  <Search size={18} className="input-icon" color={isFetchingZip ? "var(--accent)" : "#A0AEC0"} />
+                  <input
+                    type="text"
+                    id="zipCode"
+                    maxLength="5"
+                    className="form-input"
+                    placeholder="Ej. 11000"
+                    value={formData.zipCode}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="state">Estado</label>
+                <div className="input-wrapper">
+                  <Map size={18} className="input-icon" />
+                  <input
+                    type="text"
+                    id="state"
+                    className="form-input"
+                    placeholder="Estado"
+                    value={formData.state}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-group">
+                <label htmlFor="city">Municipio / Ciudad</label>
+                <div className="input-wrapper">
+                  <MapPin size={18} className="input-icon" />
+                  <input
+                    type="text"
+                    id="city"
+                    className="form-input"
+                    placeholder="Ciudad o Delegación"
+                    value={formData.city}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="neighborhood">Colonia</label>
+                <div className="input-wrapper">
+                  <MapPin size={18} className="input-icon" />
+                  <input
+                    type="text"
+                    id="neighborhood"
+                    className="form-input"
+                    placeholder="Ej. Lomas de Chapultepec"
+                    value={formData.neighborhood}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
               </div>
             </div>
 
             <div className="form-group">
-              <label htmlFor="clinicAddress">Dirección Completa</label>
+              <label htmlFor="street">Calle y Número</label>
               <div className="input-wrapper">
                 <MapPin size={18} className="input-icon" />
                 <input
                   type="text"
-                  id="clinicAddress"
+                  id="street"
                   className="form-input"
-                  placeholder="Calle, Número, Ciudad, Estado, CP"
-                  value={formData.clinicAddress}
+                  placeholder="Ej. Av. Reforma 123, Consultorio 4B"
+                  value={formData.street}
                   onChange={handleChange}
                   required
                 />
               </div>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="phoneNumber">Teléfono de Contacto</label>
-              <div className="input-wrapper">
-                <Phone size={18} className="input-icon" />
-                <input
-                  type="text"
-                  id="phoneNumber"
-                  className="form-input"
-                  placeholder="Teléfono para pacientes/farmacias"
-                  value={formData.phoneNumber}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-
-            {/* SECCIÓN: LOGO (Base64) */}
-            <h3 style={{ fontSize: '0.9rem', color: 'var(--primary)', marginTop: '2rem', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>
-              Personalización de Receta
+            {/* LOGO */}
+            <h3 style={{ fontSize: '0.9rem', color: 'var(--primary)', marginTop: '1.5rem', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>
+              Membrete de Receta
             </h3>
 
             <div className="form-group">
-              <label>Logo de la Clínica (Opcional)</label>
+              <label>Logo de la Institución (Base64)</label>
               <div 
                 style={{
-                  border: '2px dashed var(--border)',
+                  border: '1px dashed var(--border)',
                   borderRadius: 'var(--radius-md)',
                   padding: '1.5rem',
                   display: 'flex',
@@ -225,36 +355,32 @@ const Onboarding = () => {
                   justifyContent: 'center',
                   cursor: 'pointer',
                   backgroundColor: 'var(--input-bg)',
-                  transition: 'border-color 0.2s',
-                  position: 'relative',
-                  overflow: 'hidden'
                 }}
                 onClick={() => fileInputRef.current.click()}
               >
                 {logoPreview ? (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <img src={logoPreview} alt="Logo de clínica" style={{ maxHeight: '100px', maxWidth: '100%', objectFit: 'contain', marginBottom: '0.5rem' }} />
-                    <span style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 500 }}>Cambiar imagen</span>
+                    <img src={logoPreview} alt="Logo" style={{ maxHeight: '80px', objectFit: 'contain', marginBottom: '0.5rem' }} />
+                    <span style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 500 }}>Cambiar logo</span>
                   </div>
                 ) : (
                   <>
-                    <Upload size={24} color="var(--text-muted)" style={{ marginBottom: '0.5rem' }} />
-                    <span style={{ fontSize: '0.875rem', color: 'var(--text-dark)', fontWeight: 500 }}>Haz clic para subir un logo</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>PNG, JPG o SVG (Máx. 2MB)</span>
+                    <Upload size={20} color="var(--text-muted)" style={{ marginBottom: '0.5rem' }} />
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-dark)', fontWeight: 500 }}>Subir logo para receta</span>
                   </>
                 )}
                 <input 
                   type="file" 
                   ref={fileInputRef} 
                   onChange={handleImageUpload} 
-                  accept="image/png, image/jpeg, image/svg+xml"
+                  accept="image/png, image/jpeg"
                   style={{ display: 'none' }}
                 />
               </div>
             </div>
 
             <button type="submit" className="btn-primary" disabled={isLoading} style={{ marginTop: '2rem' }}>
-              {isLoading ? 'Guardando perfil...' : 'Finalizar Configuración'}
+              {isLoading ? 'Guardando perfil...' : 'Guardar y Continuar'}
               {!isLoading && <CheckCircle size={18} />}
             </button>
           </form>
