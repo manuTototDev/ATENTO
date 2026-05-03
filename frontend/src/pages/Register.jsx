@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Activity, ShieldCheck, ArrowRight, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Login.css'; // Reutilizamos el diseño médico limpio
 
 const Register = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -29,6 +30,7 @@ const Register = () => {
     setTimeout(() => {
       setIsLoading(false);
       console.log('Intento de registro:', formData);
+      navigate('/onboarding');
     }, 1500);
   };
 
