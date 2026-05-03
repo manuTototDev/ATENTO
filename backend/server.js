@@ -135,13 +135,22 @@ app.get('/api/patients', async (req, res) => {
     });
     
     // Formateamos para el frontend
-    const formatted = patients.map(p => ({
-      id: p.id,
-      name: `${p.firstName} ${p.lastName}`,
-      dob: p.dateOfBirth ? p.dateOfBirth.toISOString().split('T')[0] : 'N/A',
-      phone: p.phone || 'N/A',
-      lastVisit: p.consultations.length > 0 ? p.consultations[0].createdAt.toISOString().split('T')[0] : 'Sin visitas'
-    }));
+    const formatted = patients.map(p => {
+      const formatDate = (d) => {
+        if (!d) return 'N/A';
+        const date = new Date(d);
+        // Ajuste manual para evitar zonas horarias y mostrar DD/MM/YYYY
+        return `${date.getUTCDate().toString().padStart(2, '0')}/${(date.getUTCMonth() + 1).toString().padStart(2, '0')}/${date.getUTCFullYear()}`;
+      };
+
+      return {
+        id: p.id,
+        name: `${p.firstName} ${p.lastName}`,
+        dob: formatDate(p.dateOfBirth),
+        phone: p.phone || 'N/A',
+        lastVisit: p.consultations.length > 0 ? formatDate(p.consultations[0].createdAt) : 'Sin visitas'
+      };
+    });
     
     res.json(formatted);
   } catch (error) {

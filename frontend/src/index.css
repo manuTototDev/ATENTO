@@ -5,8 +5,9 @@
   --primary-light: #183C66;
   --accent: #0077B6;       /* Clinical blue */
   --accent-hover: #0096C7;
-  --bg-color: #FFFFFF;     /* Pure white, sterile */
+  --bg-color: #F8FAFC;     /* Off-white background */
   --surface: #FFFFFF;
+  --card-bg: #FFFFFF;      /* Solid white for cards/modals */
   --text-dark: #1A202C;
   --text-muted: #718096;
   --border: #E2E8F0;
