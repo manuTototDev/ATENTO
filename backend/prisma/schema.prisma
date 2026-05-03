@@ -25,7 +25,31 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  // Relaciones clínicas irán aquí (Pacientes, Notas, etc)
+  // Relaciones
+  profile       DoctorProfile?
+}
+
+model DoctorProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Datos Profesionales (Obligatorios para Recetas Médicas)
+  specialty       String   // Ej. Pediatría, Medicina General
+  licenseNumber   String   // Cédula Profesional (Crucial para validez legal)
+  specialtyLicense String? // Cédula de Especialidad (Opcional)
+  university      String?  // Universidad que expidió el título (Requerido en algunos países)
+  
+  // Datos del Consultorio/Clínica
+  clinicName      String   // Nombre del consultorio o clínica
+  clinicAddress   String   // Dirección física
+  phoneNumber     String   // Teléfono de contacto
+  
+  // Personalización
+  logoUrl         String?  // URL del logo para imprimir en la receta
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 enum Role {

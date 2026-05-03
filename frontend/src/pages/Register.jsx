@@ -8,7 +8,8 @@ const Register = () => {
     firstName: '',
     lastName: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,6 +20,10 @@ const Register = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      alert('Las contraseñas no coinciden');
+      return;
+    }
     setIsLoading(true);
     // Simular llamada a la API
     setTimeout(() => {
@@ -117,6 +122,23 @@ const Register = () => {
               <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.4rem', display: 'block' }}>
                 Debe contener al menos 8 caracteres.
               </small>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="confirmPassword">Repetir Contraseña</label>
+              <div className="input-wrapper">
+                <Lock size={18} className="input-icon" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="confirmPassword"
+                  className="form-input"
+                  placeholder="••••••••"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  required
+                  minLength="8"
+                />
+              </div>
             </div>
 
             <button type="submit" className="btn-primary" disabled={isLoading} style={{ marginTop: '1.5rem' }}>
