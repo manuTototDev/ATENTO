@@ -84,7 +84,7 @@ const Register = () => {
 
   return (
     <div className="login-container">
-      <div className="login-content animate-fade-in">
+      <div className="login-content animate-fade-in" style={{ maxWidth: '600px', width: '100%' }}>
         <div className="logo-container">
           <Activity size={36} strokeWidth={2.5} className="logo-icon" />
           <h1 className="logo-text">Atento</h1>
