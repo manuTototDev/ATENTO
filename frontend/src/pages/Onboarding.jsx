@@ -131,7 +131,7 @@ const Onboarding = () => {
 
       if (response.ok) {
         alert('¡Perfil configurado con éxito!');
-        // navigate('/dashboard'); // Descomentar cuando el dashboard esté listo
+        navigate('/dashboard');
       } else {
         alert(data.error || 'Hubo un error al guardar el perfil.');
       }
