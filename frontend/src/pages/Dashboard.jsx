@@ -64,11 +64,7 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       {/* HEADER TOP BAR */}
-      <header className="dashboard-header">
-        <div className="logo-container" style={{ margin: 0 }}>
-          <Activity size={28} strokeWidth={2.5} className="logo-icon" />
-          <h1 className="logo-text" style={{ fontSize: '1.25rem' }}>Atento</h1>
-        </div>
+      <header className="dashboard-header" style={{ justifyContent: 'flex-end' }}>
 
         <div className="user-profile-mini">
           <div style={{ textAlign: 'right' }}>

@@ -70,6 +70,12 @@ model University {
   profiles        DoctorProfile[]
 }
 
+model Allergy {
+  id              String          @id @default(uuid())
+  name            String          @unique
+  isActive        Boolean         @default(true)
+}
+
 model Patient {
   id              String         @id @default(uuid())
   doctorId        String         // El doctor que registró o atiende a este paciente
@@ -82,10 +88,11 @@ model Patient {
   phone           String?
   email           String?
   
-  // Expediente
-  bloodType       String?
-  allergies       String?        // Guardado como texto libre para MVP
-  chronicDiseases String?
+  // Expediente (Guardados como arreglos de strings para análisis de datos / tokens)
+  bloodType          String?
+  allergies          String[]       @default([])
+  chronicDiseases    String[]       @default([])
+  currentTreatments  String[]       @default([])
   
   consultations   Consultation[]
   createdAt       DateTime       @default(now())
