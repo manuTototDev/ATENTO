@@ -27,6 +27,8 @@ model User {
 
   // Relaciones
   profile       DoctorProfile?
+  patients      Patient[]
+  consultations Consultation[] @relation("DoctorConsultations")
 }
 
 model DoctorProfile {
@@ -66,6 +68,49 @@ model University {
   name            String          @unique
   isActive        Boolean         @default(true)
   profiles        DoctorProfile[]
+}
+
+model Patient {
+  id              String         @id @default(uuid())
+  doctorId        String         // El doctor que registró o atiende a este paciente
+  doctor          User           @relation(fields: [doctorId], references: [id])
+  
+  firstName       String
+  lastName        String
+  dateOfBirth     DateTime
+  gender          String         // M, F, Otro
+  phone           String?
+  email           String?
+  
+  // Expediente
+  bloodType       String?
+  allergies       String?        // Guardado como texto libre para MVP
+  chronicDiseases String?
+  
+  consultations   Consultation[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Consultation {
+  id              String         @id @default(uuid())
+  patientId       String
+  patient         Patient        @relation(fields: [patientId], references: [id])
+  doctorId        String
+  doctor          User           @relation("DoctorConsultations", fields: [doctorId], references: [id])
+  
+  // Notas SOAP (Estructura médica estándar)
+  subjective      String?        @db.Text // Síntomas, motivo de consulta
+  objective       String?        @db.Text // Exploración física, signos vitales
+  assessment      String?        @db.Text // Diagnóstico
+  plan            String?        @db.Text // Tratamiento, Receta
+  
+  // Cobro
+  cost            Float          @default(0)
+  hasVariableCost Boolean        @default(false) // Si se aplicó tarifa nocturna o fin de semana
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 enum Role {

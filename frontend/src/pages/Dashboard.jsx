@@ -248,7 +248,7 @@ const Dashboard = () => {
                   className="btn-secondary" 
                   style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: 'var(--input-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer' }}
                   onClick={() => {
-                    alert('Navegando a formulario de creación de paciente...');
+                    navigate('/patient/new');
                     setShowNewConsultModal(false);
                   }}
                 >

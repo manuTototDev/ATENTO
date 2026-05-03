@@ -117,13 +117,22 @@ const Onboarding = () => {
       return;
     }
 
+    const fullClinicAddress = `${formData.street}, ${formData.neighborhood}, ${formData.city}, ${formData.state}, C.P. ${formData.zipCode}`;
+
     try {
       const response = await fetch('http://localhost:5000/api/auth/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
-          userId
+          userId,
+          specialty: formData.specialty,
+          licenseNumber: formData.licenseNumber,
+          specialtyLicense: formData.specialtyLicense,
+          university: formData.university,
+          clinicName: formData.clinicName,
+          phoneNumber: formData.phoneNumber,
+          logoBase64: formData.logoBase64,
+          clinicAddress: fullClinicAddress
         })
       });
 
