@@ -120,6 +120,123 @@ app.post('/api/auth/onboarding', async (req, res) => {
 });
 
 // ==========================================
+// MÓDULO DE INVENTARIO
+// ==========================================
+
+app.get('/api/inventory', async (req, res) => {
+  try {
+    const { userId } = req.query; // En producción, esto vendría del JWT
+    if (!userId) return res.status(400).json({ error: 'userId es requerido' });
+
+    const items = await prisma.inventoryItem.findMany({
+      where: { doctorId: userId },
+      orderBy: { name: 'asc' }
+    });
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener inventario.' });
+  }
+});
+
+app.post('/api/inventory', async (req, res) => {
+  try {
+    const { userId, name, description, stock, price } = req.body;
+    
+    const newItem = await prisma.inventoryItem.create({
+      data: {
+        doctorId: userId,
+        name,
+        description,
+        stock: parseInt(stock),
+        price: parseFloat(price)
+      }
+    });
+    res.status(201).json(newItem);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al crear item de inventario.' });
+  }
+});
+
+// ==========================================
+// MÓDULO DE AGENDA (CITAS)
+// ==========================================
+
+app.get('/api/appointments', async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ error: 'userId es requerido' });
+
+    const appointments = await prisma.appointment.findMany({
+      where: { doctorId: userId },
+      orderBy: { startTime: 'asc' }
+    });
+    res.json(appointments);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener citas.' });
+  }
+});
+
+app.post('/api/appointments', async (req, res) => {
+  try {
+    const { userId, patientName, reason, startTime, endTime } = req.body;
+    
+    const newAppointment = await prisma.appointment.create({
+      data: {
+        doctorId: userId,
+        patientName,
+        reason,
+        startTime: new Date(startTime),
+        endTime: new Date(endTime)
+      }
+    });
+    res.status(201).json(newAppointment);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al agendar cita.' });
+  }
+});
+
+// ==========================================
+// MÓDULO DE REPORTES (ANALYTICS)
+// ==========================================
+
+app.get('/api/analytics', async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ error: 'userId es requerido' });
+
+    // Simulando agregaciones complejas por ahora (MVP)
+    // En el futuro: agrupar Consultations por fecha, sumar 'cost'.
+    const totalPatients = await prisma.patient.count({ where: { doctorId: userId } });
+    const totalAppointments = await prisma.appointment.count({ where: { doctorId: userId } });
+    const totalConsultations = await prisma.consultation.count({ where: { doctorId: userId } });
+    
+    // Obtener ingresos totales (Suma de cost de todas las consultas)
+    const consultations = await prisma.consultation.findMany({
+      where: { doctorId: userId },
+      select: { cost: true }
+    });
+    const totalEarnings = consultations.reduce((acc, curr) => acc + curr.cost, 0);
+
+    res.json({
+      totalPatients,
+      totalAppointments,
+      totalConsultations,
+      totalEarnings,
+      // Datos mock para las gráficas
+      monthlyRevenue: [
+        { name: 'Ene', value: 4000 },
+        { name: 'Feb', value: 3000 },
+        { name: 'Mar', value: 2000 },
+        { name: 'Abr', value: 2780 },
+        { name: 'May', value: totalEarnings },
+      ]
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener reportes.' });
+  }
+});
+
+// ==========================================
 // INICIO DEL SERVIDOR
 // ==========================================
 app.listen(PORT, () => {

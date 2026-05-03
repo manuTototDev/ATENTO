@@ -29,6 +29,8 @@ model User {
   profile       DoctorProfile?
   patients      Patient[]
   consultations Consultation[] @relation("DoctorConsultations")
+  appointments  Appointment[]
+  inventory     InventoryItem[]
 }
 
 model DoctorProfile {
@@ -95,6 +97,8 @@ model Patient {
   currentTreatments  String[]       @default([])
   
   consultations   Consultation[]
+  appointments    Appointment[]
+  
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 }
@@ -115,6 +119,37 @@ model Consultation {
   // Cobro
   cost            Float          @default(0)
   hasVariableCost Boolean        @default(false) // Si se aplicó tarifa nocturna o fin de semana
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Appointment {
+  id              String         @id @default(uuid())
+  doctorId        String
+  doctor          User           @relation(fields: [doctorId], references: [id])
+  patientId       String?        // Opcional por si agenda alguien no registrado aún
+  patient         Patient?       @relation(fields: [patientId], references: [id])
+  
+  patientName     String?        // Útil si patientId es nulo
+  reason          String?
+  startTime       DateTime
+  endTime         DateTime
+  status          String         @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model InventoryItem {
+  id              String         @id @default(uuid())
+  doctorId        String
+  doctor          User           @relation(fields: [doctorId], references: [id])
+  
+  name            String
+  description     String?
+  stock           Int            @default(0)
+  price           Float          @default(0)
   
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
