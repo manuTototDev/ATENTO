@@ -120,6 +120,36 @@ app.post('/api/auth/onboarding', async (req, res) => {
 });
 
 // ==========================================
+// MÓDULO DE PACIENTES
+// ==========================================
+
+app.get('/api/patients', async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ error: 'userId es requerido' });
+
+    const patients = await prisma.patient.findMany({
+      where: { doctorId: userId },
+      orderBy: { firstName: 'asc' },
+      include: { consultations: { orderBy: { createdAt: 'desc' }, take: 1 } }
+    });
+    
+    // Formateamos para el frontend
+    const formatted = patients.map(p => ({
+      id: p.id,
+      name: `${p.firstName} ${p.lastName}`,
+      dob: p.dateOfBirth ? p.dateOfBirth.toISOString().split('T')[0] : 'N/A',
+      phone: p.phone || 'N/A',
+      lastVisit: p.consultations.length > 0 ? p.consultations[0].createdAt.toISOString().split('T')[0] : 'Sin visitas'
+    }));
+    
+    res.json(formatted);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener pacientes.' });
+  }
+});
+
+// ==========================================
 // MÓDULO DE INVENTARIO
 // ==========================================
 

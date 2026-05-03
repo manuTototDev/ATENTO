@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Activity, 
   Users, 
@@ -20,32 +20,53 @@ const Dashboard = () => {
   const [showNewConsultModal, setShowNewConsultModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Real data state
+  const [stats, setStats] = useState({ todayPatients: 0, todayEarnings: 0, totalPatients: 0 });
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+  const [recentConsults, setRecentConsults] = useState([]);
+  
+  const userId = localStorage.getItem('userId');
 
-  // Costos de consulta configurables
-  const [consultCostConfig, setConsultCostConfig] = useState({
-    basePrice: 800,
-    hasVariablePricing: false,
-    weekendSurge: 200, // Cargo extra fines de semana
-    nightSurge: 300 // Cargo extra nocturno
-  });
+  // Fetch dashboard data
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [analyticsRes, appointmentsRes] = await Promise.all([
+          fetch(`http://localhost:5000/api/analytics?userId=${userId}`),
+          fetch(`http://localhost:5000/api/appointments?userId=${userId}`)
+        ]);
 
-  // Datos simulados (Estos vendrán de Supabase después)
-  const stats = {
-    todayPatients: 8,
-    todayEarnings: 4500,
-    totalPatients: 142
-  };
+        if (analyticsRes.ok) {
+          const aData = await analyticsRes.json();
+          setStats({
+            todayPatients: aData.totalAppointments, // Simulado
+            todayEarnings: aData.totalEarnings,
+            totalPatients: aData.totalPatients
+          });
+        }
 
-  const recentConsults = [
-    { id: 1, patient: 'María López', time: '10:30 AM', type: 'Primera Vez', cost: 600, status: 'Completada' },
-    { id: 2, patient: 'Carlos Ramírez', time: '11:15 AM', type: 'Seguimiento', cost: 400, status: 'Completada' },
-    { id: 3, patient: 'Ana Silva', time: '12:00 PM', type: 'Lectura de Estudios', cost: 300, status: 'Completada' },
-  ];
-
-  const upcomingAppointments = [
-    { id: 4, patient: 'Roberto Gómez', time: '04:00 PM', reason: 'Dolor abdominal' },
-    { id: 5, patient: 'Elena Torres', time: '04:45 PM', reason: 'Control mensual' },
-  ];
+        if (appointmentsRes.ok) {
+          const appData = await appointmentsRes.json();
+          // Solo mostrar las de hoy en adelante, limitado a 5
+          const upcoming = appData
+            .filter(a => new Date(a.startTime) >= new Date())
+            .slice(0, 5)
+            .map(a => ({
+              id: a.id,
+              patient: a.patientName,
+              time: new Date(a.startTime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }),
+              reason: a.reason
+            }));
+          setUpcomingAppointments(upcoming);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    
+    if (userId) fetchDashboardData();
+  }, [userId]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -55,7 +76,6 @@ const Dashboard = () => {
 
   const startConsultation = (e) => {
     e.preventDefault();
-    // Aquí buscaríamos al paciente o lo crearíamos
     console.log('Iniciando consulta para:', searchQuery);
     alert('Navegando a pantalla de Expediente/Consulta para: ' + (searchQuery || 'Nuevo Paciente'));
     setShowNewConsultModal(false);
