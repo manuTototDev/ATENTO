@@ -39,7 +39,7 @@ const Register = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (passwordStrength.score < 75) {
       alert('Por favor, ingresa una contraseña más segura (mínimo "Buena").');
@@ -50,12 +50,36 @@ const Register = () => {
       return;
     }
     setIsLoading(true);
-    // Simular llamada a la API
-    setTimeout(() => {
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Guardar token y userId para la siguiente pantalla
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userId', data.userId);
+        
+        navigate('/onboarding');
+      } else {
+        alert(data.error || 'Ocurrió un error al registrarse.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error de conexión con el servidor.');
+    } finally {
       setIsLoading(false);
-      console.log('Intento de registro:', formData);
-      navigate('/onboarding');
-    }, 1500);
+    }
   };
 
   return (

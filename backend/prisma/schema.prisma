@@ -35,10 +35,12 @@ model DoctorProfile {
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   // Datos Profesionales (Obligatorios para Recetas Médicas)
-  specialty       String   // Ej. Pediatría, Medicina General
+  specialtyId     String?
+  specialty       Specialty? @relation(fields: [specialtyId], references: [id])
   licenseNumber   String   // Cédula Profesional (Crucial para validez legal)
   specialtyLicense String? // Cédula de Especialidad (Opcional)
-  university      String?  // Universidad que expidió el título (Requerido en algunos países)
+  universityId    String?
+  university      University? @relation(fields: [universityId], references: [id])
   
   // Datos del Consultorio/Clínica
   clinicName      String   // Nombre del consultorio o clínica
@@ -50,6 +52,20 @@ model DoctorProfile {
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+model Specialty {
+  id              String          @id @default(uuid())
+  name            String          @unique
+  isActive        Boolean         @default(true)
+  profiles        DoctorProfile[]
+}
+
+model University {
+  id              String          @id @default(uuid())
+  name            String          @unique
+  isActive        Boolean         @default(true)
+  profiles        DoctorProfile[]
 }
 
 enum Role {

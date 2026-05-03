@@ -106,14 +106,41 @@ const Onboarding = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
+
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      alert('Error de sesión: Por favor regístrate de nuevo.');
+      navigate('/register');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          userId
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('¡Perfil configurado con éxito!');
+        // navigate('/dashboard'); // Descomentar cuando el dashboard esté listo
+      } else {
+        alert(data.error || 'Hubo un error al guardar el perfil.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error de conexión con el servidor.');
+    } finally {
       setIsLoading(false);
-      console.log('Datos de onboarding:', formData);
-      alert('¡Perfil configurado con éxito!');
-    }, 2000);
+    }
   };
 
   return (
