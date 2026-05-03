@@ -21,8 +21,8 @@ Atento es la plataforma de documentación médica impulsada por IA que permite a
 ## 📁 Estructura del Proyecto
 ```text
 /atento-ai
-├── /client          # Interfaz médico
-├── /server          # API y WebSockets
-├── /services        # Integración Gemini
-└── /db              # Esquema Postgres
+├── /frontend        # Interfaz médico (React.js + Vite)
+└── /backend         # API, WebSockets, DB y Servicios de IA
+    ├── /db          # Esquema Postgres
+    └── /services    # Integración Gemini
 ```
