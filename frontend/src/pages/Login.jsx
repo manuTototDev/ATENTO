@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Activity, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import './Login.css';
 
 const Login = () => {
@@ -85,6 +86,10 @@ const Login = () => {
               {!isLoading && <ArrowRight size={18} />}
             </button>
           </form>
+
+          <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+            ¿Eres nuevo en Atento? <Link to="/register" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>Crea una cuenta</Link>
+          </div>
 
           <div className="security-badge">
             <ShieldCheck size={16} />
