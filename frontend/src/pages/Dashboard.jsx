@@ -18,7 +18,16 @@ import './Dashboard.css'; // Estilos específicos del dashboard
 const Dashboard = () => {
   const navigate = useNavigate();
   const [showNewConsultModal, setShowNewConsultModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Costos de consulta configurables
+  const [consultCostConfig, setConsultCostConfig] = useState({
+    basePrice: 800,
+    hasVariablePricing: false,
+    weekendSurge: 200, // Cargo extra fines de semana
+    nightSurge: 300 // Cargo extra nocturno
+  });
 
   // Datos simulados (Estos vendrán de Supabase después)
   const stats = {
@@ -68,8 +77,15 @@ const Dashboard = () => {
           </div>
           <div className="avatar-circle">M</div>
           <button 
-            onClick={handleLogout}
+            onClick={() => setShowSettingsModal(true)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', marginLeft: '1rem' }}
+            title="Configuración de Perfil"
+          >
+            <UserPlus size={20} />
+          </button>
+          <button 
+            onClick={handleLogout}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', marginLeft: '0.5rem' }}
             title="Cerrar Sesión"
           >
             <LogOut size={20} />
@@ -241,6 +257,84 @@ const Dashboard = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: CONFIGURACIÓN DE PERFIL Y COSTOS */}
+      {showSettingsModal && (
+        <div className="modal-overlay" onClick={() => setShowSettingsModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
+              <h2 style={{ fontSize: '1.25rem', color: 'var(--text-dark)' }}>Configuración Financiera</h2>
+              <button onClick={() => setShowSettingsModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                <X size={24} />
+              </button>
+            </div>
+
+            <div>
+              <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
+                Establece tus tarifas. Al terminar cada consulta médica, el sistema te sugerirá este costo, pero podrás modificarlo antes de cobrar.
+              </p>
+
+              <div className="form-group">
+                <label>Costo Base de Consulta ($ MXN)</label>
+                <div className="input-wrapper">
+                  <DollarSign size={18} className="input-icon" />
+                  <input
+                    type="number"
+                    className="form-input"
+                    value={consultCostConfig.basePrice}
+                    onChange={(e) => setConsultCostConfig({...consultCostConfig, basePrice: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="form-options" style={{ marginTop: '1.5rem', marginBottom: '1rem' }}>
+                <label className="remember-me" style={{ color: 'var(--text-dark)', fontWeight: 500 }}>
+                  <input 
+                    type="checkbox" 
+                    checked={consultCostConfig.hasVariablePricing}
+                    onChange={(e) => setConsultCostConfig({...consultCostConfig, hasVariablePricing: e.target.checked})}
+                  />
+                  <span>Manejar tarifas variables por día/hora</span>
+                </label>
+              </div>
+
+              {consultCostConfig.hasVariablePricing && (
+                <div style={{ background: 'var(--input-bg)', padding: '1rem', borderRadius: 'var(--radius-md)', display: 'grid', gap: '1rem' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label>Cargo extra fines de semana ($)</label>
+                    <input
+                      type="number"
+                      className="form-input"
+                      value={consultCostConfig.weekendSurge}
+                      onChange={(e) => setConsultCostConfig({...consultCostConfig, weekendSurge: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label>Cargo extra horario nocturno ($)</label>
+                    <input
+                      type="number"
+                      className="form-input"
+                      value={consultCostConfig.nightSurge}
+                      onChange={(e) => setConsultCostConfig({...consultCostConfig, nightSurge: e.target.value})}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <button 
+                className="btn-primary" 
+                style={{ marginTop: '2rem', width: '100%' }}
+                onClick={() => {
+                  alert('Configuración guardada en Base de Datos.');
+                  setShowSettingsModal(false);
+                }}
+              >
+                Guardar Configuración
+              </button>
+            </div>
           </div>
         </div>
       )}
