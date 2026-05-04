@@ -25,6 +25,7 @@ const Dashboard = () => {
   const [stats, setStats] = useState({ todayPatients: 0, todayEarnings: 0, totalPatients: 0 });
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [recentConsults, setRecentConsults] = useState([]);
+  const [patients, setPatients] = useState([]);
   
   const userId = localStorage.getItem('userId');
 
@@ -32,9 +33,10 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [analyticsRes, appointmentsRes] = await Promise.all([
+        const [analyticsRes, appointmentsRes, patientsRes] = await Promise.all([
           fetch(`http://localhost:5000/api/analytics?userId=${userId}`),
-          fetch(`http://localhost:5000/api/appointments?userId=${userId}`)
+          fetch(`http://localhost:5000/api/appointments?userId=${userId}`),
+          fetch(`http://localhost:5000/api/patients?userId=${userId}`)
         ]);
 
         if (analyticsRes.ok) {
@@ -51,6 +53,7 @@ const Dashboard = () => {
           // Solo mostrar las de hoy en adelante, limitado a 5
           const upcoming = appData
             .filter(a => new Date(a.startTime) >= new Date())
+            .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
             .slice(0, 5)
             .map(a => ({
               id: a.id,
@@ -59,6 +62,11 @@ const Dashboard = () => {
               reason: a.reason
             }));
           setUpcomingAppointments(upcoming);
+        }
+
+        if (patientsRes.ok) {
+          const pData = await patientsRes.json();
+          setPatients(pData);
         }
       } catch (error) {
         console.error(error);
@@ -76,10 +84,22 @@ const Dashboard = () => {
 
   const startConsultation = (e) => {
     e.preventDefault();
-    console.log('Iniciando consulta para:', searchQuery);
-    alert('Navegando a pantalla de Expediente/Consulta para: ' + (searchQuery || 'Nuevo Paciente'));
+    if (searchQuery) {
+      // Si el texto está pero no seleccionó nada de la lista, podríamos buscar al primer paciente o crear nuevo
+      // Por simplicidad, navegamos a nueva consulta
+      navigate('/consultation/new');
+    } else {
+      navigate('/patient/new');
+    }
     setShowNewConsultModal(false);
   };
+
+  const filteredSearchPatients = searchQuery.trim() === '' 
+    ? [] 
+    : patients.filter(p => 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (p.phone && p.phone.includes(searchQuery))
+      ).slice(0, 5);
 
   return (
     <div className="dashboard-container">
@@ -93,7 +113,7 @@ const Dashboard = () => {
           </div>
           <div className="avatar-circle">M</div>
           <button 
-            onClick={() => setShowSettingsModal(true)}
+            onClick={() => navigate('/settings')}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', marginLeft: '1rem' }}
             title="Configuración de Perfil"
           >
@@ -134,15 +154,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="stat-card">
-            <div className="stat-info">
-              <h3>Ingresos del Día</h3>
-              <div className="stat-value">${stats.todayEarnings} <span style={{ fontSize:'1rem', color:'var(--text-muted)', fontWeight:400 }}>MXN</span></div>
-            </div>
-            <div className="stat-icon" style={{ backgroundColor: '#ECFDF5', color: '#10B981' }}>
-              <DollarSign size={24} />
-            </div>
-          </div>
+
 
           <div className="stat-card">
             <div className="stat-info">
@@ -240,7 +252,7 @@ const Dashboard = () => {
             </div>
 
             <form onSubmit={startConsultation}>
-              <div className="form-group">
+              <div className="form-group" style={{ position: 'relative' }}>
                 <label>Buscar Paciente (Nombre, Teléfono o CURP)</label>
                 <div className="input-wrapper">
                   <Search size={18} className="input-icon" />
@@ -253,6 +265,43 @@ const Dashboard = () => {
                     autoFocus
                   />
                 </div>
+                {searchQuery.trim() !== '' && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', marginTop: '0.25rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', zIndex: 10, maxHeight: '200px', overflowY: 'auto' }}>
+                    {filteredSearchPatients.length > 0 ? (
+                      filteredSearchPatients.map(p => (
+                        <div 
+                          key={p.id} 
+                          onClick={() => {
+                            setSearchQuery(p.name);
+                          }}
+                          style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                        >
+                          <div>
+                            <div style={{ fontWeight: 500, color: 'var(--text-dark)' }}>{p.name}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Tel: {p.phone !== 'N/A' ? p.phone : 'No registrado'}</div>
+                          </div>
+                          <button 
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSearchQuery(p.name);
+                              navigate(`/consultation/${p.id}`);
+                              setShowNewConsultModal(false);
+                            }}
+                            className="btn-primary"
+                            style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem', borderRadius: 'var(--radius-sm)' }}
+                          >
+                            Iniciar
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                        No se encontraron coincidencias.
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>

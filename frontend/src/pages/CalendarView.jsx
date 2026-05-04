@@ -5,7 +5,7 @@ const CalendarView = () => {
   const [appointments, setAppointments] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({ patientName: '', reason: '', startTime: '', endTime: '' });
+  const [formData, setFormData] = useState({ patientName: '', reason: '', date: '', startTime: '', endTime: '' });
 
   const userId = localStorage.getItem('userId');
 
@@ -25,19 +25,43 @@ const CalendarView = () => {
     if (userId) fetchAppointments();
   }, [userId]);
 
+  const handleDelete = async (id) => {
+    if(window.confirm('¿Estás seguro de eliminar esta cita?')) {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`http://localhost:5000/api/appointments/${id}`, {
+          method: 'DELETE'
+        });
+        if (res.ok) fetchAppointments();
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      const startDateTime = new Date(`${formData.date}T${formData.startTime}:00`);
+      const endDateTime = new Date(`${formData.date}T${formData.endTime}:00`);
       const res = await fetch('http://localhost:5000/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, userId })
+        body: JSON.stringify({ 
+          patientName: formData.patientName, 
+          reason: formData.reason, 
+          startTime: startDateTime, 
+          endTime: endDateTime, 
+          userId 
+        })
       });
       if (res.ok) {
         fetchAppointments();
         setShowModal(false);
-        setFormData({ patientName: '', reason: '', startTime: '', endTime: '' });
+        setFormData({ patientName: '', reason: '', date: '', startTime: '', endTime: '' });
       } else {
         alert('Error al agendar cita');
       }
@@ -77,10 +101,15 @@ const CalendarView = () => {
                     {new Date(app.startTime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
-                <div>
+                <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 600, color: 'var(--text-dark)', fontSize: '1.1rem' }}>{app.patientName || 'Paciente No Registrado'}</div>
                   <div style={{ color: 'var(--text-muted)' }}>{app.reason}</div>
                   <span className={`status-badge status-${app.status.toLowerCase()}`} style={{ marginTop: '0.5rem', display: 'inline-block' }}>{app.status}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button onClick={() => handleDelete(app.id)} style={{ background: 'none', border: '1px solid #fee2e2', borderRadius: 'var(--radius-sm)', padding: '0.5rem', color: '#b91c1c', cursor: 'pointer' }} title="Eliminar Cita">
+                    <X size={18} />
+                  </button>
                 </div>
               </div>
             ))
@@ -104,14 +133,18 @@ const CalendarView = () => {
                 <label>Motivo de la Cita</label>
                 <input type="text" className="form-input" required value={formData.reason} onChange={e => setFormData({...formData, reason: e.target.value})} placeholder="Ej. Revisión mensual" />
               </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label>Fecha de la Cita</label>
+                <input type="date" className="form-input" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="form-group" style={{ margin: 0 }}>
-                  <label>Fecha y Hora de Inicio</label>
-                  <input type="datetime-local" className="form-input" required value={formData.startTime} onChange={e => setFormData({...formData, startTime: e.target.value})} />
+                  <label>Hora de Inicio</label>
+                  <input type="time" className="form-input" required value={formData.startTime} onChange={e => setFormData({...formData, startTime: e.target.value})} />
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
-                  <label>Fecha y Hora de Fin</label>
-                  <input type="datetime-local" className="form-input" required value={formData.endTime} onChange={e => setFormData({...formData, endTime: e.target.value})} />
+                  <label>Hora de Fin</label>
+                  <input type="time" className="form-input" required value={formData.endTime} onChange={e => setFormData({...formData, endTime: e.target.value})} />
                 </div>
               </div>
               <button type="submit" className="btn-primary" disabled={isLoading} style={{ marginTop: '1rem' }}>

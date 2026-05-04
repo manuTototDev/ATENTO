@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Eye, Edit } from 'lucide-react';
+import { Search, Filter, Eye, Edit, Trash2, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const PatientDirectory = () => {
   const navigate = useNavigate();
   const [patients, setPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const [patientToDelete, setPatientToDelete] = useState(null);
+  const [dobConfirm, setDobConfirm] = useState('');
   
   const userId = localStorage.getItem('userId');
 
@@ -23,6 +26,30 @@ const PatientDirectory = () => {
     };
     if (userId) fetchPatients();
   }, [userId]);
+
+  const handleDeleteClick = (p) => {
+    setPatientToDelete(p);
+    setDobConfirm('');
+  };
+
+  const confirmDelete = async () => {
+    if (dobConfirm !== patientToDelete.dob) {
+      alert('La fecha de nacimiento no coincide. Debe tener el formato exacto (ej. 15/05/1990).');
+      return;
+    }
+    try {
+      const res = await fetch(`http://localhost:5000/api/patients/${patientToDelete.id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setPatients(patients.filter(p => p.id !== patientToDelete.id));
+        setPatientToDelete(null);
+      } else {
+        alert('Error al eliminar paciente.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error de red al eliminar paciente.');
+    }
+  };
 
   const filteredPatients = patients.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -77,6 +104,7 @@ const PatientDirectory = () => {
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button onClick={() => navigate(`/patients/${p.id}`)} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer' }} title="Ver Expediente"><Eye size={18} /></button>
                       <button style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }} title="Editar Datos"><Edit size={18} /></button>
+                      <button onClick={() => handleDeleteClick(p)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }} title="Eliminar Paciente"><Trash2 size={18} /></button>
                     </div>
                   </td>
                 </tr>
@@ -85,6 +113,39 @@ const PatientDirectory = () => {
           </tbody>
         </table>
       </div>
+
+      {patientToDelete && (
+        <div className="modal-overlay" onClick={() => setPatientToDelete(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.25rem', color: '#ef4444' }}>Eliminar Paciente</h2>
+              <button onClick={() => setPatientToDelete(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
+            </div>
+            <p style={{ marginBottom: '1.5rem' }}>
+              Estás a punto de eliminar a <strong>{patientToDelete.name}</strong>. Esta acción eliminará todas sus citas y consultas asociadas. No se puede deshacer.
+            </p>
+            <div className="form-group">
+              <label>Para confirmar, teclea su fecha de nacimiento ({patientToDelete.dob}):</label>
+              <input 
+                type="text" 
+                className="form-input" 
+                placeholder="DD/MM/YYYY" 
+                value={dobConfirm} 
+                onChange={e => setDobConfirm(e.target.value)} 
+                autoFocus 
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+              <button onClick={confirmDelete} className="btn-primary" style={{ flex: 1, backgroundColor: '#ef4444', borderColor: '#ef4444' }}>
+                Eliminar Permanentemente
+              </button>
+              <button onClick={() => setPatientToDelete(null)} className="btn-secondary" style={{ flex: 1 }}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -43,14 +43,9 @@ const Sidebar = () => {
           <span>Agenda</span>
         </NavLink>
         
-        <NavLink to="/inventory" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
-          <Package size={20} />
-          <span>Inventario</span>
-        </NavLink>
-        
-        <NavLink to="/analytics" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
+        <NavLink to="/finances" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
           <BarChart2 size={20} />
-          <span>Reportes</span>
+          <span>Finanzas</span>
         </NavLink>
       </nav>
 

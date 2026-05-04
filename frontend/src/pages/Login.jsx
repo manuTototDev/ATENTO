@@ -10,15 +10,34 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call for now (Ideally connect to /api/auth/login)
-    setTimeout(() => {
+    setErrorMsg('');
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userId', data.userId);
+        navigate('/dashboard');
+      } else {
+        setErrorMsg(data.error || 'Error al iniciar sesión');
+      }
+    } catch (error) {
+      setErrorMsg('Error de conexión con el servidor');
+    } finally {
       setIsLoading(false);
-      console.log('Login attempt with secure credentials');
-      navigate('/dashboard');
-    }, 1500);
+    }
   };
 
   return (
@@ -34,6 +53,12 @@ const Login = () => {
             <h2>Acceso Clínico</h2>
             <p>Ingresa tus credenciales seguras</p>
           </div>
+
+          {errorMsg && (
+            <div style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '0.75rem', borderRadius: '0.5rem', marginBottom: '1rem', fontSize: '0.875rem' }}>
+              {errorMsg}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">

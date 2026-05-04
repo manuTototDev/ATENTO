@@ -11,7 +11,8 @@ import PatientDirectory from './pages/PatientDirectory';
 import PatientDetail from './pages/PatientDetail';
 import CalendarView from './pages/CalendarView';
 import Analytics from './pages/Analytics';
-import Inventory from './pages/Inventory';
+import Finances from './pages/Finances';
+import Settings from './pages/Settings';
 import './index.css';
 
 function App() {
@@ -28,13 +29,14 @@ function App() {
           <Route path="/patients" element={<PatientDirectory />} />
           <Route path="/patients/:id" element={<PatientDetail />} />
           <Route path="/calendar" element={<CalendarView />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/inventory" element={<Inventory />} />
+          <Route path="/finances" element={<Finances />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
 
         {/* Pantallas completas (Sin Sidebar) */}
         <Route path="/patient/new" element={<NewPatient />} />
-        <Route path="/consultation/new-12345" element={<Consultation />} />
+        <Route path="/consultation/new" element={<Consultation />} />
+        <Route path="/consultation/:id" element={<Consultation />} />
         <Route path="/prescription" element={<PrescriptionView />} />
         
         {/* Default route to login for now */}

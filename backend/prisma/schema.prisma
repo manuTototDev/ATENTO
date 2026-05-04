@@ -160,3 +160,16 @@ enum Role {
   DOCTOR
   ASSISTANT
 }
+
+model Medication {
+  id              String   @id @default(uuid())
+  name            String   // Nombre comercial o genérico
+  activePrinciple String?  // Principio activo
+  presentation    String?  // Presentación (ej. Tabletas 500mg)
+  
+  // Para futuras referencias de COFEPRIS
+  registrationNo  String?  // Registro Sanitario COFEPRIS
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

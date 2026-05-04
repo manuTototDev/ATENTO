@@ -8,8 +8,11 @@ const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const { Pool } = require('pg');
 const { PrismaPg } = require('@prisma/adapter-pg');
+const { GoogleGenAI } = require('@google/genai');
 
 dotenv.config();
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -78,6 +81,33 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
+// LOGIN DE USUARIO
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Buscar usuario
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return res.status(401).json({ error: 'Credenciales inválidas.' });
+    }
+
+    // Verificar contraseña
+    const isValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isValid) {
+      return res.status(401).json({ error: 'Credenciales inválidas.' });
+    }
+
+    // Crear token
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+    res.json({ message: 'Login exitoso', token, userId: user.id });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error del servidor al iniciar sesión.' });
+  }
+});
+
 // ONBOARDING DEL DOCTOR (Datos de Receta)
 app.post('/api/auth/onboarding', async (req, res) => {
   try {
@@ -123,6 +153,20 @@ app.post('/api/auth/onboarding', async (req, res) => {
 // MÓDULO DE PACIENTES
 // ==========================================
 
+app.delete('/api/patients/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Opcional: borrar consultas relacionadas antes, si no hay cascade
+    await prisma.consultation.deleteMany({ where: { patientId: id } });
+    await prisma.appointment.deleteMany({ where: { patientId: id } });
+    await prisma.patient.delete({ where: { id } });
+    res.json({ message: 'Paciente eliminado' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al eliminar paciente.' });
+  }
+});
+
 app.get('/api/patients', async (req, res) => {
   try {
     const { userId } = req.query;
@@ -159,8 +203,84 @@ app.get('/api/patients', async (req, res) => {
 });
 
 // ==========================================
-// MÓDULO DE INVENTARIO
+// MÓDULO DE IA (GEMINI)
 // ==========================================
+
+app.post('/api/ai/parse-consultation', async (req, res) => {
+  try {
+    const { transcription } = req.body;
+    if (!transcription) return res.status(400).json({ error: 'Falta transcripción' });
+
+    const prompt = `
+      Eres un asistente médico inteligente de alto nivel (Ambient Clinical Intelligence). Analiza la siguiente transcripción de una conversación fluida en tiempo real (que puede incluir al médico y al paciente hablando) y extrae la información clínica en formato JSON puro.
+      
+      Debes inferir por el contexto quién es el médico (quien pregunta/diagnostica/receta) y quién es el paciente (quien describe síntomas).
+      Estructura estrictamente la respuesta en este formato JSON (no devuelvas NADA más, ni markdown):
+      {
+        "soap": {
+          "subjective": "lo que refiere el paciente en la conversación",
+          "objective": "signos físicos o exploración mencionados",
+          "assessment": "diagnóstico o análisis clínico del médico"
+        },
+        "treatments": [
+          { "medication": "Nombre", "dose": "Ej. 1 tableta", "frequencyNumber": "8", "frequencyUnit": "horas", "durationNumber": "5", "durationUnit": "días" }
+        ],
+        "indications": [
+          { "type": "Dieta", "instruction": "Descripción" }
+        ]
+      }
+      Reglas:
+      - En "frequencyUnit" solo usa "horas" o "días". En "durationUnit" usa "días", "semanas" o "meses".
+      - En indications "type" usa "General", "Dieta", "Reposo", "Cuidados" o "Signos de Alarma".
+      - Si en la charla no se define un tratamiento o falta un dato (como la duración exacta), déjalo vacío o deduce el estándar médico aplicable y obvio.
+      
+      Transcripción de la consulta: "${transcription}"
+    `;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+    });
+    
+    let text = response.text.trim();
+    if (text.startsWith('\`\`\`json')) {
+       text = text.replace(/^\`\`\`json/, '').replace(/\`\`\`$/, '').trim();
+    } else if (text.startsWith('\`\`\`')) {
+       text = text.replace(/^\`\`\`/, '').replace(/\`\`\`$/, '').trim();
+    }
+
+    const parsedData = JSON.parse(text);
+    res.json(parsedData);
+  } catch (error) {
+    console.error('Error de IA:', error);
+    res.status(500).json({ error: 'Fallo al procesar con IA' });
+  }
+});
+
+// ==========================================
+// MÓDULO DE INVENTARIO Y MEDICAMENTOS
+// ==========================================
+
+app.get('/api/medications', async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query || query.length < 2) return res.json([]);
+    
+    const meds = await prisma.medication.findMany({
+      where: {
+        OR: [
+          { name: { contains: query, mode: 'insensitive' } },
+          { activePrinciple: { contains: query, mode: 'insensitive' } }
+        ]
+      },
+      take: 10
+    });
+    res.json(meds);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al buscar medicamentos.' });
+  }
+});
 
 app.get('/api/inventory', async (req, res) => {
   try {
@@ -231,6 +351,16 @@ app.post('/api/appointments', async (req, res) => {
     res.status(201).json(newAppointment);
   } catch (error) {
     res.status(500).json({ error: 'Error al agendar cita.' });
+  }
+});
+
+app.delete('/api/appointments/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.appointment.delete({ where: { id } });
+    res.json({ message: 'Cita eliminada exitosamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar cita.' });
   }
 });
 

@@ -1,9 +1,28 @@
-import React from 'react';
-import { Printer, Download, ArrowLeft, CheckCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Printer, Download, ArrowLeft, CheckCircle, Mail } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const PrescriptionView = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { patient, treatments, indications, soap } = location.state || {};
+  const [emailSent, setEmailSent] = useState(false);
+
+  const handleSendEmail = () => {
+    let email = patient?.email;
+    if (!email) {
+      email = window.prompt("El paciente no tiene un correo registrado. Ingresa un correo electrónico para enviarle la receta:");
+      if (!email) return; // cancelado
+      // Aquí haríamos el UPDATE en la BD del paciente para guardarle su email nuevo
+      alert(`Correo registrado. Guardando en base de datos...`);
+    }
+    
+    // Simular el envío de correo
+    setTimeout(() => {
+      setEmailSent(true);
+      alert(`Receta enviada exitosamente a ${email}`);
+    }, 1000);
+  };
 
   return (
     <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -13,6 +32,14 @@ const PrescriptionView = () => {
           <ArrowLeft size={18} /> Volver al Inicio
         </button>
         <div style={{ display: 'flex', gap: '1rem' }}>
+          <button 
+            className="btn-secondary" 
+            onClick={handleSendEmail}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', border: '1px solid var(--border)' }}
+          >
+            {emailSent ? <CheckCircle size={18} color="green" /> : <Mail size={18} />}
+            {emailSent ? 'Enviada' : 'Enviar por Correo'}
+          </button>
           <button className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', border: '1px solid var(--border)' }}>
             <Download size={18} /> Descargar PDF
           </button>
@@ -42,33 +69,47 @@ const PrescriptionView = () => {
 
         {/* Datos Paciente */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.875rem', marginBottom: '2rem', background: 'var(--input-bg)', padding: '1rem', borderRadius: 'var(--radius-sm)' }}>
-          <div><strong>Paciente:</strong> María López Gómez</div>
-          <div><strong>Fecha:</strong> 3 de Mayo de 2026</div>
-          <div><strong>Edad:</strong> 34 años</div>
-          <div><strong>Alergias:</strong> Penicilina, Sulfa</div>
-          <div><strong>Peso:</strong> 65 kg</div>
-          <div><strong>Talla:</strong> 1.62 m</div>
-          <div><strong>TA:</strong> 120/80 mmHg</div>
-          <div><strong>Temp:</strong> 36.5 °C</div>
+          <div><strong>Paciente:</strong> {patient?.firstName} {patient?.lastName}</div>
+          <div><strong>Fecha:</strong> {new Date().toLocaleDateString('es-MX')}</div>
+          <div><strong>Edad:</strong> {patient?.dob ? Math.floor((new Date() - new Date(patient.dob)) / 31557600000) : '--'} años</div>
+          <div><strong>Diagnóstico:</strong> {soap?.assessment || 'No especificado'}</div>
         </div>
 
         {/* Medicamentos */}
-        <div style={{ minHeight: '300px' }}>
+        <div style={{ minHeight: '200px', marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.25rem', color: 'var(--text-dark)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.5rem', color: 'var(--primary)' }}>Rx</span>
+            <span style={{ fontSize: '1.5rem', color: 'var(--primary)' }}>Rx</span> Farmacológico
           </h2>
 
           <ol style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <li style={{ paddingLeft: '0.5rem' }}>
-              <div style={{ fontWeight: 600, color: 'var(--text-dark)' }}>Paracetamol 500mg Tabletas</div>
-              <div style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>Tomar 1 tableta vía oral cada 8 horas por 5 días en caso de fiebre o dolor.</div>
-            </li>
-            <li style={{ paddingLeft: '0.5rem' }}>
-              <div style={{ fontWeight: 600, color: 'var(--text-dark)' }}>Loratadina 10mg Tabletas</div>
-              <div style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>Tomar 1 tableta vía oral cada 24 horas por 7 días.</div>
-            </li>
+            {treatments && treatments.length > 0 ? treatments.map((t, i) => (
+              <li key={i} style={{ paddingLeft: '0.5rem' }}>
+                <div style={{ fontWeight: 600, color: 'var(--text-dark)' }}>{t.medication}</div>
+                <div style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  Tomar {t.dose} cada {t.frequencyNumber} {t.frequencyUnit} por {t.durationNumber} {t.durationUnit}.
+                </div>
+              </li>
+            )) : (
+              <li style={{ color: 'var(--text-muted)' }}>Sin prescripción farmacológica.</li>
+            )}
           </ol>
         </div>
+
+        {/* Indicaciones Generales */}
+        {indications && indications.length > 0 && (
+          <div style={{ minHeight: '150px' }}>
+            <h2 style={{ fontSize: '1rem', color: 'var(--text-dark)', marginBottom: '1rem', fontWeight: 600 }}>
+              Indicaciones Generales y Cuidados
+            </h2>
+            <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', color: 'var(--text-dark)', fontSize: '0.9rem' }}>
+              {indications.map((ind, i) => (
+                <li key={i}>
+                  <strong>{ind.type}:</strong> {ind.instruction}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Footer Firmas */}
         <div style={{ position: 'absolute', bottom: '3rem', left: '3rem', right: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>

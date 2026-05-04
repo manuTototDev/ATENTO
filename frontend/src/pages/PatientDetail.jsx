@@ -43,7 +43,7 @@ const PatientDetail = () => {
             </div>
           </div>
 
-          <button className="btn-primary" style={{ width: '100%', marginTop: '2rem' }} onClick={() => navigate('/consultation/new-12345')}>
+          <button className="btn-primary" style={{ width: '100%', marginTop: '2rem' }} onClick={() => navigate(`/consultation/${id}`)}>
             Iniciar Consulta
           </button>
         </div>
