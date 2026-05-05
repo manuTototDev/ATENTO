@@ -120,6 +120,9 @@ model Consultation {
   cost            Float          @default(0)
   hasVariableCost Boolean        @default(false) // Si se aplicó tarifa nocturna o fin de semana
   
+  // Transcripción Original
+  rawTranscription Json?          // Guardamos la transcripción completa original sin alterar (puede incluir texto, metadatos, etc)
+  
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 }

@@ -20,7 +20,9 @@ const NewPatient = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    dateOfBirth: '',
+    dobDay: '',
+    dobMonth: '',
+    dobYear: '',
     gender: 'M',
     phone: '',
     email: '',
@@ -37,14 +39,40 @@ const NewPatient = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Aquí iría el fetch POST a /api/patients
-    setTimeout(() => {
+    const userId = localStorage.getItem('userId');
+    const dateOfBirth = `${formData.dobYear}-${formData.dobMonth.padStart(2, '0')}-${formData.dobDay.padStart(2, '0')}T12:00:00Z`;
+
+    try {
+      const response = await fetch('http://localhost:5000/api/patients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          dateOfBirth,
+          gender: formData.gender,
+          phone: formData.phone,
+          email: formData.email,
+          bloodType: formData.bloodType,
+          allergies: formData.allergies,
+          chronicDiseases: formData.chronicDiseases
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert('Paciente registrado exitosamente. Iniciando consulta...');
+        navigate(`/consultation/${data.id}`); 
+      } else {
+        alert(data.error || 'Error al registrar paciente');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error de conexión con el servidor.');
+    } finally {
       setIsLoading(false);
-      console.log('Paciente creado:', formData);
-      alert('Paciente registrado exitosamente. Iniciando consulta...');
-      // Simulamos la creación de una consulta pasando un id de paciente falso
-      navigate('/consultation/new-12345'); 
-    }, 1500);
+    }
   };
 
   return (
@@ -109,14 +137,38 @@ const NewPatient = () => {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div className="form-group">
-                <label htmlFor="dateOfBirth">Fecha de Nacimiento</label>
-                <div className="input-wrapper">
-                  <Calendar size={18} className="input-icon" />
+                <label>Fecha de Nacimiento</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.5fr', gap: '0.5rem' }}>
                   <input
-                    type="date"
-                    id="dateOfBirth"
+                    type="text"
+                    maxLength="2"
+                    id="dobDay"
                     className="form-input"
-                    value={formData.dateOfBirth}
+                    style={{ paddingLeft: '0.75rem', textAlign: 'center' }}
+                    placeholder="DD"
+                    value={formData.dobDay}
+                    onChange={handleChange}
+                    required
+                  />
+                  <input
+                    type="text"
+                    maxLength="2"
+                    id="dobMonth"
+                    className="form-input"
+                    style={{ paddingLeft: '0.75rem', textAlign: 'center' }}
+                    placeholder="MM"
+                    value={formData.dobMonth}
+                    onChange={handleChange}
+                    required
+                  />
+                  <input
+                    type="text"
+                    maxLength="4"
+                    id="dobYear"
+                    className="form-input"
+                    style={{ paddingLeft: '0.75rem', textAlign: 'center' }}
+                    placeholder="AAAA"
+                    value={formData.dobYear}
                     onChange={handleChange}
                     required
                   />

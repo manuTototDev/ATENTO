@@ -37,7 +37,7 @@ function App() {
         <Route path="/patient/new" element={<NewPatient />} />
         <Route path="/consultation/new" element={<Consultation />} />
         <Route path="/consultation/:id" element={<Consultation />} />
-        <Route path="/prescription" element={<PrescriptionView />} />
+        <Route path="/prescription/:id" element={<PrescriptionView />} />
         
         {/* Default route to login for now */}
         <Route path="*" element={<Navigate to="/login" replace />} />

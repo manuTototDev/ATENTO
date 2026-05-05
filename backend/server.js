@@ -1,16 +1,17 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const dotenv = require('dotenv');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const { Pool } = require('pg');
 const { PrismaPg } = require('@prisma/adapter-pg');
 const { GoogleGenAI } = require('@google/genai');
-
-dotenv.config();
+const { processTranscription } = require('./services/aiTranscriptionService');
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -153,6 +154,36 @@ app.post('/api/auth/onboarding', async (req, res) => {
 // MÓDULO DE PACIENTES
 // ==========================================
 
+// Crear paciente
+app.post('/api/patients', async (req, res) => {
+  try {
+    const { userId, firstName, lastName, dateOfBirth, gender, phone, email, bloodType, allergies, chronicDiseases } = req.body;
+    if (!userId || !firstName || !lastName || !dateOfBirth) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios.' });
+    }
+
+    const newPatient = await prisma.patient.create({
+      data: {
+        doctorId: userId,
+        firstName,
+        lastName,
+        dateOfBirth: new Date(dateOfBirth),
+        gender,
+        phone,
+        email,
+        bloodType,
+        allergies: allergies ? [allergies] : [],
+        chronicDiseases: chronicDiseases ? [chronicDiseases] : []
+      }
+    });
+
+    res.status(201).json(newPatient);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al crear paciente.' });
+  }
+});
+
 app.delete('/api/patients/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -202,6 +233,29 @@ app.get('/api/patients', async (req, res) => {
   }
 });
 
+app.get('/api/patients/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const patient = await prisma.patient.findUnique({
+      where: { id },
+      include: {
+        consultations: {
+          orderBy: { createdAt: 'desc' }
+        }
+      }
+    });
+
+    if (!patient) {
+      return res.status(404).json({ error: 'Paciente no encontrado.' });
+    }
+
+    res.json(patient);
+  } catch (error) {
+    console.error('Error al obtener paciente:', error);
+    res.status(500).json({ error: 'Error al obtener detalles del paciente.' });
+  }
+});
+
 // ==========================================
 // MÓDULO DE IA (GEMINI)
 // ==========================================
@@ -211,49 +265,75 @@ app.post('/api/ai/parse-consultation', async (req, res) => {
     const { transcription } = req.body;
     if (!transcription) return res.status(400).json({ error: 'Falta transcripción' });
 
-    const prompt = `
-      Eres un asistente médico inteligente de alto nivel (Ambient Clinical Intelligence). Analiza la siguiente transcripción de una conversación fluida en tiempo real (que puede incluir al médico y al paciente hablando) y extrae la información clínica en formato JSON puro.
-      
-      Debes inferir por el contexto quién es el médico (quien pregunta/diagnostica/receta) y quién es el paciente (quien describe síntomas).
-      Estructura estrictamente la respuesta en este formato JSON (no devuelvas NADA más, ni markdown):
-      {
-        "soap": {
-          "subjective": "lo que refiere el paciente en la conversación",
-          "objective": "signos físicos o exploración mencionados",
-          "assessment": "diagnóstico o análisis clínico del médico"
-        },
-        "treatments": [
-          { "medication": "Nombre", "dose": "Ej. 1 tableta", "frequencyNumber": "8", "frequencyUnit": "horas", "durationNumber": "5", "durationUnit": "días" }
-        ],
-        "indications": [
-          { "type": "Dieta", "instruction": "Descripción" }
-        ]
-      }
-      Reglas:
-      - En "frequencyUnit" solo usa "horas" o "días". En "durationUnit" usa "días", "semanas" o "meses".
-      - En indications "type" usa "General", "Dieta", "Reposo", "Cuidados" o "Signos de Alarma".
-      - Si en la charla no se define un tratamiento o falta un dato (como la duración exacta), déjalo vacío o deduce el estándar médico aplicable y obvio.
-      
-      Transcripción de la consulta: "${transcription}"
-    `;
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+    // 1. Usar el nuevo servicio validado con Zod
+    const parsedData = await processTranscription(transcription);
     
-    let text = response.text.trim();
-    if (text.startsWith('\`\`\`json')) {
-       text = text.replace(/^\`\`\`json/, '').replace(/\`\`\`$/, '').trim();
-    } else if (text.startsWith('\`\`\`')) {
-       text = text.replace(/^\`\`\`/, '').replace(/\`\`\`$/, '').trim();
-    }
-
-    const parsedData = JSON.parse(text);
+    // Devolvemos el JSON estructurado al Frontend
     res.json(parsedData);
   } catch (error) {
     console.error('Error de IA:', error);
     res.status(500).json({ error: 'Fallo al procesar con IA' });
+  }
+});
+
+// ==========================================
+// MÓDULO DE CONSULTAS (GUARDADO FINAL)
+// ==========================================
+
+app.post('/api/consultations', async (req, res) => {
+  try {
+    const { patientId, doctorId, soap, treatments, indications, rawTranscriptionTexto, patientHistoryUpdates } = req.body;
+    
+    if (!patientId || !doctorId) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    }
+
+    const resultado = await prisma.$transaction(async (tx) => {
+      // A) Actualizar Historial Clínico del Paciente
+      if (patientHistoryUpdates) {
+        // En Prisma, los arreglos de String[] se sobrescriben o se debe hacer un fetch previo.
+        // Lo más seguro es obtener el paciente y concatenar, o simplemente dejar que el frontend
+        // nos mande lo que ya tenía más lo nuevo. Si confiamos en patientHistoryUpdates, agregamos.
+        const patient = await tx.patient.findUnique({ where: { id: patientId } });
+        if (patient) {
+          const newAllergies = Array.from(new Set([...patient.allergies, ...(patientHistoryUpdates.allergies || [])]));
+          const newDiseases = Array.from(new Set([...patient.chronicDiseases, ...(patientHistoryUpdates.chronicDiseases || [])]));
+          const newTreatments = Array.from(new Set([...patient.currentTreatments, ...(patientHistoryUpdates.currentTreatments || [])]));
+          
+          await tx.patient.update({
+            where: { id: patientId },
+            data: {
+              allergies: newAllergies,
+              chronicDiseases: newDiseases,
+              currentTreatments: newTreatments,
+              ...(patientHistoryUpdates.bloodType ? { bloodType: patientHistoryUpdates.bloodType } : {})
+            }
+          });
+        }
+      }
+
+      // B) Guardar la Consulta y la Transcripción Cruda
+      // Como Prisma Schema guardará el plan médico, concatenamos treatments e indications en el 'plan' si no vienen como campos separados.
+      const planText = soap.plan || JSON.stringify({ treatments, indications });
+
+      const nuevaConsulta = await tx.consultation.create({
+        data: {
+          patientId,
+          doctorId,
+          subjective: soap.subjective,
+          objective: soap.objective,
+          assessment: soap.assessment,
+          plan: planText,
+          rawTranscription: rawTranscriptionTexto ? { text: rawTranscriptionTexto, source: "audio" } : null
+        }
+      });
+      return nuevaConsulta;
+    });
+
+    res.status(201).json(resultado);
+  } catch (error) {
+    console.error('Error al guardar consulta:', error);
+    res.status(500).json({ error: 'Error al guardar la consulta médica.' });
   }
 });
 
@@ -402,6 +482,32 @@ app.get('/api/analytics', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener reportes.' });
+  }
+});
+
+// ==========================================
+// GET DOCTOR PROFILE
+// ==========================================
+app.get('/api/profile', async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ error: 'Falta userId' });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { 
+        profile: {
+          include: { specialty: true }
+        } 
+      }
+    });
+
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener el perfil.' });
   }
 });
 

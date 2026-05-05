@@ -19,6 +19,8 @@ const Consultation = () => {
     assessment: ''
   });
 
+  const [patientHistoryUpdates, setPatientHistoryUpdates] = useState(null);
+
   const [treatments, setTreatments] = useState([
     { medication: '', dose: '', frequencyNumber: '', frequencyUnit: 'horas', durationNumber: '', durationUnit: 'días' }
   ]);
@@ -86,11 +88,10 @@ const Consultation = () => {
 
   useEffect(() => {
     if (id && id !== 'new') {
-      fetch(`http://localhost:5000/api/patients?userId=${userId}`)
+      fetch(`http://localhost:5000/api/patients/${id}`)
         .then(res => res.json())
         .then(data => {
-          const found = data.find(p => p.id === id);
-          if (found) setPatientData(found);
+          if (data && !data.error) setPatientData(data);
         })
         .catch(err => console.error(err));
     }
@@ -165,6 +166,9 @@ const Consultation = () => {
               return [...current, ...data.indications];
             });
           }
+          if (data.patientHistoryUpdates) {
+            setPatientHistoryUpdates(data.patientHistoryUpdates);
+          }
         }
       } catch (err) {
         console.error(err);
@@ -175,15 +179,38 @@ const Consultation = () => {
     }, 500);
   };
 
-  const handleFinish = () => {
-    navigate('/prescription', { 
-      state: { 
-        patient: patientData, 
-        treatments, 
-        indications, 
-        soap: soapNotes 
-      } 
-    });
+  const handleFinish = async () => {
+    try {
+      // 1. Guardar en Base de Datos (Incluyendo transcripción cruda y actualizaciones clínicas)
+      const res = await fetch('http://localhost:5000/api/consultations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientId: id,
+          doctorId: userId,
+          soap: soapNotes,
+          treatments,
+          indications,
+          rawTranscriptionTexto: transcription,
+          patientHistoryUpdates
+        })
+      });
+
+      if (!res.ok) throw new Error('Error al guardar consulta');
+
+      // 2. Navegar a la receta
+      navigate(`/prescription/${id}`, { 
+        state: { 
+          patient: patientData, 
+          treatments, 
+          indications, 
+          soap: soapNotes 
+        } 
+      });
+    } catch (e) {
+      console.error(e);
+      alert('Hubo un error al guardar la consulta');
+    }
   };
 
   return (
@@ -196,12 +223,12 @@ const Consultation = () => {
           </button>
           <h1 style={{ fontSize: '1.5rem', color: 'var(--text-dark)' }}>Consulta en curso</h1>
           <h2 style={{ fontSize: '1.1rem', color: 'var(--primary)', fontWeight: 600 }}>
-            {patientData ? patientData.name : (id === 'new' ? 'Nuevo Paciente' : 'Paciente Seleccionado')}
+            {patientData ? `${patientData.firstName} ${patientData.lastName}` : (id === 'new' ? 'Nuevo Paciente' : 'Paciente Seleccionado')}
           </h2>
         </div>
 
         <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#DC2626', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', fontWeight: 600 }}>
-          ⚠️ Alergias: {patientData && patientData.name === 'María López Gómez' ? 'Penicilina, Sulfa' : 'No registradas'}
+          ⚠️ Alergias: {patientData?.allergies?.length > 0 ? patientData.allergies.join(', ') : 'No registradas'}
         </div>
       </div>
 

@@ -1,10 +1,45 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, User, Activity, Clock, FileText } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const PatientDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [patient, setPatient] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPatient = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/patients/${id}`);
+        if (!res.ok) throw new Error('Error al obtener datos del paciente');
+        const data = await res.json();
+        setPatient(data);
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPatient();
+  }, [id]);
+
+  if (loading) return <div style={{ padding: '2rem' }}>Cargando expediente...</div>;
+  if (error) return <div style={{ padding: '2rem', color: 'red' }}>{error}</div>;
+  if (!patient) return <div style={{ padding: '2rem' }}>Paciente no encontrado.</div>;
+
+  // Calcular edad
+  const dob = new Date(patient.dateOfBirth);
+  const ageDifMs = Date.now() - dob.getTime();
+  const ageDate = new Date(ageDifMs);
+  const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+
+  const formatDate = (d) => {
+    const date = new Date(d);
+    return `${date.getUTCDate().toString().padStart(2, '0')} de ${['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][date.getUTCMonth()]} de ${date.getUTCFullYear()}`;
+  };
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -20,26 +55,26 @@ const PatientDetail = () => {
             <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--input-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
               <User size={40} color="var(--primary)" />
             </div>
-            <h2 style={{ fontSize: '1.25rem', color: 'var(--text-dark)' }}>María López Gómez</h2>
-            <p style={{ color: 'var(--text-muted)' }}>34 años | Femenino</p>
+            <h2 style={{ fontSize: '1.25rem', color: 'var(--text-dark)' }}>{patient.firstName} {patient.lastName}</h2>
+            <p style={{ color: 'var(--text-muted)' }}>{age} años | {patient.gender}</p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.875rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>Sangre:</span>
-              <span style={{ fontWeight: 600, color: '#EF4444' }}>O+</span>
+              <span style={{ fontWeight: 600, color: '#EF4444' }}>{patient.bloodType || 'N/A'}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>Teléfono:</span>
-              <span style={{ fontWeight: 600 }}>55 1234 5678</span>
+              <span style={{ fontWeight: 600 }}>{patient.phone || 'N/A'}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>Alergias:</span>
-              <span style={{ fontWeight: 600, color: '#DC2626' }}>Penicilina, Sulfa</span>
+              <span style={{ fontWeight: 600, color: '#DC2626' }}>{patient.allergies?.length > 0 ? patient.allergies.join(', ') : 'Ninguna registrada'}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>Enf. Crónicas:</span>
-              <span style={{ fontWeight: 600 }}>Asma Leve</span>
+              <span style={{ fontWeight: 600 }}>{patient.chronicDiseases?.length > 0 ? patient.chronicDiseases.join(', ') : 'Ninguna registrada'}</span>
             </div>
           </div>
 
@@ -53,33 +88,26 @@ const PatientDetail = () => {
           <h2 className="panel-title" style={{ marginBottom: '1.5rem' }}>Historial Clínico</h2>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            
-            <div style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', background: 'var(--input-bg)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <strong style={{ color: 'var(--primary)' }}>03 de Mayo de 2026</strong>
-                <span className="status-badge status-completed">Completada</span>
+            {patient.consultations && patient.consultations.length > 0 ? (
+              patient.consultations.map(consult => (
+                <div key={consult.id} style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', background: 'var(--input-bg)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <strong style={{ color: 'var(--primary)' }}>{formatDate(consult.createdAt)}</strong>
+                    <span className="status-badge status-completed">Completada</span>
+                  </div>
+                  <p style={{ fontSize: '0.875rem', color: 'var(--text-dark)', marginBottom: '0.5rem' }}>
+                    <strong>Motivo:</strong> {consult.subjective || 'Sin registro detallado.'}
+                  </p>
+                  <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                    <strong>Diagnóstico:</strong> {consult.assessment || 'Sin diagnóstico detallado.'}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>
+                Este paciente aún no tiene consultas registradas.
               </div>
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-dark)', marginBottom: '0.5rem' }}>
-                <strong>Motivo:</strong> Cuadro febril de 48 hrs de evolución con odinofagia.
-              </p>
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                <strong>Diagnóstico:</strong> Faringoamigdalitis aguda.
-              </p>
-            </div>
-
-            <div style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <strong style={{ color: 'var(--text-dark)' }}>15 de Enero de 2026</strong>
-                <span className="status-badge status-completed">Completada</span>
-              </div>
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-dark)', marginBottom: '0.5rem' }}>
-                <strong>Motivo:</strong> Control de asma rutinario.
-              </p>
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                <strong>Diagnóstico:</strong> Asma controlada. Se mantiene tratamiento base.
-              </p>
-            </div>
-
+            )}
           </div>
         </div>
 

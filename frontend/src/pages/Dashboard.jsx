@@ -22,6 +22,7 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
   // Real data state
+  const [doctorProfile, setDoctorProfile] = useState(null);
   const [stats, setStats] = useState({ todayPatients: 0, todayEarnings: 0, totalPatients: 0 });
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [recentConsults, setRecentConsults] = useState([]);
@@ -33,10 +34,11 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [analyticsRes, appointmentsRes, patientsRes] = await Promise.all([
+        const [analyticsRes, appointmentsRes, patientsRes, profileRes] = await Promise.all([
           fetch(`http://localhost:5000/api/analytics?userId=${userId}`),
           fetch(`http://localhost:5000/api/appointments?userId=${userId}`),
-          fetch(`http://localhost:5000/api/patients?userId=${userId}`)
+          fetch(`http://localhost:5000/api/patients?userId=${userId}`),
+          fetch(`http://localhost:5000/api/profile?userId=${userId}`)
         ]);
 
         if (analyticsRes.ok) {
@@ -68,6 +70,11 @@ const Dashboard = () => {
           const pData = await patientsRes.json();
           setPatients(pData);
         }
+
+        if (profileRes.ok) {
+          const profData = await profileRes.json();
+          setDoctorProfile(profData);
+        }
       } catch (error) {
         console.error(error);
       }
@@ -85,21 +92,24 @@ const Dashboard = () => {
   const startConsultation = (e) => {
     e.preventDefault();
     if (searchQuery) {
-      // Si el texto está pero no seleccionó nada de la lista, podríamos buscar al primer paciente o crear nuevo
-      // Por simplicidad, navegamos a nueva consulta
-      navigate('/consultation/new');
+      if (filteredSearchPatients.length > 0) {
+        navigate(`/consultation/${filteredSearchPatients[0].id}`);
+      } else {
+        alert("Por favor, selecciona un paciente de la lista o crea uno nuevo.");
+      }
     } else {
-      navigate('/patient/new');
+      alert("Por favor, busca un paciente o crea uno nuevo.");
     }
     setShowNewConsultModal(false);
   };
 
   const filteredSearchPatients = searchQuery.trim() === '' 
     ? [] 
-    : patients.filter(p => 
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        (p.phone && p.phone.includes(searchQuery))
-      ).slice(0, 5);
+    : patients.filter(p => {
+        const fullName = `${p.firstName} ${p.lastName}`.toLowerCase();
+        return fullName.includes(searchQuery.toLowerCase()) || 
+               (p.phone && p.phone.includes(searchQuery));
+      }).slice(0, 5);
 
   return (
     <div className="dashboard-container">
@@ -108,10 +118,16 @@ const Dashboard = () => {
 
         <div className="user-profile-mini">
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-dark)' }}>Dr. Médico</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Cardiología</div>
+            <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-dark)' }}>
+              Dr. {doctorProfile?.firstName || 'Médico'} {doctorProfile?.lastName || ''}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              {doctorProfile?.profile?.specialty?.name || 'Médico General'}
+            </div>
           </div>
-          <div className="avatar-circle">M</div>
+          <div className="avatar-circle">
+            {doctorProfile?.firstName ? doctorProfile.firstName.charAt(0).toUpperCase() : 'M'}
+          </div>
           <button 
             onClick={() => navigate('/settings')}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', marginLeft: '1rem' }}
@@ -272,19 +288,19 @@ const Dashboard = () => {
                         <div 
                           key={p.id} 
                           onClick={() => {
-                            setSearchQuery(p.name);
+                            setSearchQuery(`${p.firstName} ${p.lastName}`);
                           }}
                           style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                         >
                           <div>
-                            <div style={{ fontWeight: 500, color: 'var(--text-dark)' }}>{p.name}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Tel: {p.phone !== 'N/A' ? p.phone : 'No registrado'}</div>
+                            <div style={{ fontWeight: 500, color: 'var(--text-dark)' }}>{p.firstName} {p.lastName}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Tel: {p.phone || 'No registrado'}</div>
                           </div>
                           <button 
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setSearchQuery(p.name);
+                              setSearchQuery(`${p.firstName} ${p.lastName}`);
                               navigate(`/consultation/${p.id}`);
                               setShowNewConsultModal(false);
                             }}

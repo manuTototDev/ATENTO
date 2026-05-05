@@ -181,3 +181,10 @@ input {
   from { opacity: 0; transform: translateY(-20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+@media print {
+  body * { visibility: hidden; }
+  .printable-prescription, .printable-prescription * { visibility: visible; }
+  .printable-prescription { position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; padding: 2rem; box-shadow: none; border: none; }
+  .no-print { display: none !important; }
+}
