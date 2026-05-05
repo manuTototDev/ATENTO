@@ -497,7 +497,7 @@ app.get('/api/profile', async (req, res) => {
       where: { id: userId },
       include: { 
         profile: {
-          include: { specialty: true }
+          include: { specialty: true, university: true }
         } 
       }
     });
@@ -512,8 +512,77 @@ app.get('/api/profile', async (req, res) => {
 });
 
 // ==========================================
+// UPDATE DOCTOR PROFILE
+// ==========================================
+app.put('/api/profile', async (req, res) => {
+  try {
+    const { 
+      userId, fullName, specialty, licenseNumber, specialtyLicense, 
+      university, clinicName, zipCode, state, city, neighborhood, street, phoneNumber, logoBase64 
+    } = req.body;
+
+    if (!userId) return res.status(400).json({ error: 'Falta userId' });
+
+    // Dividir fullName en firstName y lastName si es posible
+    const nameParts = fullName.split(' ');
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(' ');
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { firstName, lastName: lastName || '' }
+    });
+
+    // Buscar o crear la especialidad y universidad en las tablas catálogo
+    let specialtyRecord = await prisma.specialty.findUnique({ where: { name: specialty } });
+    if (!specialtyRecord) {
+      specialtyRecord = await prisma.specialty.create({ data: { name: specialty } });
+    }
+
+    let universityRecord = await prisma.university.findUnique({ where: { name: university } });
+    if (!universityRecord) {
+      universityRecord = await prisma.university.create({ data: { name: university } });
+    }
+
+    // Clinic Address construida
+    const clinicAddress = `${street}, ${neighborhood}, ${city}, ${state}, CP ${zipCode}`;
+
+    // Actualizar perfil
+    const profile = await prisma.doctorProfile.upsert({
+      where: { userId },
+      update: {
+        specialtyId: specialtyRecord.id,
+        licenseNumber,
+        specialtyLicense,
+        universityId: universityRecord.id,
+        clinicName,
+        clinicAddress,
+        phoneNumber,
+        ...(logoBase64 ? { logoUrl: logoBase64 } : {})
+      },
+      create: {
+        userId,
+        specialtyId: specialtyRecord.id,
+        licenseNumber,
+        specialtyLicense,
+        universityId: universityRecord.id,
+        clinicName,
+        clinicAddress,
+        phoneNumber,
+        logoUrl: logoBase64 || ''
+      }
+    });
+
+    res.json({ message: 'Perfil actualizado exitosamente', profile });
+  } catch (error) {
+    console.error('Error al actualizar perfil:', error);
+    res.status(500).json({ error: 'Error del servidor al actualizar perfil.' });
+  }
+});
+
+// ==========================================
 // INICIO DEL SERVIDOR
 // ==========================================
 app.listen(PORT, () => {
-  console.log(`[Backend Seguro] Servidor Atento corriendo en puerto ${PORT}`);
+  console.log(`[Backend Seguro] Servidor Atentia corriendo en puerto ${PORT}`);
 });

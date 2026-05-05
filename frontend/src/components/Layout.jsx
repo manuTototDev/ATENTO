@@ -4,9 +4,9 @@ import Sidebar from './Sidebar';
 
 const Layout = () => {
   return (
-    <div className="app-layout">
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#fff', fontFamily: 'Inter, system-ui, sans-serif' }}>
       <Sidebar />
-      <div className="main-content">
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
         <Outlet />
       </div>
     </div>

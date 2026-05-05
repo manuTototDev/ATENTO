@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Onboarding from './pages/Onboarding';
+import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import NewPatient from './pages/NewPatient';
 import Layout from './components/Layout';
@@ -19,6 +20,7 @@ function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/onboarding" element={<Onboarding />} />
@@ -39,8 +41,8 @@ function App() {
         <Route path="/consultation/:id" element={<Consultation />} />
         <Route path="/prescription/:id" element={<PrescriptionView />} />
         
-        {/* Default route to login for now */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        {/* Default route back to landing */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

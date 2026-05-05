@@ -1,28 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Clock, Plus, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, Plus, X, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const CalendarView = () => {
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [doctorProfile, setDoctorProfile] = useState(null);
   const [formData, setFormData] = useState({ patientName: '', reason: '', date: '', startTime: '', endTime: '' });
 
   const userId = localStorage.getItem('userId');
 
-  const fetchAppointments = async () => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/appointments?userId=${userId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setAppointments(data);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   useEffect(() => {
-    if (userId) fetchAppointments();
+    const fetchData = async () => {
+      try {
+        const [appRes, profileRes] = await Promise.all([
+          fetch(`http://localhost:5000/api/appointments?userId=${userId}`),
+          fetch(`http://localhost:5000/api/profile?userId=${userId}`)
+        ]);
+        
+        if (appRes.ok) {
+          const data = await appRes.json();
+          setAppointments(data);
+        }
+        if (profileRes.ok) {
+          const profData = await profileRes.json();
+          setDoctorProfile(profData);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    if (userId) fetchData();
   }, [userId]);
 
   const handleDelete = async (id) => {
@@ -32,7 +42,9 @@ const CalendarView = () => {
         const res = await fetch(`http://localhost:5000/api/appointments/${id}`, {
           method: 'DELETE'
         });
-        if (res.ok) fetchAppointments();
+        if (res.ok) {
+          setAppointments(appointments.filter(a => a.id !== id));
+        }
       } catch (e) {
         console.error(e);
       } finally {
@@ -59,7 +71,8 @@ const CalendarView = () => {
         })
       });
       if (res.ok) {
-        fetchAppointments();
+        const newApp = await res.json();
+        setAppointments([...appointments, newApp].sort((a,b) => new Date(a.startTime) - new Date(b.startTime)));
         setShowModal(false);
         setFormData({ patientName: '', reason: '', date: '', startTime: '', endTime: '' });
       } else {
@@ -74,80 +87,202 @@ const CalendarView = () => {
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '1.5rem', color: 'var(--text-dark)' }}>Agenda Médica</h1>
-        <button className="btn-primary" onClick={() => setShowModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Plus size={18} /> Agendar Cita
-        </button>
-      </div>
+    <div style={{ minHeight: '100vh', backgroundColor: '#fff', fontFamily: 'Inter, system-ui, sans-serif' }}>
+      {/* HEADER TOP BAR */}
+      <header style={{ 
+        display: 'flex', 
+        justifyContent: 'flex-end', 
+        alignItems: 'center', 
+        padding: '1.5rem 3rem',
+        borderBottom: '2px solid #000'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '1rem', fontWeight: 600, color: '#000' }}>
+              Dr. {doctorProfile?.firstName || 'Médico'} {doctorProfile?.lastName || ''}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {doctorProfile?.profile?.specialty?.name || 'Especialista'}
+            </div>
+          </div>
+          <button 
+            onClick={() => navigate('/settings')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#000', display: 'flex', alignItems: 'center', transition: 'transform 0.2s' }}
+            title="Configuración de Perfil"
+            onMouseOver={e=>e.currentTarget.style.transform='rotate(45deg)'}
+            onMouseOut={e=>e.currentTarget.style.transform='rotate(0deg)'}
+          >
+            <Settings size={24} />
+          </button>
+        </div>
+      </header>
 
-      <div className="dashboard-panel">
-        <h2 className="panel-title" style={{ marginBottom: '1.5rem' }}>
-          <Clock size={20} color="var(--primary)" /> Próximas Citas
-        </h2>
+      <main style={{ padding: '3rem', maxWidth: '1400px', margin: '0 auto' }}>
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {/* PAGE HEADER */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
+          <div>
+            <h1 style={{ fontSize: '3rem', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: '#000', margin: 0 }}>
+              Agenda <br/> Médica.
+            </h1>
+          </div>
+          <button 
+            onClick={() => setShowModal(true)}
+            style={{ 
+              backgroundColor: '#000', 
+              color: '#fff', 
+              border: 'none', 
+              padding: '1rem 2rem', 
+              fontSize: '1rem', 
+              fontWeight: 700, 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem', 
+              cursor: 'pointer',
+              transition: 'opacity 0.2s'
+            }}
+            onMouseOver={e=>e.currentTarget.style.opacity=0.8}
+            onMouseOut={e=>e.currentTarget.style.opacity=1}
+          >
+            <Plus size={20} /> Agendar Cita
+          </button>
+        </div>
+
+        {/* LIST */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', borderBottom: '2px solid #000', paddingBottom: '0.5rem' }}>
+            <Clock size={24} color="#000" />
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 600, letterSpacing: '-0.03em', color: '#000' }}>
+              Próximas Citas
+            </h2>
+          </div>
+
           {appointments.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No hay citas agendadas.</div>
+            <div style={{ padding: '4rem 0', textAlign: 'center', color: '#888', fontSize: '1.125rem' }}>No hay citas agendadas.</div>
           ) : (
             appointments.map(app => (
-              <div key={app.id} style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
-                <div style={{ background: 'var(--input-bg)', padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)', textAlign: 'center', minWidth: '150px' }}>
-                  <div style={{ fontWeight: 600, color: 'var(--primary)', fontSize: '0.9rem' }}>
+              <div key={app.id} style={{ display: 'flex', alignItems: 'center', gap: '2rem', padding: '1.5rem', border: '1px solid #e5e5e5', transition: 'border-color 0.2s' }} onMouseOver={e=>e.currentTarget.style.borderColor='#000'} onMouseOut={e=>e.currentTarget.style.borderColor='#e5e5e5'}>
+                <div style={{ textAlign: 'center', minWidth: '150px' }}>
+                  <div style={{ fontWeight: 600, color: '#555', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
                     {new Date(app.startTime).toLocaleDateString('es-MX')}
                   </div>
-                  <div style={{ color: 'var(--text-dark)', fontWeight: 700, fontSize: '1.1rem' }}>
+                  <div style={{ color: '#000', fontWeight: 700, fontSize: '1.5rem' }}>
                     {new Date(app.startTime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 600, color: 'var(--text-dark)', fontSize: '1.1rem' }}>{app.patientName || 'Paciente No Registrado'}</div>
-                  <div style={{ color: 'var(--text-muted)' }}>{app.reason}</div>
-                  <span className={`status-badge status-${app.status.toLowerCase()}`} style={{ marginTop: '0.5rem', display: 'inline-block' }}>{app.status}</span>
+                
+                <div style={{ flex: 1, borderLeft: '1px solid #e5e5e5', paddingLeft: '2rem' }}>
+                  <div style={{ fontWeight: 700, color: '#000', fontSize: '1.25rem', marginBottom: '0.25rem' }}>{app.patientName || 'Paciente No Registrado'}</div>
+                  <div style={{ color: '#555', fontSize: '1rem' }}>{app.reason}</div>
+                  <span style={{ 
+                    marginTop: '0.75rem', 
+                    display: 'inline-block',
+                    background: app.status === 'Completada' ? '#000' : '#f5f5f5', 
+                    color: app.status === 'Completada' ? '#fff' : '#000', 
+                    padding: '0.25rem 0.75rem', 
+                    fontSize: '0.75rem', 
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                  }}>
+                    {app.status}
+                  </span>
                 </div>
+                
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={() => handleDelete(app.id)} style={{ background: 'none', border: '1px solid #fee2e2', borderRadius: 'var(--radius-sm)', padding: '0.5rem', color: '#b91c1c', cursor: 'pointer' }} title="Eliminar Cita">
-                    <X size={18} />
+                  <button onClick={() => handleDelete(app.id)} style={{ background: 'transparent', border: '2px solid transparent', padding: '0.75rem', color: '#000', cursor: 'pointer', transition: 'all 0.2s' }} title="Eliminar Cita" onMouseOver={e=>{e.currentTarget.style.borderColor='#ef4444'; e.currentTarget.style.color='#ef4444'}} onMouseOut={e=>{e.currentTarget.style.borderColor='transparent'; e.currentTarget.style.color='#000'}}>
+                    <X size={24} />
                   </button>
                 </div>
               </div>
             ))
           )}
         </div>
-      </div>
+      </main>
 
+      {/* MODAL */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.25rem' }}>Agendar Nueva Cita</h2>
-              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
-            </div>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div className="form-group" style={{ margin: 0 }}>
-                <label>Nombre del Paciente</label>
-                <input type="text" className="form-input" required value={formData.patientName} onChange={e => setFormData({...formData, patientName: e.target.value})} placeholder="Ej. Juan Pérez" />
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowModal(false)}>
+          <div style={{ backgroundColor: '#fff', width: '100%', maxWidth: '600px', padding: '4rem', position: 'relative' }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowModal(false)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', cursor: 'pointer', color: '#000' }}><X size={32} /></button>
+            <h2 style={{ fontSize: '3rem', fontWeight: 800, letterSpacing: '-0.04em', color: '#000', marginBottom: '3rem', lineHeight: 1 }}>Nueva <br/>Cita.</h2>
+            
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Nombre del Paciente</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={formData.patientName} 
+                  onChange={e => setFormData({...formData, patientName: e.target.value})} 
+                  placeholder="Ej. Juan Pérez" 
+                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
+                  onFocus={e => e.target.style.borderBottom = '2px solid #000'}
+                  onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}
+                />
               </div>
-              <div className="form-group" style={{ margin: 0 }}>
-                <label>Motivo de la Cita</label>
-                <input type="text" className="form-input" required value={formData.reason} onChange={e => setFormData({...formData, reason: e.target.value})} placeholder="Ej. Revisión mensual" />
+              
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Motivo de la Cita</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={formData.reason} 
+                  onChange={e => setFormData({...formData, reason: e.target.value})} 
+                  placeholder="Ej. Revisión mensual" 
+                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
+                  onFocus={e => e.target.style.borderBottom = '2px solid #000'}
+                  onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}
+                />
               </div>
-              <div className="form-group" style={{ margin: 0 }}>
-                <label>Fecha de la Cita</label>
-                <input type="date" className="form-input" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
+              
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Fecha de la Cita</label>
+                <input 
+                  type="date" 
+                  required 
+                  value={formData.date} 
+                  onChange={e => setFormData({...formData, date: e.target.value})} 
+                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
+                  onFocus={e => e.target.style.borderBottom = '2px solid #000'}
+                  onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}
+                />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label>Hora de Inicio</label>
-                  <input type="time" className="form-input" required value={formData.startTime} onChange={e => setFormData({...formData, startTime: e.target.value})} />
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Hora de Inicio</label>
+                  <input 
+                    type="time" 
+                    required 
+                    value={formData.startTime} 
+                    onChange={e => setFormData({...formData, startTime: e.target.value})} 
+                    style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
+                    onFocus={e => e.target.style.borderBottom = '2px solid #000'}
+                    onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}
+                  />
                 </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label>Hora de Fin</label>
-                  <input type="time" className="form-input" required value={formData.endTime} onChange={e => setFormData({...formData, endTime: e.target.value})} />
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Hora de Fin</label>
+                  <input 
+                    type="time" 
+                    required 
+                    value={formData.endTime} 
+                    onChange={e => setFormData({...formData, endTime: e.target.value})} 
+                    style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
+                    onFocus={e => e.target.style.borderBottom = '2px solid #000'}
+                    onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}
+                  />
                 </div>
               </div>
-              <button type="submit" className="btn-primary" disabled={isLoading} style={{ marginTop: '1rem' }}>
+              
+              <button 
+                type="submit" 
+                disabled={isLoading} 
+                style={{ width: '100%', background: '#000', color: '#fff', border: 'none', padding: '1.5rem', fontSize: '1.125rem', fontWeight: 700, cursor: isLoading ? 'not-allowed' : 'pointer', transition: 'opacity 0.2s', marginTop: '1rem' }}
+                onMouseOver={e=>{if(!isLoading) e.target.style.opacity=0.8}} 
+                onMouseOut={e=>{if(!isLoading) e.target.style.opacity=1}}
+              >
                 {isLoading ? 'Guardando...' : 'Guardar Cita'}
               </button>
             </form>

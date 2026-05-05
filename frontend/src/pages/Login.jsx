@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Activity, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import './Login.css';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -9,7 +8,6 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleSubmit = async (e) => {
@@ -41,89 +39,117 @@ const Login = () => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-content animate-fade-in">
-        <div className="logo-container">
-          <Activity size={36} strokeWidth={2.5} className="logo-icon" />
-          <h1 className="logo-text">Atento</h1>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Inter, system-ui, sans-serif', flexWrap: 'wrap' }}>
+      
+      {/* Left Side: Black Cover */}
+      <div style={{ flex: '1 1 500px', backgroundColor: '#000', color: '#fff', padding: '4rem 5%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '50vh' }}>
+        <div 
+          onClick={() => navigate('/')} 
+          style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.05em', cursor: 'pointer' }}
+        >
+          Atentia.
         </div>
+        
+        <div style={{ margin: 'auto 0' }}>
+          <h1 style={{ fontSize: 'clamp(3rem, 5vw, 5rem)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.04em', marginBottom: '1.5rem', color: '#fff' }}>
+            Bienvenido <br/> de vuelta.
+          </h1>
+          <p style={{ fontSize: '1.25rem', color: '#a3a3a3', maxWidth: '400px', lineHeight: 1.6 }}>
+            Continúa donde lo dejaste. Tus expedientes clínicos y notas SOAP están listas y resguardadas bajo los más altos estándares de seguridad.
+          </p>
+        </div>
+        
+        <div style={{ fontSize: '0.875rem', color: '#555' }}>
+          Atentia © 2026. Cumplimiento médico y cifrado de grado bancario.
+        </div>
+      </div>
 
-        <div className="clean-panel login-card">
-          <div className="login-header">
-            <h2>Acceso Clínico</h2>
-            <p>Ingresa tus credenciales seguras</p>
-          </div>
-
+      {/* Right Side: White Minimal Form */}
+      <div style={{ flex: '1 1 500px', backgroundColor: '#fff', padding: '4rem 5%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ width: '100%', maxWidth: '420px' }}>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 600, letterSpacing: '-0.04em', marginBottom: '0.5rem', color: '#000' }}>
+            Iniciar Sesión
+          </h2>
+          <p style={{ color: '#555', marginBottom: '3rem', fontSize: '1.125rem' }}>
+            Ingresa tus credenciales para acceder a tu consultorio.
+          </p>
+          
           {errorMsg && (
-            <div style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '0.75rem', borderRadius: '0.5rem', marginBottom: '1rem', fontSize: '0.875rem' }}>
+            <div style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', fontSize: '0.875rem', fontWeight: 500 }}>
               {errorMsg}
             </div>
           )}
 
           <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="email">Correo Electrónico</label>
-              <div className="input-wrapper">
-                <Mail size={18} className="input-icon" />
-                <input
-                  type="email"
-                  id="email"
-                  className="form-input"
-                  placeholder="dr.nombre@hospital.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+            <div style={{ marginBottom: '2rem' }}>
+              <label htmlFor="email" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>
+                Correo Electrónico
+              </label>
+              <input
+                type="email"
+                id="email"
+                style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.25rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
+                placeholder="dr.nombre@hospital.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
+                onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
+                required
+              />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="password">Contraseña</label>
-              <div className="input-wrapper">
-                <Lock size={18} className="input-icon" />
+            <div style={{ marginBottom: '3rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <label htmlFor="password" style={{ fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000' }}>
+                  Contraseña
+                </label>
+                <a href="#" style={{ color: '#888', fontSize: '0.875rem', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={e=>e.target.style.color='#000'} onMouseOut={e=>e.target.style.color='#888'}>
+                  ¿Olvidaste tu contraseña?
+                </a>
+              </div>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
-                  className="form-input"
+                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.25rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
+                  onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
                   required
                 />
                 <button 
                   type="button" 
-                  className="toggle-password"
+                  style={{ position: 'absolute', right: 0, background: 'none', border: 'none', cursor: 'pointer', color: '#888' }}
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
                 </button>
               </div>
             </div>
 
-            <div className="form-options">
-              <label className="remember-me">
-                <input type="checkbox" />
-                <span>Mantener sesión iniciada</span>
-              </label>
-              <a href="#" className="forgot-password">¿Olvidaste tu contraseña?</a>
-            </div>
-
-            <button type="submit" className="btn-primary" disabled={isLoading}>
-              {isLoading ? 'Autenticando...' : 'Iniciar Sesión'}
-              {!isLoading && <ArrowRight size={18} />}
+            <button 
+              type="submit" 
+              disabled={isLoading}
+              style={{ width: '100%', background: '#000', color: '#fff', border: 'none', padding: '1.25rem', fontSize: '1.125rem', fontWeight: 500, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.75rem', transition: 'opacity 0.2s' }} 
+              onMouseOver={e=>e.target.style.opacity=0.8} 
+              onMouseOut={e=>e.target.style.opacity=1}
+            >
+              {isLoading ? 'Autenticando...' : 'Entrar al consultorio'}
+              {!isLoading && <ArrowRight size={20} />}
             </button>
           </form>
 
-          <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-            ¿Eres nuevo en Atento? <Link to="/register" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>Crea una cuenta</Link>
-          </div>
-
-          <div className="security-badge">
-            <ShieldCheck size={16} />
-            <span>Conexión encriptada de extremo a extremo (HIPAA Compliant)</span>
+          <div style={{ textAlign: 'center', marginTop: '3rem', fontSize: '1rem', color: '#555' }}>
+            ¿Eres nuevo en Atentia?{' '}
+            <Link to="/register" style={{ color: '#000', textDecoration: 'none', fontWeight: 600, borderBottom: '1px solid #000', paddingBottom: '2px' }}>
+              Crea una cuenta
+            </Link>
           </div>
         </div>
       </div>
+
     </div>
   );
 };

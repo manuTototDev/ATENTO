@@ -1,9 +1,9 @@
-# Atento: Asistente Clínico Inteligente
+# Atentia: Asistente Clínico Inteligente
 
-Atento es la plataforma de documentación médica impulsada por IA que permite a los médicos independientes enfocarse en sus pacientes, no en su computadora.
+Atentia es la plataforma de documentación médica impulsada por IA que permite a los médicos independientes enfocarse en sus pacientes, no en su computadora.
 
-## Propuesta de Valor
-- **Atención plena:** Deja que Atento tome las notas mientras tú cuidas al paciente.
+## Características Principales
+- **Atención plena:** Deja que Atentia tome las notas mientras tú cuidas al paciente.
 - **Eficiencia:** Genera expedientes clínicos, notas SOAP y recetas en segundos.
 - **Fricción Cero:** Tu smartphone es el micrófono, tu PC es el centro de mando.
 
@@ -20,7 +20,7 @@ Atento es la plataforma de documentación médica impulsada por IA que permite a
 
 ## 📁 Estructura del Proyecto
 ```text
-/atento-ai
+/atentia-ai
 ├── /frontend        # Interfaz médico (React.js + Vite)
 └── /backend         # API, WebSockets, DB y Servicios de IA
     ├── /db          # Esquema Postgres

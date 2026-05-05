@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Activity, ShieldCheck, ArrowRight, User } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import './Login.css'; // Reutilizamos el diseño médico limpio
 
 const Register = () => {
   const navigate = useNavigate();
@@ -14,21 +13,21 @@ const Register = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState({ score: 0, text: '', color: 'var(--border)' });
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, text: '', color: '#e5e5e5' });
 
   // Evaluar seguridad de la contraseña
   const evaluatePassword = (pass) => {
     let score = 0;
-    if (!pass) return { score: 0, text: '', color: 'var(--border)' };
+    if (!pass) return { score: 0, text: '', color: '#e5e5e5' };
     if (pass.length >= 8) score += 1;
     if (/[A-Z]/.test(pass)) score += 1;
     if (/[0-9]/.test(pass)) score += 1;
     if (/[^A-Za-z0-9]/.test(pass)) score += 1;
 
-    if (score <= 1) return { score: 25, text: 'Débil', color: 'var(--error)' };
-    if (score === 2) return { score: 50, text: 'Regular', color: '#F59E0B' }; // Orange
-    if (score === 3) return { score: 75, text: 'Buena', color: '#10B981' }; // Green
-    return { score: 100, text: 'Fuerte', color: '#059669' }; // Dark Green
+    if (score <= 1) return { score: 25, text: 'Débil', color: '#ef4444' };
+    if (score === 2) return { score: 50, text: 'Regular', color: '#f59e0b' }; 
+    if (score === 3) return { score: 75, text: 'Buena', color: '#10b981' }; 
+    return { score: 100, text: 'Fuerte', color: '#059669' }; 
   };
 
   const handleChange = (e) => {
@@ -66,10 +65,8 @@ const Register = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Guardar token y userId para la siguiente pantalla
         localStorage.setItem('token', data.token);
         localStorage.setItem('userId', data.userId);
-        
         navigate('/onboarding');
       } else {
         alert(data.error || 'Ocurrió un error al registrarse.');
@@ -83,101 +80,129 @@ const Register = () => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-content animate-fade-in" style={{ maxWidth: '600px', width: '100%' }}>
-        <div className="logo-container">
-          <Activity size={36} strokeWidth={2.5} className="logo-icon" />
-          <h1 className="logo-text">Atento</h1>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Inter, system-ui, sans-serif', flexWrap: 'wrap' }}>
+      
+      {/* Left Side: Black Cover */}
+      <div style={{ flex: '1 1 500px', backgroundColor: '#000', color: '#fff', padding: '4rem 5%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '50vh' }}>
+        <div 
+          onClick={() => navigate('/')} 
+          style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.05em', cursor: 'pointer' }}
+        >
+          Atentia.
         </div>
+        
+        <div style={{ margin: 'auto 0' }}>
+          <h1 style={{ fontSize: 'clamp(3rem, 5vw, 5rem)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.04em', marginBottom: '1.5rem', color: '#fff' }}>
+            Únete al <br/> futuro.
+          </h1>
+          <p style={{ fontSize: '1.25rem', color: '#a3a3a3', maxWidth: '400px', lineHeight: 1.6 }}>
+            Crea tu cuenta de forma segura. Recupera hasta 2 horas diarias de tu tiempo y devuelve el lado humano a tu práctica médica.
+          </p>
+        </div>
+        
+        <div style={{ fontSize: '0.875rem', color: '#555' }}>
+          Atentia © 2026. Cumplimiento médico y cifrado de extremo a extremo.
+        </div>
+      </div>
 
-        <div className="clean-panel login-card">
-          <div className="login-header">
-            <h2>Registro de Especialista</h2>
-            <p>Crea tu cuenta segura para comenzar</p>
-          </div>
+      {/* Right Side: White Minimal Form */}
+      <div style={{ flex: '1 1 500px', backgroundColor: '#fff', padding: '4rem 5%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ width: '100%', maxWidth: '460px' }}>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 600, letterSpacing: '-0.04em', marginBottom: '0.5rem', color: '#000' }}>
+            Crear Cuenta
+          </h2>
+          <p style={{ color: '#555', marginBottom: '3rem', fontSize: '1.125rem' }}>
+            Ingresa tus datos para registrar tu consultorio inteligente.
+          </p>
 
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div className="form-group">
-                <label htmlFor="firstName">Nombre</label>
-                <div className="input-wrapper">
-                  <User size={18} className="input-icon" />
-                  <input
-                    type="text"
-                    id="firstName"
-                    className="form-input"
-                    placeholder="Ej. Carlos"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="lastName">Apellido</label>
-                <div className="input-wrapper">
-                  <User size={18} className="input-icon" />
-                  <input
-                    type="text"
-                    id="lastName"
-                    className="form-input"
-                    placeholder="Ej. Ramírez"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="email">Correo Institucional / Profesional</label>
-              <div className="input-wrapper">
-                <Mail size={18} className="input-icon" />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+              <div>
+                <label htmlFor="firstName" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>
+                  Nombre
+                </label>
                 <input
-                  type="email"
-                  id="email"
-                  className="form-input"
-                  placeholder="dr.nombre@hospital.com"
-                  value={formData.email}
+                  type="text"
+                  id="firstName"
+                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
+                  placeholder="Ej. Carlos"
+                  value={formData.firstName}
                   onChange={handleChange}
+                  onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
+                  onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="lastName" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>
+                  Apellido
+                </label>
+                <input
+                  type="text"
+                  id="lastName"
+                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
+                  placeholder="Ej. Ramírez"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
+                  onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
                   required
                 />
               </div>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="password">Contraseña Segura</label>
-              <div className="input-wrapper">
-                <Lock size={18} className="input-icon" />
+            <div style={{ marginBottom: '2rem' }}>
+              <label htmlFor="email" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>
+                Correo Institucional
+              </label>
+              <input
+                type="email"
+                id="email"
+                style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
+                placeholder="dr.nombre@hospital.com"
+                value={formData.email}
+                onChange={handleChange}
+                onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
+                onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
+                required
+              />
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <label htmlFor="password" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>
+                Contraseña
+              </label>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
-                  className="form-input"
+                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
+                  onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
+                  onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
                   required
                   minLength="8"
                 />
                 <button 
                   type="button" 
-                  className="toggle-password"
+                  style={{ position: 'absolute', right: 0, background: 'none', border: 'none', cursor: 'pointer', color: '#888' }}
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
                 </button>
               </div>
               
-              {/* Indicador de Fuerza de Contraseña */}
+              {/* Indicador de Fuerza */}
               {formData.password && (
                 <div style={{ marginTop: '0.75rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '0.25rem' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Seguridad:</span>
+                    <span style={{ color: '#888' }}>Seguridad:</span>
                     <span style={{ color: passwordStrength.color, fontWeight: 600 }}>{passwordStrength.text}</span>
                   </div>
-                  <div style={{ height: '4px', background: 'var(--border)', borderRadius: '2px', overflow: 'hidden' }}>
+                  <div style={{ height: '4px', background: '#e5e5e5', borderRadius: '2px', overflow: 'hidden' }}>
                     <div 
                       style={{ 
                         height: '100%', 
@@ -189,42 +214,43 @@ const Register = () => {
                   </div>
                 </div>
               )}
-
-              <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.5rem', display: 'block', lineHeight: 1.4 }}>
-                Requerido: Mín. 8 caracteres, 1 mayúscula, 1 número y 1 símbolo especial (!@#$%).
-              </small>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Repetir Contraseña</label>
-              <div className="input-wrapper">
-                <Lock size={18} className="input-icon" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="confirmPassword"
-                  className="form-input"
-                  placeholder="••••••••"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  required
-                  minLength="8"
-                />
-              </div>
+            <div style={{ marginBottom: '3rem' }}>
+              <label htmlFor="confirmPassword" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>
+                Confirmar Contraseña
+              </label>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="confirmPassword"
+                style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
+                placeholder="••••••••"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
+                onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
+                required
+                minLength="8"
+              />
             </div>
 
-            <button type="submit" className="btn-primary" disabled={isLoading} style={{ marginTop: '1.5rem' }}>
+            <button 
+              type="submit" 
+              disabled={isLoading}
+              style={{ width: '100%', background: '#000', color: '#fff', border: 'none', padding: '1.25rem', fontSize: '1.125rem', fontWeight: 500, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.75rem', transition: 'opacity 0.2s' }} 
+              onMouseOver={e=>e.target.style.opacity=0.8} 
+              onMouseOut={e=>e.target.style.opacity=1}
+            >
               {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
-              {!isLoading && <ArrowRight size={18} />}
+              {!isLoading && <ArrowRight size={20} />}
             </button>
           </form>
 
-          <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-            ¿Ya tienes una cuenta? <Link to="/login" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>Inicia sesión aquí</Link>
-          </div>
-
-          <div className="security-badge">
-            <ShieldCheck size={16} />
-            <span>Datos protegidos con encriptación de grado médico</span>
+          <div style={{ textAlign: 'center', marginTop: '3rem', fontSize: '1rem', color: '#555' }}>
+            ¿Ya tienes una cuenta?{' '}
+            <Link to="/login" style={{ color: '#000', textDecoration: 'none', fontWeight: 600, borderBottom: '1px solid #000', paddingBottom: '2px' }}>
+              Inicia sesión aquí
+            </Link>
           </div>
         </div>
       </div>

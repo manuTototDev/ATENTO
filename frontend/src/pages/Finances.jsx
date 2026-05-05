@@ -1,94 +1,209 @@
-import React, { useState } from 'react';
-import { DollarSign, Settings, Moon, CalendarDays, Sun } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { DollarSign, Settings as SettingsIcon, Moon, CalendarDays, Sun } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Finances = () => {
+  const navigate = useNavigate();
   const [costoBase, setCostoBase] = useState(800);
   const [costoNocturno, setCostoNocturno] = useState(1200);
   const [horaNocturna, setHoraNocturna] = useState('20:00');
   const [costoSabado, setCostoSabado] = useState(1000);
   const [costoDomingo, setCostoDomingo] = useState(1500);
+  const [doctorProfile, setDoctorProfile] = useState(null);
+
+  const userId = localStorage.getItem('userId');
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/profile?userId=${userId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setDoctorProfile(data);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    if (userId) fetchProfile();
+  }, [userId]);
 
   return (
-    <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      <h1 style={{ fontSize: '1.5rem', color: 'var(--text-dark)' }}>Finanzas y Rentabilidad</h1>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-        <div className="dashboard-panel" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <h2 style={{ fontSize: '1.1rem', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <DollarSign size={20} /> Ingresos del Mes (Aprox)
-          </h2>
-          <div style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--text-dark)' }}>$24,500 <span style={{ fontSize: '1rem', fontWeight: 400, color: 'var(--text-muted)' }}>MXN</span></div>
+    <div style={{ minHeight: '100vh', backgroundColor: '#fff', fontFamily: 'Inter, system-ui, sans-serif' }}>
+      {/* HEADER TOP BAR */}
+      <header style={{ 
+        display: 'flex', 
+        justifyContent: 'flex-end', 
+        alignItems: 'center', 
+        padding: '1.5rem 3rem',
+        borderBottom: '2px solid #000'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '1rem', fontWeight: 600, color: '#000' }}>
+              Dr. {doctorProfile?.firstName || 'Médico'} {doctorProfile?.lastName || ''}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {doctorProfile?.profile?.specialty?.name || 'Especialista'}
+            </div>
+          </div>
+          <button 
+            onClick={() => navigate('/settings')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#000', display: 'flex', alignItems: 'center', transition: 'transform 0.2s' }}
+            title="Configuración de Perfil"
+            onMouseOver={e=>e.currentTarget.style.transform='rotate(45deg)'}
+            onMouseOut={e=>e.currentTarget.style.transform='rotate(0deg)'}
+          >
+            <SettingsIcon size={24} />
+          </button>
         </div>
-      </div>
+      </header>
 
-      <div className="dashboard-panel">
-        <h2 style={{ fontSize: '1.1rem', color: 'var(--text-dark)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Settings size={20} /> Tabulador de Precios de Consulta
-        </h2>
+      <main style={{ padding: '3rem', maxWidth: '1400px', margin: '0 auto' }}>
         
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-          {/* Columna 1 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--text-dark)', fontWeight: 600 }}>
-                <Sun size={16} color="var(--primary)" /> Costo Base (Lunes a Viernes)
-              </label>
-              <div style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>$</span>
-                <input type="number" className="form-input" style={{ paddingLeft: '2rem' }} value={costoBase} onChange={e => setCostoBase(e.target.value)} />
-              </div>
-            </div>
-
-            <div style={{ padding: '1rem', background: 'var(--input-bg)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--text-dark)', fontWeight: 600 }}>
-                <Moon size={16} color="#6366F1" /> Tarifa Nocturna
-              </label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Aplica después de las:</label>
-                  <input type="time" className="form-input" value={horaNocturna} onChange={e => setHoraNocturna(e.target.value)} />
-                </div>
-                <div>
-                  <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Costo Nocturno</label>
-                  <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>$</span>
-                    <input type="number" className="form-input" style={{ paddingLeft: '1.75rem' }} value={costoNocturno} onChange={e => setCostoNocturno(e.target.value)} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Columna 2 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div style={{ padding: '1rem', background: 'var(--input-bg)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--text-dark)', fontWeight: 600 }}>
-                <CalendarDays size={16} color="#F59E0B" /> Tarifas de Fin de Semana
-              </label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div>
-                  <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Costo Sábado</label>
-                  <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>$</span>
-                    <input type="number" className="form-input" style={{ paddingLeft: '1.75rem' }} value={costoSabado} onChange={e => setCostoSabado(e.target.value)} />
-                  </div>
-                </div>
-                <div>
-                  <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Costo Domingo</label>
-                  <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>$</span>
-                    <input type="number" className="form-input" style={{ paddingLeft: '1.75rem' }} value={costoDomingo} onChange={e => setCostoDomingo(e.target.value)} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* PAGE HEADER */}
+        <div style={{ marginBottom: '4rem' }}>
+          <h1 style={{ fontSize: '3rem', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: '#000', margin: 0 }}>
+            Finanzas.
+          </h1>
         </div>
 
-        <button className="btn-primary" style={{ marginTop: '2rem', padding: '0.75rem 2rem' }} onClick={() => alert('Tabulador de precios actualizado exitosamente')}>
-          Guardar Tabulador
-        </button>
-      </div>
+        <div style={{ display: 'flex', gap: '4rem' }}>
+          {/* LEFT COL: INGRESOS */}
+          <div style={{ flex: 1 }}>
+            <div style={{ border: '2px solid #000', padding: '3rem', display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <DollarSign size={24} color="#000" />
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000' }}>
+                  Ingresos del Mes
+                </h2>
+              </div>
+              <div style={{ fontSize: '5rem', fontWeight: 800, letterSpacing: '-0.05em', color: '#000', lineHeight: 1 }}>
+                $24,500
+              </div>
+              <div style={{ fontSize: '1.125rem', fontWeight: 600, color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                MXN Aprox.
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT COL: TABULADOR */}
+          <div style={{ flex: 2 }}>
+            <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '2px solid #000', paddingBottom: '0.5rem' }}>
+              <SettingsIcon size={24} color="#000" />
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', color: '#000' }}>
+                Tabulador de Precios
+              </h2>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                {/* BASE */}
+                <div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>
+                    <Sun size={18} color="#000" /> Costo Base (Lunes a Viernes)
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: '0', top: '50%', transform: 'translateY(-50%)', color: '#000', fontSize: '1.25rem', fontWeight: 700 }}>$</span>
+                    <input 
+                      type="number" 
+                      style={{ width: '100%', padding: '1rem 0 1rem 1.5rem', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.25rem', fontWeight: 600, color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
+                      value={costoBase} 
+                      onChange={e => setCostoBase(e.target.value)} 
+                      onFocus={e => e.target.style.borderBottom = '2px solid #000'}
+                      onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}
+                    />
+                  </div>
+                </div>
+
+                {/* NOCTURNA */}
+                <div style={{ border: '1px solid #e5e5e5', padding: '2rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '1.5rem' }}>
+                    <Moon size={18} color="#000" /> Tarifa Nocturna
+                  </label>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#555', marginBottom: '0.5rem' }}>Aplica después de las:</label>
+                      <input 
+                        type="time" 
+                        style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', fontWeight: 600, color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
+                        value={horaNocturna} 
+                        onChange={e => setHoraNocturna(e.target.value)} 
+                        onFocus={e => e.target.style.borderBottom = '2px solid #000'}
+                        onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#555', marginBottom: '0.5rem' }}>Costo Nocturno</label>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: '0', top: '50%', transform: 'translateY(-50%)', color: '#000', fontSize: '1.125rem', fontWeight: 700 }}>$</span>
+                        <input 
+                          type="number" 
+                          style={{ width: '100%', padding: '1rem 0 1rem 1.25rem', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', fontWeight: 600, color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
+                          value={costoNocturno} 
+                          onChange={e => setCostoNocturno(e.target.value)} 
+                          onFocus={e => e.target.style.borderBottom = '2px solid #000'}
+                          onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* FIN DE SEMANA */}
+              <div style={{ border: '1px solid #e5e5e5', padding: '2rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '1.5rem' }}>
+                  <CalendarDays size={18} color="#000" /> Fines de Semana
+                </label>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#555', marginBottom: '0.5rem' }}>Costo Sábado</label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '0', top: '50%', transform: 'translateY(-50%)', color: '#000', fontSize: '1.125rem', fontWeight: 700 }}>$</span>
+                      <input 
+                        type="number" 
+                        style={{ width: '100%', padding: '1rem 0 1rem 1.25rem', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', fontWeight: 600, color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
+                        value={costoSabado} 
+                        onChange={e => setCostoSabado(e.target.value)} 
+                        onFocus={e => e.target.style.borderBottom = '2px solid #000'}
+                        onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#555', marginBottom: '0.5rem' }}>Costo Domingo</label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '0', top: '50%', transform: 'translateY(-50%)', color: '#000', fontSize: '1.125rem', fontWeight: 700 }}>$</span>
+                      <input 
+                        type="number" 
+                        style={{ width: '100%', padding: '1rem 0 1rem 1.25rem', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', fontWeight: 600, color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
+                        value={costoDomingo} 
+                        onChange={e => setCostoDomingo(e.target.value)} 
+                        onFocus={e => e.target.style.borderBottom = '2px solid #000'}
+                        onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+
+            <button 
+              style={{ width: '100%', background: '#000', color: '#fff', border: 'none', padding: '1.5rem', fontSize: '1.125rem', fontWeight: 700, cursor: 'pointer', transition: 'opacity 0.2s', marginTop: '3rem' }}
+              onClick={() => alert('Tabulador de precios actualizado exitosamente')}
+              onMouseOver={e=>e.target.style.opacity=0.8} 
+              onMouseOut={e=>e.target.style.opacity=1}
+            >
+              Guardar Tabulador
+            </button>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };

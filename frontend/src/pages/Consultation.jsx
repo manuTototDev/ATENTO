@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Save, Printer, ArrowLeft, Plus, Trash2, Loader2 } from 'lucide-react';
+import { Mic, MicOff, Save, Printer, ArrowLeft, Plus, Trash2, Loader2, Settings } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const Consultation = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [patientData, setPatientData] = useState(null);
+  const [doctorProfile, setDoctorProfile] = useState(null);
   
   const [isRecording, setIsRecording] = useState(false);
   const [transcription, setTranscription] = useState('');
@@ -31,6 +32,8 @@ const Consultation = () => {
 
   const [medSuggestions, setMedSuggestions] = useState([]);
   const [activeMedInput, setActiveMedInput] = useState(null);
+
+  const userId = localStorage.getItem('userId');
 
   const addTreatment = () => setTreatments([...treatments, { medication: '', dose: '', frequencyNumber: '', frequencyUnit: 'horas', durationNumber: '', durationUnit: 'días' }]);
   const updateTreatment = (index, field, value) => {
@@ -76,7 +79,6 @@ const Consultation = () => {
 
   const selectMedication = (index, med) => {
     updateTreatment(index, 'medication', med.name);
-    // Sugerimos la dosis/presentación por defecto si existe
     if (med.presentation && !treatments[index].dose) {
       updateTreatment(index, 'dose', med.presentation);
     }
@@ -84,9 +86,14 @@ const Consultation = () => {
     setMedSuggestions([]);
   };
 
-  const userId = localStorage.getItem('userId');
-
   useEffect(() => {
+    if (userId) {
+      fetch(`http://localhost:5000/api/profile?userId=${userId}`)
+        .then(res => res.json())
+        .then(data => setDoctorProfile(data))
+        .catch(console.error);
+    }
+
     if (id && id !== 'new') {
       fetch(`http://localhost:5000/api/patients/${id}`)
         .then(res => res.json())
@@ -136,14 +143,13 @@ const Consultation = () => {
   };
 
   const processTranscription = async () => {
-    // Usamos el state ref actual o dejamos un delay pequeño si el onresult no ha terminado
     setTimeout(async () => {
       setIsProcessingAI(true);
       try {
         const res = await fetch('http://localhost:5000/api/ai/parse-consultation', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ transcription: transcription || 'El paciente refiere dolor de cabeza' }) // fallback por si acaso
+          body: JSON.stringify({ transcription: transcription || 'El paciente refiere dolor de cabeza' })
         });
         if (res.ok) {
           const data = await res.json();
@@ -181,7 +187,6 @@ const Consultation = () => {
 
   const handleFinish = async () => {
     try {
-      // 1. Guardar en Base de Datos (Incluyendo transcripción cruda y actualizaciones clínicas)
       const res = await fetch('http://localhost:5000/api/consultations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -198,7 +203,6 @@ const Consultation = () => {
 
       if (!res.ok) throw new Error('Error al guardar consulta');
 
-      // 2. Navegar a la receta
       navigate(`/prescription/${id}`, { 
         state: { 
           patient: patientData, 
@@ -213,238 +217,306 @@ const Consultation = () => {
     }
   };
 
+  const inputStyle = { width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s', fontFamily: 'Inter' };
+  const labelStyle = { display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#555', marginBottom: '0.5rem' };
+
   return (
-    <div style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: '0.5rem' }}>
-            <ArrowLeft size={18} /> Salir
-          </button>
-          <h1 style={{ fontSize: '1.5rem', color: 'var(--text-dark)' }}>Consulta en curso</h1>
-          <h2 style={{ fontSize: '1.1rem', color: 'var(--primary)', fontWeight: 600 }}>
-            {patientData ? `${patientData.firstName} ${patientData.lastName}` : (id === 'new' ? 'Nuevo Paciente' : 'Paciente Seleccionado')}
-          </h2>
-        </div>
-
-        <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#DC2626', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', fontWeight: 600 }}>
-          ⚠️ Alergias: {patientData?.allergies?.length > 0 ? patientData.allergies.join(', ') : 'No registradas'}
-        </div>
-      </div>
-
-      {/* ÁREA DE VOZ */}
-      <div className="dashboard-panel" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: isRecording ? '#FEF2F2' : 'var(--card-bg)', transition: 'all 0.3s' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#fff', fontFamily: 'Inter, system-ui, sans-serif' }}>
+      {/* HEADER TOP BAR */}
+      <header style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        padding: '1.5rem 3rem',
+        borderBottom: '2px solid #000'
+      }}>
+        <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: 'none', color: '#000', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '1rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', transition: 'opacity 0.2s' }} onMouseOver={e=>e.currentTarget.style.opacity=0.6} onMouseOut={e=>e.currentTarget.style.opacity=1}>
+          <ArrowLeft size={20} /> Salir
+        </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '1rem', fontWeight: 600, color: '#000' }}>
+              Dr. {doctorProfile?.firstName || 'Médico'} {doctorProfile?.lastName || ''}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {doctorProfile?.profile?.specialty?.name || 'Especialista'}
+            </div>
+          </div>
           <button 
-            onClick={toggleRecording}
-            style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: isRecording ? '#EF4444' : 'var(--primary)', color: 'white', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: 'var(--shadow-md)' }}
-            disabled={isProcessingAI}
+            onClick={() => navigate('/settings')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#000', display: 'flex', alignItems: 'center', transition: 'transform 0.2s' }}
+            title="Configuración de Perfil"
+            onMouseOver={e=>e.currentTarget.style.transform='rotate(45deg)'}
+            onMouseOut={e=>e.currentTarget.style.transform='rotate(0deg)'}
           >
-            {isProcessingAI ? <Loader2 size={32} className="spin" /> : (isRecording ? <MicOff size={32} /> : <Mic size={32} />)}
+            <Settings size={24} />
           </button>
-          <div style={{ flex: 1 }}>
-            <h3 style={{ fontSize: '1.1rem', color: 'var(--text-dark)' }}>
-              {isProcessingAI ? 'Gemini AI está estructurando tu consulta...' : (isRecording ? 'Escuchando... Presiona para terminar y procesar' : 'Asistente de Voz IA (Gemini)')}
-            </h3>
-            <p style={{ color: 'var(--text-muted)' }}>
-              {isProcessingAI ? 'Aplicando estándares médicos y rellenando los campos...' : (isRecording ? 'Habla con naturalidad sobre síntomas, exploración y recetas.' : 'Presiona para dictar. La IA (Gemini 1.5) organizará la nota médica y el plan de tratamiento automáticamente.')}
-            </p>
+        </div>
+      </header>
+
+      <main style={{ padding: '3rem', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '4rem' }}>
+        
+        {/* PAGE HEADER */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <h1 style={{ fontSize: '4rem', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: '#000', margin: '0 0 1rem 0' }}>
+              Consulta.
+            </h1>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#555', letterSpacing: '-0.02em', margin: 0 }}>
+              {patientData ? patientData.name : (id === 'new' ? 'Nuevo Paciente' : 'Paciente Seleccionado')}
+            </h2>
+          </div>
+          {patientData?.allergies?.length > 0 && (
+            <div style={{ border: '2px solid #ef4444', padding: '1rem 2rem', color: '#ef4444', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Alergias: {patientData.allergies.join(', ')}
+            </div>
+          )}
+        </div>
+
+        {/* ÁREA DE VOZ */}
+        <div style={{ border: '2px solid #000', padding: '3rem', background: isRecording ? '#000' : '#fff', color: isRecording ? '#fff' : '#000', transition: 'all 0.3s ease' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+            <button 
+              onClick={toggleRecording}
+              style={{ 
+                width: '80px', height: '80px', borderRadius: '50%', 
+                backgroundColor: isRecording ? '#fff' : '#000', 
+                color: isRecording ? '#ef4444' : '#fff', 
+                border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'transform 0.2s' 
+              }}
+              onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'}
+              onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
+              disabled={isProcessingAI}
+            >
+              {isProcessingAI ? <Loader2 size={40} className="spin" color={isRecording ? '#000' : '#fff'} /> : (isRecording ? <MicOff size={40} /> : <Mic size={40} />)}
+            </button>
+            <div style={{ flex: 1 }}>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', margin: '0 0 0.5rem 0' }}>
+                {isProcessingAI ? 'Gemini AI estructurando...' : (isRecording ? 'Escuchando consulta...' : 'Asistente de Voz IA (Gemini 1.5)')}
+              </h3>
+              <p style={{ fontSize: '1.125rem', color: isRecording ? '#ccc' : '#555', margin: 0 }}>
+                {isProcessingAI ? 'Aplicando estándares médicos y rellenando los campos...' : (isRecording ? 'Habla con naturalidad sobre síntomas, exploración y recetas.' : 'Presiona para dictar. La IA organizará la nota médica y el plan de tratamiento automáticamente.')}
+              </p>
+            </div>
+          </div>
+          
+          {transcription && (
+            <div style={{ marginTop: '2rem', padding: '1.5rem', borderLeft: `4px solid ${isRecording ? '#fff' : '#000'}`, fontSize: '1.25rem', fontStyle: 'italic', lineHeight: 1.6 }}>
+              "{transcription}"
+            </div>
+          )}
+        </div>
+
+        {/* NOTAS SOAP */}
+        <div>
+          <h2 style={{ fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.04em', borderBottom: '2px solid #000', paddingBottom: '1rem', marginBottom: '2rem' }}>
+            Expediente Clínico (SOAP)
+          </h2>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
+            <div>
+              <label style={labelStyle}>Subjetivo (Síntomas, Motivo)</label>
+              <textarea 
+                style={{ ...inputStyle, minHeight: '120px', resize: 'vertical' }} 
+                value={soapNotes.subjective} 
+                onChange={e => setSoapNotes({...soapNotes, subjective: e.target.value})} 
+                placeholder="El paciente refiere..." 
+                onFocus={e => e.target.style.borderBottom = '2px solid #000'}
+                onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Objetivo (Exploración, Signos vitales)</label>
+              <textarea 
+                style={{ ...inputStyle, minHeight: '120px', resize: 'vertical' }} 
+                value={soapNotes.objective} 
+                onChange={e => setSoapNotes({...soapNotes, objective: e.target.value})} 
+                placeholder="TA 120/80, FC 80..." 
+                onFocus={e => e.target.style.borderBottom = '2px solid #000'}
+                onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}
+              />
+            </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={labelStyle}>Análisis (Diagnóstico)</label>
+              <textarea 
+                style={{ ...inputStyle, minHeight: '120px', resize: 'vertical' }} 
+                value={soapNotes.assessment} 
+                onChange={e => setSoapNotes({...soapNotes, assessment: e.target.value})} 
+                placeholder="Faringoamigdalitis aguda..." 
+                onFocus={e => e.target.style.borderBottom = '2px solid #000'}
+                onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}
+              />
+            </div>
           </div>
         </div>
-        
-        {transcription && (
-          <div style={{ padding: '1rem', background: 'var(--input-bg)', borderRadius: 'var(--radius-md)', fontSize: '0.875rem', fontStyle: 'italic', color: 'var(--text-muted)' }}>
-            "{transcription}"
-          </div>
-        )}
-      </div>
 
-      {/* NOTAS SOAP */}
-      <div className="dashboard-panel">
-        <h3 className="panel-title" style={{ marginBottom: '1.5rem' }}>Expediente Clínico (SOAP)</h3>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-          <div className="form-group">
-            <label>Subjetivo (Síntomas, Motivo)</label>
-            <textarea className="form-input" style={{ minHeight: '120px' }} value={soapNotes.subjective} onChange={e => setSoapNotes({...soapNotes, subjective: e.target.value})} placeholder="El paciente refiere..." />
+        {/* TRATAMIENTO */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #000', paddingBottom: '1rem', marginBottom: '2rem' }}>
+            <h2 style={{ fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.04em', margin: 0 }}>
+              Plan de Tratamiento
+            </h2>
+            <button 
+              onClick={addTreatment} 
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#000', color: '#fff', border: 'none', padding: '0.75rem 1.5rem', fontWeight: 600, cursor: 'pointer', transition: 'opacity 0.2s' }}
+              onMouseOver={e=>e.currentTarget.style.opacity=0.8}
+              onMouseOut={e=>e.currentTarget.style.opacity=1}
+            >
+              <Plus size={18} /> Añadir Fármaco
+            </button>
           </div>
-          <div className="form-group">
-            <label>Objetivo (Exploración, Signos vitales)</label>
-            <textarea className="form-input" style={{ minHeight: '120px' }} value={soapNotes.objective} onChange={e => setSoapNotes({...soapNotes, objective: e.target.value})} placeholder="TA 120/80, FC 80..." />
-          </div>
-          <div className="form-group">
-            <label>Análisis (Diagnóstico)</label>
-            <textarea className="form-input" style={{ minHeight: '120px' }} value={soapNotes.assessment} onChange={e => setSoapNotes({...soapNotes, assessment: e.target.value})} placeholder="Faringoamigdalitis aguda..." />
-          </div>
-          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <label style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Plan de Tratamiento (Prescripción)</label>
-            </div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {treatments.map((t, index) => (
-                <div key={index} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: '1rem', alignItems: 'start', background: 'var(--input-bg)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-                  <div style={{ position: 'relative' }}>
-                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Fármaco / Principio Activo</label>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      value={t.medication} 
-                      onChange={e => handleMedicationChange(index, e.target.value)} 
-                      onFocus={() => {
-                        setActiveMedInput(index);
-                        if (t.medication.length > 1) handleMedicationChange(index, t.medication);
-                      }}
-                      onBlur={() => setTimeout(() => setActiveMedInput(null), 200)}
-                      placeholder="Ej. Paracetamol 500mg" 
-                    />
-                    {activeMedInput === index && medSuggestions.length > 0 && (
-                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', marginTop: '0.25rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', zIndex: 10, maxHeight: '200px', overflowY: 'auto' }}>
-                        {medSuggestions.map(med => (
-                          <div 
-                            key={med.id} 
-                            onClick={() => selectMedication(index, med)}
-                            style={{ padding: '0.5rem 1rem', borderBottom: '1px solid var(--border)', cursor: 'pointer', fontSize: '0.875rem' }}
-                          >
-                            <div style={{ fontWeight: 600, color: 'var(--text-dark)' }}>{med.name}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{med.activePrinciple} {med.presentation ? `| ${med.presentation}` : ''}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Dosis</label>
-                    <input type="text" className="form-input" value={t.dose} onChange={e => updateTreatment(index, 'dose', e.target.value)} placeholder="Ej. 1 tableta" />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Frecuencia (Cada...)</label>
-                    <div style={{ display: 'flex', gap: '0.25rem' }}>
-                      <input type="text" className="form-input" style={{ width: '80px' }} value={t.frequencyNumber || ''} onChange={e => updateTreatment(index, 'frequencyNumber', e.target.value)} placeholder="Ej. 8" />
-                      <select className="form-input" style={{ flex: 1, padding: '0.5rem' }} value={t.frequencyUnit} onChange={e => updateTreatment(index, 'frequencyUnit', e.target.value)}>
-                        <option value="horas">Horas</option>
-                        <option value="días">Días</option>
-                      </select>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {treatments.map((t, index) => (
+              <div key={index} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: '2rem', alignItems: 'start', padding: '1.5rem', border: '1px solid #e5e5e5' }}>
+                <div style={{ position: 'relative' }}>
+                  <label style={labelStyle}>Fármaco / Principio Activo</label>
+                  <input 
+                    type="text" 
+                    style={inputStyle} 
+                    value={t.medication} 
+                    onChange={e => handleMedicationChange(index, e.target.value)} 
+                    onFocus={(e) => {
+                      e.target.style.borderBottom = '2px solid #000';
+                      setActiveMedInput(index);
+                      if (t.medication.length > 1) handleMedicationChange(index, t.medication);
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderBottom = '2px solid #e5e5e5';
+                      setTimeout(() => setActiveMedInput(null), 200);
+                    }}
+                    placeholder="Ej. Paracetamol 500mg" 
+                  />
+                  {activeMedInput === index && medSuggestions.length > 0 && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '2px solid #000', marginTop: '0.25rem', zIndex: 10, maxHeight: '250px', overflowY: 'auto' }}>
+                      {medSuggestions.map(med => (
+                        <div 
+                          key={med.id} 
+                          onClick={() => selectMedication(index, med)}
+                          style={{ padding: '1rem', borderBottom: '1px solid #e5e5e5', cursor: 'pointer' }}
+                        >
+                          <div style={{ fontWeight: 600, color: '#000' }}>{med.name}</div>
+                          <div style={{ fontSize: '0.875rem', color: '#555' }}>{med.activePrinciple} {med.presentation ? `| ${med.presentation}` : ''}</div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Duración (Por...)</label>
-                    <div style={{ display: 'flex', gap: '0.25rem' }}>
-                      <input type="text" className="form-input" style={{ width: '80px' }} value={t.durationNumber || ''} onChange={e => updateTreatment(index, 'durationNumber', e.target.value)} placeholder="Ej. 5" />
-                      <select className="form-input" style={{ flex: 1, padding: '0.5rem' }} value={t.durationUnit} onChange={e => updateTreatment(index, 'durationUnit', e.target.value)}>
-                        <option value="días">Días</option>
-                        <option value="semanas">Semanas</option>
-                        <option value="meses">Meses</option>
-                      </select>
-                    </div>
-                  </div>
-                  <button onClick={() => removeTreatment(index)} style={{ marginTop: '1.25rem', padding: '0.5rem', background: '#fee2e2', color: '#b91c1c', border: '1px solid #fca5a5', borderRadius: 'var(--radius-sm)', cursor: 'pointer', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Eliminar este tratamiento">
-                    <Trash2 size={18} />
-                  </button>
+                  )}
                 </div>
-              ))}
-              
-              {treatments.length === 0 && (
-                <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', border: '2px dashed var(--border)', borderRadius: 'var(--radius-md)' }}>
-                  No hay tratamientos agregados.
+                <div>
+                  <label style={labelStyle}>Dosis</label>
+                  <input type="text" style={inputStyle} value={t.dose} onChange={e => updateTreatment(index, 'dose', e.target.value)} placeholder="Ej. 1 tableta" onFocus={e => e.target.style.borderBottom = '2px solid #000'} onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'} />
                 </div>
-              )}
-
-              <button 
-                onClick={addTreatment} 
-                style={{ 
-                  marginTop: '0.5rem', alignSelf: 'flex-start', padding: '0.5rem 1.25rem', 
-                  display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem',
-                  background: '#E0E7FF', color: '#4338CA', border: '1px solid #C7D2FE',
-                  borderRadius: 'var(--radius-md)', fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.background = '#C7D2FE'}
-                onMouseOut={(e) => e.currentTarget.style.background = '#E0E7FF'}
-              >
-                <Plus size={18} strokeWidth={2.5} /> Añadir Fármaco / Indicación
-              </button>
-            </div>
-          </div>
-
-          {/* INDICACIONES GENERALES */}
-          <div className="form-group" style={{ gridColumn: '1 / -1', marginTop: '1rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <label style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Indicaciones Generales (No farmacológicas)</label>
-            </div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {indications.map((ind, index) => (
-                <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 3fr auto', gap: '1rem', alignItems: 'start', background: 'var(--input-bg)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-                  <div>
-                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Categoría</label>
-                    <select className="form-input" value={ind.type} onChange={e => updateIndication(index, 'type', e.target.value)}>
-                      <option value="General">General</option>
-                      <option value="Dieta">Dieta</option>
-                      <option value="Reposo">Reposo / Actividad</option>
-                      <option value="Cuidados">Cuidados Específicos</option>
-                      <option value="Signos de Alarma">Signos de Alarma</option>
+                <div>
+                  <label style={labelStyle}>Frecuencia (Cada)</label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <input type="text" style={{...inputStyle, width: '60px'}} value={t.frequencyNumber || ''} onChange={e => updateTreatment(index, 'frequencyNumber', e.target.value)} placeholder="8" onFocus={e => e.target.style.borderBottom = '2px solid #000'} onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'} />
+                    <select style={{...inputStyle, flex: 1}} value={t.frequencyUnit} onChange={e => updateTreatment(index, 'frequencyUnit', e.target.value)} onFocus={e => e.target.style.borderBottom = '2px solid #000'} onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}>
+                      <option value="horas">Horas</option>
+                      <option value="días">Días</option>
                     </select>
                   </div>
-                  <div>
-                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Instrucción</label>
-                    <input type="text" className="form-input" value={ind.instruction} onChange={e => updateIndication(index, 'instruction', e.target.value)} placeholder="Ej. Evitar grasas e irritantes, reposo relativo" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Duración (Por)</label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <input type="text" style={{...inputStyle, width: '60px'}} value={t.durationNumber || ''} onChange={e => updateTreatment(index, 'durationNumber', e.target.value)} placeholder="5" onFocus={e => e.target.style.borderBottom = '2px solid #000'} onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'} />
+                    <select style={{...inputStyle, flex: 1}} value={t.durationUnit} onChange={e => updateTreatment(index, 'durationUnit', e.target.value)} onFocus={e => e.target.style.borderBottom = '2px solid #000'} onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}>
+                      <option value="días">Días</option>
+                      <option value="semanas">Semanas</option>
+                      <option value="meses">Meses</option>
+                    </select>
                   </div>
-                  <button onClick={() => removeIndication(index)} style={{ marginTop: '1.25rem', padding: '0.5rem', background: '#fee2e2', color: '#b91c1c', border: '1px solid #fca5a5', borderRadius: 'var(--radius-sm)', cursor: 'pointer', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Eliminar indicación">
-                    <Trash2 size={18} />
-                  </button>
                 </div>
-              ))}
-              
-              {indications.length === 0 && (
-                <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', border: '2px dashed var(--border)', borderRadius: 'var(--radius-md)' }}>
-                  No hay indicaciones generales agregadas.
-                </div>
-              )}
-
-              <button 
-                onClick={addIndication} 
-                style={{ 
-                  marginTop: '0.5rem', alignSelf: 'flex-start', padding: '0.5rem 1.25rem', 
-                  display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem',
-                  background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0',
-                  borderRadius: 'var(--radius-md)', fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.background = '#A7F3D0'}
-                onMouseOut={(e) => e.currentTarget.style.background = '#ECFDF5'}
-              >
-                <Plus size={18} strokeWidth={2.5} /> Añadir Indicación
-              </button>
-            </div>
+                <button onClick={() => removeTreatment(index)} style={{ marginTop: '2rem', background: 'transparent', border: 'none', color: '#000', cursor: 'pointer', padding: '0.5rem' }} title="Eliminar este tratamiento" onMouseOver={e=>e.currentTarget.style.color='#ef4444'} onMouseOut={e=>e.currentTarget.style.color='#000'}>
+                  <Trash2 size={24} />
+                </button>
+              </div>
+            ))}
+            
+            {treatments.length === 0 && (
+              <div style={{ padding: '4rem 0', textAlign: 'center', color: '#888', fontSize: '1.125rem' }}>
+                No hay tratamientos agregados.
+              </div>
+            )}
           </div>
         </div>
-      </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1.5rem', marginTop: '1rem', background: 'var(--card-bg)', padding: '1.5rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-dark)', fontWeight: 500 }}>
-          <input 
-            type="checkbox" 
-            checked={isVerified} 
-            onChange={(e) => setIsVerified(e.target.checked)} 
-            style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--primary)' }}
-          />
-          He revisado y verificado que la transcripción del diagnóstico y la receta generados por IA son correctos.
-        </label>
-        
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', border: '1px solid var(--border)', background: 'var(--card-bg)' }}>
-            <Save size={18} /> Guardar Borrador
-          </button>
-          <button 
-            onClick={handleFinish} 
-            className="btn-primary" 
-            disabled={!isVerified}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', opacity: isVerified ? 1 : 0.5, cursor: isVerified ? 'pointer' : 'not-allowed' }}
-          >
-            <Printer size={18} /> Terminar y Crear Receta
-          </button>
+        {/* INDICACIONES */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #000', paddingBottom: '1rem', marginBottom: '2rem' }}>
+            <h2 style={{ fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.04em', margin: 0 }}>
+              Indicaciones Generales
+            </h2>
+            <button 
+              onClick={addIndication} 
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', color: '#000', border: '2px solid #000', padding: '0.75rem 1.5rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}
+              onMouseOver={e=>{e.currentTarget.style.background='#000'; e.currentTarget.style.color='#fff'}}
+              onMouseOut={e=>{e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#000'}}
+            >
+              <Plus size={18} /> Añadir Indicación
+            </button>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {indications.map((ind, index) => (
+              <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 3fr auto', gap: '2rem', alignItems: 'start', padding: '1.5rem', border: '1px solid #e5e5e5' }}>
+                <div>
+                  <label style={labelStyle}>Categoría</label>
+                  <select style={inputStyle} value={ind.type} onChange={e => updateIndication(index, 'type', e.target.value)} onFocus={e => e.target.style.borderBottom = '2px solid #000'} onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}>
+                    <option value="General">General</option>
+                    <option value="Dieta">Dieta</option>
+                    <option value="Reposo">Reposo / Actividad</option>
+                    <option value="Cuidados">Cuidados Específicos</option>
+                    <option value="Signos de Alarma">Signos de Alarma</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={labelStyle}>Instrucción</label>
+                  <input type="text" style={inputStyle} value={ind.instruction} onChange={e => updateIndication(index, 'instruction', e.target.value)} placeholder="Ej. Evitar grasas e irritantes, reposo relativo" onFocus={e => e.target.style.borderBottom = '2px solid #000'} onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'} />
+                </div>
+                <button onClick={() => removeIndication(index)} style={{ marginTop: '2rem', background: 'transparent', border: 'none', color: '#000', cursor: 'pointer', padding: '0.5rem' }} title="Eliminar indicación" onMouseOver={e=>e.currentTarget.style.color='#ef4444'} onMouseOut={e=>e.currentTarget.style.color='#000'}>
+                  <Trash2 size={24} />
+                </button>
+              </div>
+            ))}
+            
+            {indications.length === 0 && (
+              <div style={{ padding: '4rem 0', textAlign: 'center', color: '#888', fontSize: '1.125rem' }}>
+                No hay indicaciones generales agregadas.
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
+        {/* VERIFICACIÓN Y ACCIONES */}
+        <div style={{ borderTop: '2px solid #000', paddingTop: '3rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', fontSize: '1.125rem', color: '#000', fontWeight: 600 }}>
+            <input 
+              type="checkbox" 
+              checked={isVerified} 
+              onChange={(e) => setIsVerified(e.target.checked)} 
+              style={{ width: '1.5rem', height: '1.5rem', accentColor: '#000' }}
+            />
+            He verificado que la transcripción y el plan de tratamiento son correctos.
+          </label>
+          
+          <div style={{ display: 'flex', gap: '1.5rem', width: '100%', justifyContent: 'flex-end' }}>
+            <button style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '1.5rem 3rem', border: '2px solid #000', background: 'transparent', color: '#000', fontSize: '1.125rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.background='#f5f5f5'}} onMouseOut={e=>{e.currentTarget.style.background='transparent'}}>
+              <Save size={20} /> Guardar Borrador
+            </button>
+            <button 
+              onClick={handleFinish} 
+              disabled={!isVerified}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '1.5rem 3rem', border: 'none', background: '#000', color: '#fff', fontSize: '1.125rem', fontWeight: 700, cursor: isVerified ? 'pointer' : 'not-allowed', opacity: isVerified ? 1 : 0.5, transition: 'opacity 0.2s' }}
+              onMouseOver={e=>{if(isVerified) e.currentTarget.style.opacity=0.8}} 
+              onMouseOut={e=>{if(isVerified) e.currentTarget.style.opacity=1}}
+            >
+              <Printer size={20} /> Crear Receta
+            </button>
+          </div>
+        </div>
+
+      </main>
     </div>
   );
 };

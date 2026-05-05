@@ -55,8 +55,8 @@
 }
 
 .nav-item.active {
-  background-color: #EFF6FF;
-  color: var(--primary);
+  background-color: #000000;
+  color: #FFFFFF;
 }
 
 .sidebar-footer {
@@ -68,12 +68,12 @@
   width: 100%;
   background: none;
   border: none;
-  color: #EF4444;
+  color: var(--text-muted);
 }
 
 .logout-btn:hover {
-  background-color: #FEF2F2;
-  color: #DC2626;
+  background-color: #F5F5F5;
+  color: #000000;
 }
 
 /* Layout container */
