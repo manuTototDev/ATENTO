@@ -35,14 +35,70 @@ const Landing = () => {
       d1: "Comprendo. ¿La fiebre ha bajado en algún momento?",
       p2: "No, me tomé un té pero sigo igual, me siento muy débil.",
       d2: "Te voy a recetar Paracetamol de 500mg, tómate una tableta cada 8 horas por 3 días.",
-      rx: "Paracetamol 500mg\nTomar 1 tableta cada 8 horas por 3 días en caso de fiebre o dolor."
+      rx: "PACIENTE: A. Martínez (34 años)\nMOTIVO DE CONSULTA: Cefalea y fiebre sostenida.\nEVALUACIÓN CLÍNICA: Paciente refiere astenia y cuadro febril sin respuesta a remedios caseros. Probable infección viral.\n\nPLAN Y TRATAMIENTO:\n• Paracetamol 500mg\n  Tomar 1 tableta cada 8 hrs por 3 días."
     },
     {
       p1: "Doctor, tengo mucha tos con flema y me duele al tragar.",
       d1: "¿La flema es de color verde o amarillenta?",
       p2: "Sí, es amarillenta, y siento el pecho muy congestionado.",
       d2: "Es una infección. Te daré Amoxicilina de 500mg, una cápsula cada 8 horas por 7 días.",
-      rx: "Amoxicilina 500mg\nTomar 1 cápsula cada 8 horas durante 7 días."
+      rx: "PACIENTE: C. López (42 años)\nMOTIVO DE CONSULTA: Tos productiva y odinofagia.\nEVALUACIÓN CLÍNICA: Refiere esputo purulento amarillento y congestión. Faringoamigdalitis bacteriana.\n\nPLAN Y TRATAMIENTO:\n• Amoxicilina 500mg\n  Tomar 1 cápsula cada 8 hrs por 7 días."
+    },
+    {
+      p1: "Siento mucho ardor al orinar y me quedo con ganas de seguir yendo.",
+      d1: "¿Te duele la espalda baja o has tenido escalofríos?",
+      p2: "La espalda no me duele, pero sí he tenido como asco en la mañana.",
+      d2: "Parece una infección urinaria baja. Te indicaré Ciprofloxacino por 5 días.",
+      rx: "PACIENTE: S. Gómez (28 años)\nMOTIVO DE CONSULTA: Disuria y tenesmo vesical.\nEVALUACIÓN CLÍNICA: Refiere sintomatología urinaria baja acompañada de náusea leve sin fiebre. Probable IVU aguda.\n\nPLAN Y TRATAMIENTO:\n• Ciprofloxacino 500mg\n  Tomar 1 tableta cada 12 hrs por 5 días."
+    },
+    {
+      p1: "Mi bebé tiene 3 días con mucha diarrea líquida y no quiere comer.",
+      d1: "¿Ha tolerado los líquidos o vomita lo que toma?",
+      p2: "Sí toma agua, pero hace popó casi inmediato. Huele un poco ácido.",
+      d2: "Le enviaremos Vida Suero Oral a libre demanda y probióticos por 5 días.",
+      rx: "PACIENTE: R. Pérez (1 año 2 meses)\nMOTIVO DE CONSULTA: Diarrea y anorexia.\nEVALUACIÓN CLÍNICA: Madre refiere evacuaciones líquidas abundantes sin vómito. Gastroenteritis aguda no complicada.\n\nPLAN Y TRATAMIENTO:\n• Vida Suero Oral: A libre demanda.\n• Enterogermina: 1 ampolleta cada 24 hrs por 5 días."
+    },
+    {
+      p1: "Me salió una mancha muy roja en el brazo y pica muchísimo.",
+      d1: "¿Estuviste en contacto con plantas, solventes o algún animal?",
+      p2: "Fui al bosque el fin de semana. Empezó chiquita y se hizo grande.",
+      d2: "Es dermatitis por contacto. Aplica crema de Hidrocortisona al 1% dos veces al día.",
+      rx: "PACIENTE: M. Rojas (25 años)\nMOTIVO DE CONSULTA: Lesión eritematosa en extremidad.\nEVALUACIÓN CLÍNICA: Refiere exposición a flora silvestre. Placa pruriginosa con crecimiento centrífugo. Dermatitis por contacto.\n\nPLAN Y TRATAMIENTO:\n• Hidrocortisona 1% Crema\n  Aplicar capa fina 2 veces al día por 5 días."
+    },
+    {
+      p1: "Llevo días que no puedo dormir, me despierto con el corazón a mil por hora.",
+      d1: "¿Estás pasando por algún evento estresante en el trabajo o familia?",
+      p2: "Sí, me acaban de despedir y no dejo de pensar en las deudas.",
+      d2: "Estás cursando con crisis de ansiedad. Te indicaré un ansiolítico ligero.",
+      rx: "PACIENTE: J. Silva (45 años)\nMOTIVO DE CONSULTA: Insomnio y palpitaciones nocturnas.\nEVALUACIÓN CLÍNICA: Paciente refiere cuadro de estrés agudo secundario a pérdida de empleo. Crisis de ansiedad agudizada.\n\nPLAN Y TRATAMIENTO:\n• Clonazepam 0.25mg\n  Tomar 1/2 tableta por las noches."
+    },
+    {
+      p1: "Doctor, me torcí el tobillo bajando la escalera y lo tengo muy hinchado.",
+      d1: "¿Puedes apoyar el pie o el dolor es insoportable al pisar?",
+      p2: "Duele muchísimo, tengo que caminar cojeando apoyándome en las paredes.",
+      d2: "Requiere reposo absoluto y Diclofenaco de 100mg cada 12 horas.",
+      rx: "PACIENTE: F. Castillo (39 años)\nMOTIVO DE CONSULTA: Trauma en miembro inferior.\nEVALUACIÓN CLÍNICA: Refiere inversión forzada. Presenta edema y marcha claudicante. Esguince de tobillo grado II.\n\nPLAN Y TRATAMIENTO:\n• Diclofenaco 100mg\n  Tomar 1 tableta cada 12 hrs por 5 días. Reposo."
+    },
+    {
+      p1: "Siento un dolor punzante en la baja espalda que baja hasta la pierna.",
+      d1: "¿El dolor empeora cuando pasas mucho tiempo sentado o al agacharte?",
+      p2: "Sí, trabajar en la computadora es un suplicio. Siento toques eléctricos.",
+      d2: "Es probable ciática. Tomarás Complejo B y Meloxicam por una semana.",
+      rx: "PACIENTE: L. Ruiz (52 años)\nMOTIVO DE CONSULTA: Lumbalgia irradiada.\nEVALUACIÓN CLÍNICA: Refiere parestesias al sedentarismo prolongado. Probable radiculopatía lumbar (Ciática).\n\nPLAN Y TRATAMIENTO:\n• Meloxicam 15mg: 1 tableta al día.\n• Tribedoce: 1 tableta al día por 7 días."
+    },
+    {
+      p1: "Tengo mucha acidez después de comer, como si me quemara hasta la garganta.",
+      d1: "¿Suele empeorar al acostarte o comer cosas grasosas?",
+      p2: "Sí, las noches son terribles. Ya ni el antiácido me ayuda.",
+      d2: "Vamos a iniciar con Omeprazol de 20mg en ayunas durante un mes.",
+      rx: "PACIENTE: D. Hernández (41 años)\nMOTIVO DE CONSULTA: Pirosis intensa y reflujo nocturno.\nEVALUACIÓN CLÍNICA: Refiere acidez resistente a tratamiento convencional. Enfermedad por Reflujo Gastroesofágico (ERGE).\n\nPLAN Y TRATAMIENTO:\n• Omeprazol 20mg\n  Tomar 1 cápsula en ayunas por 30 días."
+    },
+    {
+      p1: "Traigo el ojo derecho súper rojo, con lagañas y siento que tengo tierrita.",
+      d1: "¿La visión se ha vuelto borrosa o tienes sensibilidad a la luz?",
+      p2: "No borrosa, pero sí me cala mucho la luz del sol cuando salgo.",
+      d2: "Es conjuntivitis bacteriana. Usa gotas de Tobramicina cada 4 horas.",
+      rx: "PACIENTE: P. Vargas (19 años)\nMOTIVO DE CONSULTA: Hiperemia conjuntival y secreción.\nEVALUACIÓN CLÍNICA: Refiere sensación de cuerpo extraño y fotofobia sin alteración visual. Conjuntivitis bacteriana.\n\nPLAN Y TRATAMIENTO:\n• Tobramicina Gotas\n  Aplicar 2 gotas en ojo derecho cada 4 hrs por 7 días."
     }
   ];
 
@@ -345,27 +401,27 @@ const Landing = () => {
             {/* Receta Física (Formato Documento) */}
             <div style={{ 
               position: 'absolute', 
-              bottom: showRx ? '10%' : '-100%', 
+              bottom: showRx ? '5%' : '-100%', 
               left: '50%', 
               transform: 'translateX(-50%)',
-              width: '80%',
+              width: '85%',
               background: '#fff', 
               color: '#000', 
               border: '2px solid #000',
               borderRadius: '8px', 
-              padding: '2rem',
+              padding: '1.5rem',
               boxShadow: '8px 8px 0px rgba(0,0,0,1)', 
               transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)', 
               zIndex: 10 
             }}>
-              <div style={{ borderBottom: '2px solid #e5e5e5', paddingBottom: '0.75rem', marginBottom: '1.5rem', textAlign: 'center' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Receta Médica</h3>
-                <span style={{ fontSize: '0.75rem', color: '#888', fontWeight: 600 }}>DR. LATENTO</span>
+              <div style={{ borderBottom: '2px solid #e5e5e5', paddingBottom: '0.5rem', marginBottom: '1rem', textAlign: 'center' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Receta y Evaluación Médica</h3>
+                <span style={{ fontSize: '0.65rem', color: '#888', fontWeight: 600 }}>LATENTO HEALTHCARE AI</span>
               </div>
-              <div style={{ fontFamily: 'monospace', fontSize: '1rem', lineHeight: 1.6, whiteSpace: 'pre-line', color: '#222', fontWeight: 600 }}>
+              <div style={{ fontFamily: 'monospace', fontSize: '0.875rem', lineHeight: 1.5, whiteSpace: 'pre-line', color: '#222', fontWeight: 600 }}>
                 {prescriptionScenarios[rxScenarioIndex].rx}
               </div>
-              <div style={{ marginTop: '3rem', borderTop: '2px solid #000', paddingTop: '0.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ marginTop: '1.5rem', borderTop: '2px solid #000', paddingTop: '0.5rem', display: 'flex', justifyContent: 'flex-end' }}>
                 <div style={{ width: '80px', height: '10px', borderBottom: '2px solid #000', opacity: 0.3 }}></div>
               </div>
             </div>
