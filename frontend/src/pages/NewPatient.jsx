@@ -12,6 +12,7 @@ import {
   Stethoscope
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
 import './Login.css'; // Reutilizamos los mismos estilos limpios
 
 const NewPatient = () => {
@@ -43,7 +44,7 @@ const NewPatient = () => {
     const dateOfBirth = `${formData.dobYear}-${formData.dobMonth.padStart(2, '0')}-${formData.dobDay.padStart(2, '0')}T12:00:00Z`;
 
     try {
-      const response = await fetch('http://localhost:5000/api/patients', {
+      const response = await apiFetch('/api/patients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

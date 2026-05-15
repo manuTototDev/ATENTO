@@ -1,16 +1,13 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { 
-  Activity, 
-  LogOut 
-} from 'lucide-react';
+import { Activity, LogOut } from 'lucide-react';
+import { apiLogout } from '../utils/api';
 
 const Sidebar = () => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
+  const handleLogout = async () => {
+    await apiLogout(); // Borra cookie httpOnly en el servidor + limpia localStorage
     navigate('/login');
   };
 
@@ -49,7 +46,7 @@ const Sidebar = () => {
       }}>
         <Activity size={28} strokeWidth={2.5} color="#fff" />
         <h1 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.05em', margin: 0, color: '#fff' }}>
-          Atentia.
+          Latento.
         </h1>
       </div>
 

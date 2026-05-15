@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const Login = () => {
     setErrorMsg('');
     
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await apiFetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -47,7 +48,7 @@ const Login = () => {
           onClick={() => navigate('/')} 
           style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.05em', cursor: 'pointer' }}
         >
-          Atentia.
+          Latento.
         </div>
         
         <div style={{ margin: 'auto 0' }}>
@@ -60,7 +61,7 @@ const Login = () => {
         </div>
         
         <div style={{ fontSize: '0.875rem', color: '#555' }}>
-          Atentia © 2026. Cumplimiento médico y cifrado de grado bancario.
+          Latento © 2026. Cumplimiento médico y cifrado de grado bancario.
         </div>
       </div>
 
@@ -142,7 +143,7 @@ const Login = () => {
           </form>
 
           <div style={{ textAlign: 'center', marginTop: '3rem', fontSize: '1rem', color: '#555' }}>
-            ¿Eres nuevo en Atentia?{' '}
+            ¿Eres nuevo en Latento?{' '}
             <Link to="/register" style={{ color: '#000', textDecoration: 'none', fontWeight: 600, borderBottom: '1px solid #000', paddingBottom: '2px' }}>
               Crea una cuenta
             </Link>

@@ -13,6 +13,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
 
 const COMMON_SPECIALTIES = [
   "Alergología", "Anestesiología", "Angiología", "Biología de la Reproducción",
@@ -84,7 +85,7 @@ const Settings = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/profile?userId=${userId}`);
+        const res = await apiFetch(`/api/profile`);
         if (res.ok) {
           const data = await res.json();
           // Intentar parsear clinicAddress
@@ -195,10 +196,10 @@ const Settings = () => {
     setIsLoading(true);
     
     try {
-      const res = await fetch('http://localhost:5000/api/profile', {
+      const res = await apiFetch('/api/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, userId })
+        body: JSON.stringify({ ...formData })
       });
 
       if (res.ok) {

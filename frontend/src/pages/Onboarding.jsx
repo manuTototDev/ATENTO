@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Upload, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
 
 // Listas comunes (Ejemplo para México expandido)
 const COMMON_SPECIALTIES = [
@@ -141,7 +142,7 @@ const Onboarding = () => {
     const fullClinicAddress = `${formData.street}, ${formData.neighborhood}, ${formData.city}, ${formData.state}, C.P. ${formData.zipCode}`;
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/onboarding', {
+      const response = await apiFetch('/api/auth/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -179,7 +180,7 @@ const Onboarding = () => {
       {/* Left Side: Black Cover (Sticky on desktop) */}
       <div style={{ flex: '1 1 400px', backgroundColor: '#000', color: '#fff', padding: '4rem 5%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '50vh', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
         <div style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.05em' }}>
-          Atentia.
+          Latento.
         </div>
         
         <div style={{ margin: 'auto 0' }}>
@@ -192,7 +193,7 @@ const Onboarding = () => {
         </div>
         
         <div style={{ fontSize: '0.875rem', color: '#555' }}>
-          Atentia © 2026. Cumplimiento médico y cifrado de extremo a extremo.
+          Latento © 2026. Cumplimiento médico y cifrado de extremo a extremo.
         </div>
       </div>
 

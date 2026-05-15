@@ -14,6 +14,7 @@ import CalendarView from './pages/CalendarView';
 import Analytics from './pages/Analytics';
 import Finances from './pages/Finances';
 import Settings from './pages/Settings';
+import TermsAndConditions from './pages/TermsAndConditions';
 import './index.css';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/terminos" element={<TermsAndConditions />} />
         
         {/* Rutas con Sidebar (Layout) */}
         <Route element={<Layout />}>

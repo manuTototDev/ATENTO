@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Save, Printer, ArrowLeft, Plus, Trash2, Loader2, Settings } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
 
 const Consultation = () => {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ const Consultation = () => {
     setActiveMedInput(index);
     if (value.length > 1) {
       try {
-        const res = await fetch(`http://localhost:5000/api/medications?query=${value}`);
+        const res = await apiFetch(`/api/medications?query=${value}`);
         if (res.ok) {
           const data = await res.json();
           setMedSuggestions(data);
@@ -88,15 +89,14 @@ const Consultation = () => {
 
   useEffect(() => {
     if (userId) {
-      fetch(`http://localhost:5000/api/profile?userId=${userId}`)
-        .then(res => res.json())
-        .then(data => setDoctorProfile(data))
+      apiFetch(`/api/profile`)
+        .then(res => res?.json())
+        .then(data => { if (data) setDoctorProfile(data); })
         .catch(console.error);
-    }
-
+    
     if (id && id !== 'new') {
-      fetch(`http://localhost:5000/api/patients/${id}`)
-        .then(res => res.json())
+      apiFetch(`/api/patients/${id}`)
+        .then(res => res?.json())
         .then(data => {
           if (data && !data.error) setPatientData(data);
         })
@@ -146,7 +146,7 @@ const Consultation = () => {
     setTimeout(async () => {
       setIsProcessingAI(true);
       try {
-        const res = await fetch('http://localhost:5000/api/ai/parse-consultation', {
+        const res = await apiFetch('/api/ai/parse-consultation', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ transcription: transcription || 'El paciente refiere dolor de cabeza' })
@@ -187,12 +187,11 @@ const Consultation = () => {
 
   const handleFinish = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/consultations', {
+      const res = await apiFetch('/api/consultations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           patientId: id,
-          doctorId: userId,
           soap: soapNotes,
           treatments,
           indications,

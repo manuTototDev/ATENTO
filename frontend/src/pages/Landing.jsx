@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ArrowRight, Mic, FileText, Lock, Users, Calendar } from 'lucide-react';
 
 const Landing = () => {
@@ -115,7 +116,7 @@ const Landing = () => {
       {/* Navbar: Ultra minimal */}
       <nav style={{ padding: '2rem 5%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff' }}>
         <div style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.05em' }}>
-          Atentia.
+          Latento.
         </div>
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
           <button onClick={() => navigate('/login')} style={{ background: 'none', border: 'none', fontSize: '1rem', fontWeight: 500, cursor: 'pointer', color: '#000' }}>Log in</button>
@@ -129,10 +130,10 @@ const Landing = () => {
           Tu consulta, <br/> humana de nuevo.
         </h1>
         <p style={{ fontSize: 'clamp(1.25rem, 3vw, 1.5rem)', color: '#555', maxWidth: '600px', lineHeight: 1.5, marginBottom: '3rem' }}>
-          La IA médica que escribe por ti. Atentia escucha tus consultas y redacta el expediente clínico y la receta automáticamente. Recupera hasta 2 horas de tu día y vuelve a disfrutar de la medicina.
+          La IA médica que escribe por ti. Latento escucha tus consultas y redacta el expediente clínico y la receta automáticamente. Recupera hasta 2 horas de tu día y vuelve a disfrutar de la medicina.
         </p>
         <button onClick={() => navigate('/register')} style={{ background: '#000', color: '#fff', border: 'none', borderRadius: '100px', fontSize: '1.125rem', fontWeight: 500, padding: '1rem 2.5rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.75rem', transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity = 0.8} onMouseOut={e => e.currentTarget.style.opacity = 1}>
-          Prueba Atentia <ArrowRight size={20} />
+          Prueba Latento <ArrowRight size={20} />
         </button>
       </header>
 
@@ -201,7 +202,7 @@ const Landing = () => {
             </h2>
             <p style={{ fontSize: '1.25rem', color: '#555', lineHeight: 1.6, maxWidth: '450px' }}>
               <strong>Deja de ser un capturista de datos y vuelve a ser médico.</strong><br/><br/>
-              La tecnología no debería interponerse entre tú y quien confía en ti. Atentia escucha, analiza y estructura tu consulta automáticamente, permitiéndote recuperar la mirada y la conexión con tu paciente.
+              La tecnología no debería interponerse entre tú y quien confía en ti. Latento escucha, analiza y estructura tu consulta automáticamente, permitiéndote recuperar la mirada y la conexión con tu paciente.
             </p>
           </div>
         </div>
@@ -266,10 +267,9 @@ const Landing = () => {
 
       {/* Footer */}
       <footer style={{ padding: '3rem 5%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eee', fontSize: '0.875rem', color: '#888' }}>
-        <div style={{ fontWeight: 600, color: '#000' }}>Atentia © 2026</div>
+        <div style={{ fontWeight: 600, color: '#000' }}>Latento © 2026</div>
         <div style={{ display: 'flex', gap: '2rem' }}>
-          <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.target.style.color='#000'} onMouseOut={e=>e.target.style.color='#888'}>Privacidad</span>
-          <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.target.style.color='#000'} onMouseOut={e=>e.target.style.color='#888'}>Términos</span>
+          <Link to="/terminos" style={{ cursor: 'pointer', transition: 'color 0.2s', color: '#888', textDecoration: 'none' }} onMouseOver={e=>e.target.style.color='#000'} onMouseOut={e=>e.target.style.color='#888'}>Términos y Condiciones</Link>
           <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.target.style.color='#000'} onMouseOut={e=>e.target.style.color='#888'}>Contacto</span>
         </div>
       </footer>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, Settings as SettingsIcon, Moon, CalendarDays, Sun } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
 
 const Finances = () => {
   const navigate = useNavigate();
@@ -10,23 +11,71 @@ const Finances = () => {
   const [costoSabado, setCostoSabado] = useState(1000);
   const [costoDomingo, setCostoDomingo] = useState(1500);
   const [doctorProfile, setDoctorProfile] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [totalEarnings, setTotalEarnings] = useState(0);
 
   const userId = localStorage.getItem('userId');
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchProfileAndAnalytics = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/profile?userId=${userId}`);
-        if (res.ok) {
-          const data = await res.json();
+        // Fetch Profile for Tabulator
+        const resProfile = await apiFetch(`/api/profile`);
+        if (resProfile.ok) {
+          const data = await resProfile.json();
           setDoctorProfile(data);
+          
+          if (data.profile) {
+            setCostoBase(data.profile.basePrice || 800);
+            setCostoNocturno(data.profile.nightPrice || 1200);
+            setHoraNocturna(data.profile.nightTime || '20:00');
+            setCostoSabado(data.profile.saturdayPrice || 1000);
+            setCostoDomingo(data.profile.sundayPrice || 1500);
+          }
         }
+
+        // Fetch Analytics for Earnings
+        const resAnalytics = await apiFetch(`/api/analytics`);
+        if (resAnalytics.ok) {
+          const data = await resAnalytics.json();
+          setTotalEarnings(data.totalEarnings || 0);
+        }
+
       } catch (error) {
         console.error(error);
       }
     };
-    if (userId) fetchProfile();
+    if (userId) fetchProfileAndAnalytics();
   }, [userId]);
+
+  const handleSavePricing = async () => {
+    if (!userId) return;
+    setIsSaving(true);
+    try {
+      const response = await apiFetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          basePrice: costoBase,
+          nightPrice: costoNocturno,
+          nightTime: horaNocturna,
+          saturdayPrice: costoSabado,
+          sundayPrice: costoDomingo
+        })
+      });
+
+      if (response.ok) {
+        alert('Tabulador de precios actualizado exitosamente');
+      } else {
+        alert('Hubo un error al guardar los precios');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Hubo un error al conectar con el servidor');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#fff', fontFamily: 'Inter, system-ui, sans-serif' }}>
@@ -79,10 +128,10 @@ const Finances = () => {
                 </h2>
               </div>
               <div style={{ fontSize: '5rem', fontWeight: 800, letterSpacing: '-0.05em', color: '#000', lineHeight: 1 }}>
-                $24,500
+                ${totalEarnings.toLocaleString('es-MX')}
               </div>
               <div style={{ fontSize: '1.125rem', fontWeight: 600, color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                MXN Aprox.
+                MXN Acumulado
               </div>
             </div>
           </div>
@@ -194,12 +243,13 @@ const Finances = () => {
             </div>
 
             <button 
-              style={{ width: '100%', background: '#000', color: '#fff', border: 'none', padding: '1.5rem', fontSize: '1.125rem', fontWeight: 700, cursor: 'pointer', transition: 'opacity 0.2s', marginTop: '3rem' }}
-              onClick={() => alert('Tabulador de precios actualizado exitosamente')}
-              onMouseOver={e=>e.target.style.opacity=0.8} 
-              onMouseOut={e=>e.target.style.opacity=1}
+              style={{ width: '100%', background: '#000', color: '#fff', border: 'none', padding: '1.5rem', fontSize: '1.125rem', fontWeight: 700, cursor: 'pointer', transition: 'opacity 0.2s', marginTop: '3rem', opacity: isSaving ? 0.7 : 1 }}
+              onClick={handleSavePricing}
+              disabled={isSaving}
+              onMouseOver={e=>!isSaving && (e.target.style.opacity=0.8)} 
+              onMouseOut={e=>!isSaving && (e.target.style.opacity=1)}
             >
-              Guardar Tabulador
+              {isSaving ? 'Guardando...' : 'Guardar Tabulador'}
             </button>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Clock, Plus, X, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
 
 const CalendarView = () => {
   const navigate = useNavigate();
@@ -16,8 +17,8 @@ const CalendarView = () => {
     const fetchData = async () => {
       try {
         const [appRes, profileRes] = await Promise.all([
-          fetch(`http://localhost:5000/api/appointments?userId=${userId}`),
-          fetch(`http://localhost:5000/api/profile?userId=${userId}`)
+          apiFetch(`/api/appointments`),
+          apiFetch(`/api/profile`)
         ]);
         
         if (appRes.ok) {
@@ -39,7 +40,7 @@ const CalendarView = () => {
     if(window.confirm('¿Estás seguro de eliminar esta cita?')) {
       setIsLoading(true);
       try {
-        const res = await fetch(`http://localhost:5000/api/appointments/${id}`, {
+        const res = await apiFetch(`/api/appointments/${id}`, {
           method: 'DELETE'
         });
         if (res.ok) {
@@ -59,15 +60,14 @@ const CalendarView = () => {
     try {
       const startDateTime = new Date(`${formData.date}T${formData.startTime}:00`);
       const endDateTime = new Date(`${formData.date}T${formData.endTime}:00`);
-      const res = await fetch('http://localhost:5000/api/appointments', {
+      const res = await apiFetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           patientName: formData.patientName, 
           reason: formData.reason, 
           startTime: startDateTime, 
-          endTime: endDateTime, 
-          userId 
+          endTime: endDateTime
         })
       });
       if (res.ok) {

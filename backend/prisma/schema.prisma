@@ -54,6 +54,13 @@ model DoctorProfile {
   // Personalización
   logoUrl         String?  // URL del logo para imprimir en la receta
   
+  // Tabulador de Precios
+  basePrice       Float    @default(800)
+  nightPrice      Float    @default(1200)
+  nightTime       String   @default("20:00")
+  saturdayPrice   Float    @default(1000)
+  sundayPrice     Float    @default(1500)
+  
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
@@ -175,4 +182,38 @@ model Medication {
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// ==============================================================
+// DATA LAKE / ANALYTICS (TABLAS ANONIMIZADAS SIN PII)
+// ==============================================================
+
+model AnalyticsPatient {
+  id              String   @id @default(uuid())
+  doctorId        String
+  ageAtInsertion  Int
+  gender          String?
+  bloodType       String?
+  allergies       String[]
+  chronicDiseases String[]
+  
+  analyticsConsultations AnalyticsConsultation[]
+
+  createdAt       DateTime @default(now())
+}
+
+model AnalyticsConsultation {
+  id                 String   @id @default(uuid())
+  analyticsPatientId String
+  patient            AnalyticsPatient @relation(fields: [analyticsPatientId], references: [id])
+  
+  doctorId           String
+  diagnoses          String?  // Derivado del assessment del SOAP
+  treatmentsCount    Int
+  cost               Float
+  hasVariableCost    Boolean
+  dayOfWeek          Int
+  hourOfDay          Int
+  
+  createdAt          DateTime @default(now())
 }

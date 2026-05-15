@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, ExternalLink } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({ score: 0, text: '', color: '#e5e5e5' });
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [termsError, setTermsError] = useState(false);
 
   // Evaluar seguridad de la contraseña
   const evaluatePassword = (pass) => {
@@ -49,9 +52,14 @@ const Register = () => {
       return;
     }
     setIsLoading(true);
+    if (!termsAccepted) {
+      setTermsError(true);
+      setIsLoading(false);
+      return;
+    }
     
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await apiFetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -88,7 +96,7 @@ const Register = () => {
           onClick={() => navigate('/')} 
           style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.05em', cursor: 'pointer' }}
         >
-          Atentia.
+          Latento.
         </div>
         
         <div style={{ margin: 'auto 0' }}>
@@ -101,7 +109,7 @@ const Register = () => {
         </div>
         
         <div style={{ fontSize: '0.875rem', color: '#555' }}>
-          Atentia © 2026. Cumplimiento médico y cifrado de extremo a extremo.
+          Latento © 2026. Cumplimiento médico y cifrado de extremo a extremo.
         </div>
       </div>
 
@@ -216,7 +224,7 @@ const Register = () => {
               )}
             </div>
 
-            <div style={{ marginBottom: '3rem' }}>
+            <div style={{ marginBottom: '2rem' }}>
               <label htmlFor="confirmPassword" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>
                 Confirmar Contraseña
               </label>
@@ -234,11 +242,78 @@ const Register = () => {
               />
             </div>
 
-            <button 
-              type="submit" 
+            {/* T&C Checkbox */}
+            <div style={{ marginBottom: '2.5rem' }}>
+              <label
+                htmlFor="termsCheckbox"
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.875rem',
+                  cursor: 'pointer',
+                  padding: '1.25rem',
+                  border: termsError ? '2px solid #ef4444' : '2px solid #e5e5e5',
+                  borderRadius: '8px',
+                  backgroundColor: termsAccepted ? '#f0fdf4' : '#fafafa',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <div style={{ position: 'relative', flexShrink: 0, marginTop: '2px' }}>
+                  <input
+                    type="checkbox"
+                    id="termsCheckbox"
+                    checked={termsAccepted}
+                    onChange={(e) => {
+                      setTermsAccepted(e.target.checked);
+                      if (e.target.checked) setTermsError(false);
+                    }}
+                    style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
+                  />
+                  <div style={{
+                    width: '22px',
+                    height: '22px',
+                    border: `2px solid ${termsAccepted ? '#000' : '#ccc'}`,
+                    borderRadius: '4px',
+                    backgroundColor: termsAccepted ? '#000' : '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s'
+                  }}>
+                    {termsAccepted && (
+                      <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+                        <path d="M1 5L5 9L12 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <span style={{ fontSize: '0.9rem', color: '#333', lineHeight: 1.6 }}>
+                  He leído y acepto los{' '}
+                  <Link
+                    to="/terminos"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#000', fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Términos y Condiciones, Política de Privacidad y Política de Uso de IA
+                    <ExternalLink size={13} />
+                  </Link>
+                  {' '}de Latento, incluyendo el almacenamiento, procesamiento y tratamiento de mis datos profesionales y los datos de pacientes bajo mi responsabilidad, conforme a la LFPDPPP.
+                </span>
+              </label>
+              {termsError && (
+                <p style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 500 }}>
+                  Debes aceptar los Términos y Condiciones para continuar.
+                </p>
+              )}
+            </div>
+
+            <button
+              type="submit"
               disabled={isLoading}
-              style={{ width: '100%', background: '#000', color: '#fff', border: 'none', padding: '1.25rem', fontSize: '1.125rem', fontWeight: 500, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.75rem', transition: 'opacity 0.2s' }} 
-              onMouseOver={e=>e.target.style.opacity=0.8} 
+              style={{ width: '100%', background: '#000', color: '#fff', border: 'none', padding: '1.25rem', fontSize: '1.125rem', fontWeight: 500, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.75rem', transition: 'opacity 0.2s' }}
+              onMouseOver={e=>e.target.style.opacity=0.8}
               onMouseOut={e=>e.target.style.opacity=1}
             >
               {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}

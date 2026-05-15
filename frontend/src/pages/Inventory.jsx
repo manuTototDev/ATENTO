@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Package, Plus, Save, X } from 'lucide-react';
+import { apiFetch } from '../utils/api';
 
 const Inventory = () => {
   const [items, setItems] = useState([]);
@@ -11,7 +12,7 @@ const Inventory = () => {
 
   const fetchInventory = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/inventory?userId=${userId}`);
+      const res = await apiFetch(`/api/inventory`);
       if (res.ok) {
         const data = await res.json();
         setItems(data);
@@ -29,10 +30,10 @@ const Inventory = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/inventory', {
+      const res = await apiFetch('/api/inventory', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, userId })
+        body: JSON.stringify({ ...formData })
       });
       if (res.ok) {
         fetchInventory();
