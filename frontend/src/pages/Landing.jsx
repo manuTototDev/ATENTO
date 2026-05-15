@@ -634,8 +634,8 @@ const Landing = () => {
               <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#000', marginTop: '0.5rem' }}></div>
                 <div>
-                  <h4 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.5rem' }}>Bloqueo de Entrenamiento de IA</h4>
-                  <p style={{ color: '#555', lineHeight: 1.5, margin: 0 }}>Tus consultas jamás se envían a bases públicas ni se usan para entrenar modelos de IA. Tu inteligencia médica es 100% tuya.</p>
+                  <h4 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.5rem' }}>Entorno Privado y Aislado</h4>
+                  <p style={{ color: '#555', lineHeight: 1.5, margin: 0 }}>Tus consultas no se comparten con terceros ni alimentan modelos de IA públicos. Todo el procesamiento se realiza en nuestra infraestructura propia y anonimizada.</p>
                 </div>
               </div>
             </div>
