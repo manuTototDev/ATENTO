@@ -275,6 +275,18 @@ const Landing = () => {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
           }
+          @keyframes secure-sweep {
+            0% { width: 0%; }
+            50% { width: 100%; }
+            100% { width: 0%; }
+          }
+          @keyframes ping {
+            75%, 100% { transform: scale(1.5); opacity: 0; }
+          }
+          @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(200%); }
+          }
         `}
       </style>
 
@@ -586,15 +598,63 @@ const Landing = () => {
       </section>
 
       {/* Trust */}
-      <section style={{ padding: '8rem 5%', textAlign: 'center' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <Lock size={48} color="#000" style={{ marginBottom: '2rem' }} />
-          <h2 style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: '1.5rem', color: '#000' }}>
-            Seguridad clínica inquebrantable.
-          </h2>
-          <p style={{ fontSize: '1.25rem', color: '#555', lineHeight: 1.6 }}>
-            Cumplimos con estándares médicos de privacidad. Los datos de tus pacientes están encriptados y nunca se utilizan para entrenar o alimentar modelos de IA públicos.
-          </p>
+      <section style={{ padding: '10rem 5%', backgroundColor: '#0a0a0a', color: '#fff', textAlign: 'center' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          
+          <div style={{ marginBottom: '5rem' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#262626', marginBottom: '2rem', border: '1px solid #333' }}>
+              <Lock size={40} color="#10b981" />
+            </div>
+            <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: '1.5rem', color: '#fff' }}>
+              Seguridad clínica inquebrantable.
+            </h2>
+            <p style={{ fontSize: '1.25rem', color: '#a3a3a3', lineHeight: 1.6, maxWidth: '700px', margin: '0 auto' }}>
+              Tu práctica médica requiere confidencialidad absoluta. Protegemos tu información con protocolos de grado bancario, separando la identidad del paciente de su diagnóstico clínico. Lo que pasa en tu consultorio, se queda en tu consultorio.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', textAlign: 'left' }}>
+            
+            <div style={{ background: '#171717', padding: '2.5rem', borderRadius: '24px', border: '1px solid #262626' }}>
+              {/* Animación de anonimización */}
+              <div style={{ height: '120px', background: '#0a0a0a', borderRadius: '12px', marginBottom: '2rem', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', border: '1px solid #262626' }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#333' }}></div>
+                  <div style={{ height: '12px', background: '#333', borderRadius: '4px', width: '120px', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', background: '#10b981', animation: 'secure-sweep 2s ease-in-out infinite' }}></div>
+                  </div>
+                </div>
+                <div style={{ height: '8px', background: '#333', borderRadius: '4px', width: '80%' }}></div>
+                <div style={{ height: '8px', background: '#333', borderRadius: '4px', width: '60%' }}></div>
+              </div>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#fff', marginBottom: '1rem' }}>Identidad Protegida</h3>
+              <p style={{ color: '#a3a3a3', lineHeight: 1.6 }}>Separamos inteligentemente el nombre de tus pacientes de su historial clínico. Si alguien lograra ver los datos, solo vería estadísticas anónimas.</p>
+            </div>
+
+            <div style={{ background: '#171717', padding: '2.5rem', borderRadius: '24px', border: '1px solid #262626' }}>
+              <div style={{ height: '120px', background: '#0a0a0a', borderRadius: '12px', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', border: '1px solid #262626' }}>
+                <div style={{ position: 'absolute', width: '60px', height: '60px', border: '2px solid #10b981', borderRadius: '50%', animation: 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite' }}></div>
+                <Lock size={32} color="#10b981" />
+              </div>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#fff', marginBottom: '1rem' }}>Bóveda Encriptada</h3>
+              <p style={{ color: '#a3a3a3', lineHeight: 1.6 }}>Toda la información viaja y se almacena bajo encriptación estricta y rotación de tokens. Ni siquiera nosotros podemos leer tus notas médicas.</p>
+            </div>
+
+            <div style={{ background: '#171717', padding: '2.5rem', borderRadius: '24px', border: '1px solid #262626' }}>
+              <div style={{ height: '120px', background: '#0a0a0a', borderRadius: '12px', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #262626' }}>
+                <div style={{ width: '80%', height: '40px', background: '#171717', borderRadius: '8px', position: 'relative', overflow: 'hidden', border: '1px solid #333' }}>
+                   <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: '50%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)', animation: 'shimmer 3s infinite' }}></div>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0 1rem', height: '100%' }}>
+                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }}></div>
+                     <span style={{ color: '#888', fontSize: '0.85rem', fontFamily: 'monospace', letterSpacing: '0.05em' }}>AI_TRAINING_BLOCKED</span>
+                   </div>
+                </div>
+              </div>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#fff', marginBottom: '1rem' }}>Tu Data es Tuya</h3>
+              <p style={{ color: '#a3a3a3', lineHeight: 1.6 }}>Tus consultas y audios JAMÁS serán utilizados para alimentar, entrenar o mejorar modelos de Inteligencia Artificial públicos.</p>
+            </div>
+
+          </div>
         </div>
       </section>
 
