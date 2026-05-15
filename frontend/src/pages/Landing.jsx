@@ -476,7 +476,7 @@ const Landing = () => {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
                   <Users size={28} color={activeFeatureIndex === 0 ? '#fff' : '#000'} />
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>Control de Pacientes</h3>
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0, color: activeFeatureIndex === 0 ? '#fff' : '#000' }}>Control de Pacientes</h3>
                 </div>
                 <p style={{ color: activeFeatureIndex === 0 ? '#a3a3a3' : '#555', lineHeight: 1.6, margin: 0 }}>Directorio centralizado con información demográfica, contactos y métricas de salud fácilmente accesibles.</p>
               </div>
@@ -488,7 +488,7 @@ const Landing = () => {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
                   <FileText size={28} color={activeFeatureIndex === 1 ? '#fff' : '#000'} />
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>Historial Clínico</h3>
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0, color: activeFeatureIndex === 1 ? '#fff' : '#000' }}>Historial Clínico</h3>
                 </div>
                 <p style={{ color: activeFeatureIndex === 1 ? '#a3a3a3' : '#555', lineHeight: 1.6, margin: 0 }}>Notas SOAP y recetas almacenadas de forma segura y cronológica en bases de datos inalterables.</p>
               </div>
@@ -500,7 +500,7 @@ const Landing = () => {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
                   <Calendar size={28} color={activeFeatureIndex === 2 ? '#fff' : '#000'} />
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>Gestión de Citas</h3>
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0, color: activeFeatureIndex === 2 ? '#fff' : '#000' }}>Gestión de Citas</h3>
                 </div>
                 <p style={{ color: activeFeatureIndex === 2 ? '#a3a3a3' : '#555', lineHeight: 1.6, margin: 0 }}>Agenda inteligente conectada a tus expedientes para un flujo de trabajo continuo.</p>
               </div>
