@@ -114,6 +114,15 @@ const Landing = () => {
   const [typedRxD2, setTypedRxD2] = useState("");
   const [showRx, setShowRx] = useState(false);
 
+  const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveFeatureIndex(prev => (prev + 1) % 3);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     let pIndex = 0;
     let dIndex = 0;
@@ -445,6 +454,7 @@ const Landing = () => {
       {/* Feature 3: Gestión Todo en Uno */}
       <section style={{ padding: '8rem 5%', backgroundColor: '#fff', borderTop: '1px solid #E5E5E5', borderBottom: '1px solid #E5E5E5' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          
           <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
             <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: '1.5rem', color: '#000' }}>
               Gestión Todo en Uno
@@ -454,23 +464,122 @@ const Landing = () => {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '3rem' }}>
-            <div style={{ padding: '2.5rem', backgroundColor: '#000' }}>
-              <Users size={32} color="#fff" style={{ marginBottom: '1.5rem' }} />
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '1rem', color: '#fff' }}>Control de Pacientes</h3>
-              <p style={{ color: '#a3a3a3', lineHeight: 1.6 }}>Directorio centralizado con información demográfica, contactos y métricas de salud fácilmente accesibles.</p>
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '4rem', alignItems: 'center' }}>
             
-            <div style={{ padding: '2.5rem', backgroundColor: '#000' }}>
-              <FileText size={32} color="#fff" style={{ marginBottom: '1.5rem' }} />
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '1rem', color: '#fff' }}>Historial Clínico</h3>
-              <p style={{ color: '#a3a3a3', lineHeight: 1.6 }}>Notas SOAP y recetas almacenadas de forma segura y cronológica en bases de datos inalterables.</p>
+            {/* Lista interactiva */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              
+              {/* Opción 1: Pacientes */}
+              <div 
+                onClick={() => setActiveFeatureIndex(0)}
+                style={{ padding: '2rem', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s', backgroundColor: activeFeatureIndex === 0 ? '#000' : 'transparent', color: activeFeatureIndex === 0 ? '#fff' : '#000', border: activeFeatureIndex === 0 ? '1px solid #000' : '1px solid #e5e5e5' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                  <Users size={28} color={activeFeatureIndex === 0 ? '#fff' : '#000'} />
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>Control de Pacientes</h3>
+                </div>
+                <p style={{ color: activeFeatureIndex === 0 ? '#a3a3a3' : '#555', lineHeight: 1.6, margin: 0 }}>Directorio centralizado con información demográfica, contactos y métricas de salud fácilmente accesibles.</p>
+              </div>
+
+              {/* Opción 2: Historial */}
+              <div 
+                onClick={() => setActiveFeatureIndex(1)}
+                style={{ padding: '2rem', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s', backgroundColor: activeFeatureIndex === 1 ? '#000' : 'transparent', color: activeFeatureIndex === 1 ? '#fff' : '#000', border: activeFeatureIndex === 1 ? '1px solid #000' : '1px solid #e5e5e5' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                  <FileText size={28} color={activeFeatureIndex === 1 ? '#fff' : '#000'} />
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>Historial Clínico</h3>
+                </div>
+                <p style={{ color: activeFeatureIndex === 1 ? '#a3a3a3' : '#555', lineHeight: 1.6, margin: 0 }}>Notas SOAP y recetas almacenadas de forma segura y cronológica en bases de datos inalterables.</p>
+              </div>
+
+              {/* Opción 3: Agenda */}
+              <div 
+                onClick={() => setActiveFeatureIndex(2)}
+                style={{ padding: '2rem', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s', backgroundColor: activeFeatureIndex === 2 ? '#000' : 'transparent', color: activeFeatureIndex === 2 ? '#fff' : '#000', border: activeFeatureIndex === 2 ? '1px solid #000' : '1px solid #e5e5e5' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                  <Calendar size={28} color={activeFeatureIndex === 2 ? '#fff' : '#000'} />
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>Gestión de Citas</h3>
+                </div>
+                <p style={{ color: activeFeatureIndex === 2 ? '#a3a3a3' : '#555', lineHeight: 1.6, margin: 0 }}>Agenda inteligente conectada a tus expedientes para un flujo de trabajo continuo.</p>
+              </div>
+
             </div>
 
-            <div style={{ padding: '2.5rem', backgroundColor: '#000' }}>
-              <Calendar size={32} color="#fff" style={{ marginBottom: '1.5rem' }} />
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '1rem', color: '#fff' }}>Gestión de Citas</h3>
-              <p style={{ color: '#a3a3a3', lineHeight: 1.6 }}>Agenda inteligente conectada a tus expedientes para un flujo de trabajo continuo desde la sala de espera hasta la receta.</p>
+            {/* Pantalla interactiva visual */}
+            <div style={{ height: '500px', backgroundColor: '#f4f4f4', borderRadius: '24px', padding: '3rem', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              
+              {/* Pacientes UI */}
+              <div style={{ width: '100%', opacity: activeFeatureIndex === 0 ? 1 : 0, transform: activeFeatureIndex === 0 ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.5s', position: 'absolute', padding: '3rem', pointerEvents: activeFeatureIndex === 0 ? 'auto' : 'none' }}>
+                <div style={{ width: '100%', height: '40px', background: '#fff', borderRadius: '8px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', padding: '0 1rem', color: '#a3a3a3', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                  Buscar paciente...
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ padding: '1rem', background: '#fff', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#0ea5e9', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>CL</div>
+                      <div><div style={{ fontWeight: 600 }}>Carlos López</div><div style={{ fontSize: '0.8rem', color: '#888' }}>42 años • O+</div></div>
+                    </div>
+                  </div>
+                  <div style={{ padding: '1rem', background: '#fff', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#10b981', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>JS</div>
+                      <div><div style={{ fontWeight: 600 }}>Julia Silva</div><div style={{ fontSize: '0.8rem', color: '#888' }}>45 años • A-</div></div>
+                    </div>
+                  </div>
+                  <div style={{ padding: '1rem', background: '#fff', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#f59e0b', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>RP</div>
+                      <div><div style={{ fontWeight: 600 }}>Roberto Pérez</div><div style={{ fontSize: '0.8rem', color: '#888' }}>1 año • B+</div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Historial Clínico UI */}
+              <div style={{ width: '100%', opacity: activeFeatureIndex === 1 ? 1 : 0, transform: activeFeatureIndex === 1 ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.5s', position: 'absolute', padding: '3rem', pointerEvents: activeFeatureIndex === 1 ? 'auto' : 'none' }}>
+                <div style={{ background: '#fff', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+                  <div style={{ borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1rem' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#888', fontWeight: 600 }}>14 MAYO 2026</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>Faringoamigdalitis</div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <span style={{ fontWeight: 'bold', width: '20px' }}>S:</span> <span style={{ color: '#555' }}>Odinofagia y tos productiva.</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <span style={{ fontWeight: 'bold', width: '20px' }}>O:</span> <span style={{ color: '#555' }}>Eritema faríngeo y fiebre 38.5°C.</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <span style={{ fontWeight: 'bold', width: '20px' }}>A:</span> <span style={{ color: '#555' }}>Faringoamigdalitis aguda.</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #eee' }}>
+                      <span style={{ fontWeight: 'bold', width: '20px', color: '#10b981' }}>Rx:</span> <span style={{ color: '#10b981', fontWeight: 600 }}>Amoxicilina 500mg</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Agenda UI */}
+              <div style={{ width: '100%', opacity: activeFeatureIndex === 2 ? 1 : 0, transform: activeFeatureIndex === 2 ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.5s', position: 'absolute', padding: '3rem', pointerEvents: activeFeatureIndex === 2 ? 'auto' : 'none' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                  {['L','M','X','J','V','S','D'].map((day, i) => (
+                    <div key={i} style={{ textAlign: 'center', fontSize: '0.8rem', fontWeight: 600, color: '#888' }}>{day}</div>
+                  ))}
+                  {[...Array(14)].map((_, i) => (
+                    <div key={i} style={{ aspectRatio: '1', background: i === 9 ? '#000' : '#fff', color: i === 9 ? '#fff' : '#000', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: i === 9 ? 700 : 400, boxShadow: i === 9 ? '0 4px 10px rgba(0,0,0,0.2)' : 'none' }}>
+                      {i + 5}
+                    </div>
+                  ))}
+                </div>
+                <div style={{ background: '#fff', borderRadius: '12px', padding: '1rem', borderLeft: '4px solid #000', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
+                  <div style={{ fontSize: '0.8rem', color: '#888', fontWeight: 600 }}>16:00 - 16:30</div>
+                  <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>Carlos López</div>
+                  <div style={{ fontSize: '0.8rem', color: '#555' }}>Consulta de Seguimiento</div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
