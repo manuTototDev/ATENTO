@@ -607,8 +607,8 @@ const Landing = () => {
       </section>
 
       {/* Trust - Minimalist Iteration */}
-      <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '4rem 5%', backgroundColor: '#fff', color: '#000', borderTop: '1px solid #E5E5E5' }}>
-        <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '6rem', alignItems: 'center' }}>
+      <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: 'clamp(2rem, 5vh, 4rem) 5%', backgroundColor: '#fff', color: '#000', borderTop: '1px solid #E5E5E5' }}>
+        <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: 'clamp(2rem, 4vw, 4rem)', alignItems: 'center' }}>
           
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
@@ -644,13 +644,13 @@ const Landing = () => {
           </div>
 
           {/* Abstract Security Animation */}
-          <div style={{ height: '500px', backgroundColor: '#f4f4f4', borderRadius: '24px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ height: '400px', backgroundColor: '#f4f4f4', borderRadius: '24px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             
             {/* Círculos concéntricos de escudo */}
-            <div style={{ position: 'absolute', width: '300px', height: '300px', borderRadius: '50%', border: '1px solid #e5e5e5', animation: 'spin-slow 20s linear infinite' }}>
+            <div style={{ position: 'absolute', width: '250px', height: '250px', borderRadius: '50%', border: '1px solid #e5e5e5', animation: 'spin-slow 20s linear infinite' }}>
                <div style={{ position: 'absolute', top: '-4px', left: '50%', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div>
             </div>
-            <div style={{ position: 'absolute', width: '400px', height: '400px', borderRadius: '50%', border: '1px solid #e5e5e5', animation: 'spin-slow 30s linear infinite reverse' }}>
+            <div style={{ position: 'absolute', width: '350px', height: '350px', borderRadius: '50%', border: '1px solid #e5e5e5', animation: 'spin-slow 30s linear infinite reverse' }}>
                <div style={{ position: 'absolute', bottom: '-4px', left: '20%', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div>
             </div>
             
