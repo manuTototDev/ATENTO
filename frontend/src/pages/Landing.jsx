@@ -685,7 +685,7 @@ const Landing = () => {
       </section>
 
       {/* Final CTA - "Vuelve a ser médico no se ve ponlo negro" -> Text black, Background white */}
-      <section style={{ padding: '10rem 5%', textAlign: 'center', backgroundColor: '#fff', color: '#000', borderTop: '2px solid #000' }}>
+      <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10rem 5%', textAlign: 'center', backgroundColor: '#fff', color: '#000', borderTop: '2px solid #000' }}>
         <h2 style={{ fontSize: 'clamp(3rem, 6vw, 5rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '3rem', color: '#000' }}>
           Vuelve a ser médico.
         </h2>
