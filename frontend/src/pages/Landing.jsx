@@ -29,10 +29,29 @@ const Landing = () => {
     }
   ];
 
+  const prescriptionScenarios = [
+    {
+      c: "Voy a mandarte Amoxicilina de 500 miligramos, te tomas una cápsula cada 8 horas por 7 días. Y mucho líquido.",
+      rx: "Amoxicilina 500mg\nTomar 1 cápsula cada 8 horas durante 7 días."
+    },
+    {
+      c: "Te daré Paracetamol para la fiebre, tómate una tableta de 500mg si tienes dolor, máximo cada 6 horas.",
+      rx: "Paracetamol 500mg\nTomar 1 tableta cada 6 horas en caso de fiebre o dolor."
+    },
+    {
+      c: "Sigue aplicando la crema de Hidrocortisona al 1% en la zona afectada, dos veces al día por dos semanas.",
+      rx: "Hidrocortisona al 1% Crema\nAplicar en la zona afectada 2 veces al día por 2 semanas."
+    }
+  ];
+
   const [scenarioIndex, setScenarioIndex] = useState(0);
   const [typedP, setTypedP] = useState("");
   const [typedD, setTypedD] = useState("");
   const [showSOAP, setShowSOAP] = useState(false);
+
+  const [rxScenarioIndex, setRxScenarioIndex] = useState(0);
+  const [typedRxC, setTypedRxC] = useState("");
+  const [showRx, setShowRx] = useState(false);
 
   useEffect(() => {
     let pIndex = 0;
@@ -88,6 +107,47 @@ const Landing = () => {
     };
 
     runAnimation();
+
+    return () => { isRunning = false; };
+  }, []);
+
+  useEffect(() => {
+    let cIndex = 0;
+    let isRunning = true;
+    let currentIndex = 0;
+
+    const runRxAnimation = async () => {
+      while (isRunning) {
+        const currentScenario = prescriptionScenarios[currentIndex];
+        
+        // Escribir Conversación
+        while (cIndex <= currentScenario.c.length && isRunning) {
+          setTypedRxC(currentScenario.c.slice(0, cIndex));
+          cIndex++;
+          await new Promise(r => setTimeout(r, 40));
+        }
+        
+        if (!isRunning) break;
+        await new Promise(r => setTimeout(r, 800));
+        
+        if (isRunning) setShowRx(true);
+  
+        await new Promise(r => setTimeout(r, 4000));
+        
+        if (isRunning) {
+          setShowRx(false);
+          await new Promise(r => setTimeout(r, 500));
+          
+          setTypedRxC("");
+          cIndex = 0;
+          currentIndex = (currentIndex + 1) % prescriptionScenarios.length;
+          setRxScenarioIndex(currentIndex);
+          await new Promise(r => setTimeout(r, 500));
+        }
+      }
+    };
+
+    runRxAnimation();
 
     return () => { isRunning = false; };
   }, []);
@@ -193,8 +253,40 @@ const Landing = () => {
       {/* Feature 2: Aclaración de límites de IA */}
       <section style={{ padding: '10rem 5%', maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '4rem', alignItems: 'center' }}>
-          <div style={{ height: '500px', backgroundColor: '#f4f4f4', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <FileText size={80} color="#000" />
+          
+          {/* Animación: De la conversación a la receta */}
+          <div style={{ height: '500px', backgroundColor: '#f4f4f4', borderRadius: '24px', display: 'flex', flexDirection: 'column', padding: '2.5rem', position: 'relative', overflow: 'hidden', justifyContent: 'center' }}>
+            
+            {/* Input conversation */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', zIndex: 2 }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#e5e5e5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                 <Mic size={16} color="#000" />
+              </div>
+              <span style={{ fontSize: '0.875rem', color: '#555', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Voz del Médico</span>
+            </div>
+
+            <div style={{ padding: '1.25rem', background: '#fff', border: '1px solid #e5e5e5', borderRadius: '16px', color: '#000', fontSize: '1.125rem', fontFamily: 'monospace', lineHeight: 1.5, zIndex: 2, minHeight: '120px' }}>
+              {typedRxC}
+              {typedRxC.length < prescriptionScenarios[rxScenarioIndex].c.length && <span style={{ borderRight: '2px solid #000', animation: 'blink 1s infinite' }}>&nbsp;</span>}
+            </div>
+
+            {/* Icono de flecha */}
+            <div style={{ display: 'flex', justifyContent: 'center', margin: '1.5rem 0', opacity: showRx ? 1 : 0, transition: 'opacity 0.3s', zIndex: 2 }}>
+              <ArrowRight size={24} color="#a3a3a3" style={{ transform: 'rotate(90deg)' }} />
+            </div>
+
+            {/* Receta output */}
+            <div style={{ padding: '1.5rem', background: '#000', color: '#fff', borderRadius: '16px', fontSize: '1.125rem', lineHeight: 1.6, width: '100%', opacity: showRx ? 1 : 0, transform: showRx ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)', zIndex: 2, boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid #333', paddingBottom: '0.75rem', marginBottom: '0.75rem' }}>
+                <FileText size={18} color="#10b981" />
+                <span style={{ fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#10b981' }}>Receta Médica Extraída</span>
+              </div>
+              <span style={{ fontFamily: 'monospace', whiteSpace: 'pre-line' }}>{prescriptionScenarios[rxScenarioIndex].rx}</span>
+            </div>
+            
+            {/* Elemento de fondo decorativo */}
+            <div style={{ position: 'absolute', top: '-20%', right: '-20%', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(0,0,0,0.03) 0%, rgba(255,255,255,0) 70%)', zIndex: 1 }}></div>
+
           </div>
           <div>
             <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', fontWeight: 600, lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '2rem', color: '#000' }}>
