@@ -309,21 +309,23 @@ const Landing = () => {
       </nav>
 
       {/* Hero: Huge typography, high contrast, clean */}
-      <header style={{ padding: '8rem 5% 4rem 5%', maxWidth: '1200px', margin: '0 auto' }}>
-        <h1 style={{ fontSize: 'clamp(3.5rem, 8vw, 6rem)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.04em', marginBottom: '2rem', maxWidth: '900px', color: '#000' }}>
-          Tu consulta, <br/> humana de nuevo.
-        </h1>
-        <p style={{ fontSize: 'clamp(1.25rem, 3vw, 1.5rem)', color: '#555', maxWidth: '600px', lineHeight: 1.5, marginBottom: '3rem' }}>
-          La IA médica que escribe por ti. Latento escucha tus consultas y redacta el expediente clínico y la receta automáticamente. Recupera hasta 2 horas de tu día y vuelve a disfrutar de la medicina.
-        </p>
-        <button onClick={() => navigate('/register')} style={{ background: '#000', color: '#fff', border: 'none', borderRadius: '100px', fontSize: '1.125rem', fontWeight: 500, padding: '1rem 2.5rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.75rem', transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity = 0.8} onMouseOut={e => e.currentTarget.style.opacity = 1}>
-          Prueba Latento <ArrowRight size={20} />
-        </button>
+      <header style={{ minHeight: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 5%', maxWidth: '1200px', margin: '0 auto' }}>
+        <div>
+          <h1 style={{ fontSize: 'clamp(3.5rem, 8vw, 6rem)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.04em', marginBottom: '2rem', maxWidth: '900px', color: '#000' }}>
+            Tu consulta, <br/> humana de nuevo.
+          </h1>
+          <p style={{ fontSize: 'clamp(1.25rem, 3vw, 1.5rem)', color: '#555', maxWidth: '600px', lineHeight: 1.5, marginBottom: '3rem' }}>
+            La IA médica que escribe por ti. Latento escucha tus consultas y redacta el expediente clínico y la receta automáticamente. Recupera hasta 2 horas de tu día y vuelve a disfrutar de la medicina.
+          </p>
+          <button onClick={() => navigate('/register')} style={{ background: '#000', color: '#fff', border: 'none', borderRadius: '100px', fontSize: '1.125rem', fontWeight: 500, padding: '1rem 2.5rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.75rem', transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity = 0.8} onMouseOut={e => e.currentTarget.style.opacity = 1}>
+            Prueba Latento <ArrowRight size={20} />
+          </button>
+        </div>
       </header>
 
       {/* Feature 1: Escucha. Entiende. Escribe. */}
-      <section style={{ padding: '8rem 5%', backgroundColor: '#0a0a0a', color: '#fff' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '4rem', alignItems: 'center' }}>
+      <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '4rem 5%', backgroundColor: '#0a0a0a', color: '#fff' }}>
+        <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '4rem', alignItems: 'center' }}>
           <div>
             <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 600, lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '2rem', color: '#fff' }}>
               Escucha.<br/>Entiende.<br/>Escribe.
@@ -375,8 +377,8 @@ const Landing = () => {
       </section>
 
       {/* Feature 2: Aclaración de límites de IA */}
-      <section style={{ padding: '10rem 5%', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '4rem', alignItems: 'center' }}>
+      <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '4rem 5%', maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '4rem', alignItems: 'center' }}>
           
           {/* Animación: De la conversación a la receta */}
           <div style={{ height: '520px', backgroundColor: '#f4f4f4', borderRadius: '24px', display: 'flex', flexDirection: 'column', padding: '2rem', position: 'relative', overflow: 'hidden' }}>
@@ -471,8 +473,8 @@ const Landing = () => {
       </section>
 
       {/* Feature 3: Gestión Todo en Uno */}
-      <section style={{ padding: '8rem 5%', backgroundColor: '#fff', borderTop: '1px solid #E5E5E5', borderBottom: '1px solid #E5E5E5' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '4rem 5%', backgroundColor: '#fff', borderTop: '1px solid #E5E5E5', borderBottom: '1px solid #E5E5E5' }}>
+        <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
           
           <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
             <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: '1.5rem', color: '#000' }}>
@@ -605,8 +607,8 @@ const Landing = () => {
       </section>
 
       {/* Trust - Minimalist Iteration */}
-      <section style={{ padding: '10rem 5%', backgroundColor: '#fff', color: '#000', borderTop: '1px solid #E5E5E5' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '6rem', alignItems: 'center' }}>
+      <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '4rem 5%', backgroundColor: '#fff', color: '#000', borderTop: '1px solid #E5E5E5' }}>
+        <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '6rem', alignItems: 'center' }}>
           
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
