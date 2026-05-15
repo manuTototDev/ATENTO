@@ -287,6 +287,13 @@ const Landing = () => {
             0% { transform: translateX(-100%); }
             100% { transform: translateX(200%); }
           }
+          @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+          }
+          @keyframes spin-slow {
+            100% { transform: rotate(360deg); }
+          }
         `}
       </style>
 
@@ -597,64 +604,81 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Trust */}
-      <section style={{ padding: '10rem 5%', backgroundColor: '#0a0a0a', color: '#fff', textAlign: 'center' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      {/* Trust - Minimalist Iteration */}
+      <section style={{ padding: '10rem 5%', backgroundColor: '#fff', color: '#000', borderTop: '1px solid #E5E5E5' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '6rem', alignItems: 'center' }}>
           
-          <div style={{ marginBottom: '5rem' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#262626', marginBottom: '2rem', border: '1px solid #333' }}>
-              <Lock size={40} color="#10b981" />
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#f4f4f4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Lock size={20} color="#000" />
+              </div>
+              <span style={{ fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', fontSize: '0.875rem', color: '#888' }}>Privacidad por Diseño</span>
             </div>
-            <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: '1.5rem', color: '#fff' }}>
-              Seguridad clínica inquebrantable.
-            </h2>
-            <p style={{ fontSize: '1.25rem', color: '#a3a3a3', lineHeight: 1.6, maxWidth: '700px', margin: '0 auto' }}>
-              Tu práctica médica requiere confidencialidad absoluta. Protegemos tu información con protocolos de grado bancario, separando la identidad del paciente de su diagnóstico clínico. Lo que pasa en tu consultorio, se queda en tu consultorio.
-            </p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', textAlign: 'left' }}>
             
-            <div style={{ background: '#171717', padding: '2.5rem', borderRadius: '24px', border: '1px solid #262626' }}>
-              {/* Animación de anonimización */}
-              <div style={{ height: '120px', background: '#0a0a0a', borderRadius: '12px', marginBottom: '2rem', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', border: '1px solid #262626' }}>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#333' }}></div>
-                  <div style={{ height: '12px', background: '#333', borderRadius: '4px', width: '120px', position: 'relative', overflow: 'hidden' }}>
-                    <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', background: '#10b981', animation: 'secure-sweep 2s ease-in-out infinite' }}></div>
-                  </div>
-                </div>
-                <div style={{ height: '8px', background: '#333', borderRadius: '4px', width: '80%' }}></div>
-                <div style={{ height: '8px', background: '#333', borderRadius: '4px', width: '60%' }}></div>
-              </div>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#fff', marginBottom: '1rem' }}>Identidad Protegida</h3>
-              <p style={{ color: '#a3a3a3', lineHeight: 1.6 }}>Separamos inteligentemente el nombre de tus pacientes de su historial clínico. Si alguien lograra ver los datos, solo vería estadísticas anónimas.</p>
-            </div>
+            <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '2rem' }}>
+              Lo que se dice en consulta, se queda en consulta.
+            </h2>
+            <p style={{ fontSize: '1.25rem', color: '#555', lineHeight: 1.6, marginBottom: '3rem' }}>
+              La tecnología debe protegerte, no exponerte. Latento opera bajo una arquitectura de confianza cero (Zero-Trust) cumpliendo con los estándares de salud más estrictos.
+            </p>
 
-            <div style={{ background: '#171717', padding: '2.5rem', borderRadius: '24px', border: '1px solid #262626' }}>
-              <div style={{ height: '120px', background: '#0a0a0a', borderRadius: '12px', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', border: '1px solid #262626' }}>
-                <div style={{ position: 'absolute', width: '60px', height: '60px', border: '2px solid #10b981', borderRadius: '50%', animation: 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite' }}></div>
-                <Lock size={32} color="#10b981" />
-              </div>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#fff', marginBottom: '1rem' }}>Bóveda Encriptada</h3>
-              <p style={{ color: '#a3a3a3', lineHeight: 1.6 }}>Toda la información viaja y se almacena bajo encriptación estricta y rotación de tokens. Ni siquiera nosotros podemos leer tus notas médicas.</p>
-            </div>
-
-            <div style={{ background: '#171717', padding: '2.5rem', borderRadius: '24px', border: '1px solid #262626' }}>
-              <div style={{ height: '120px', background: '#0a0a0a', borderRadius: '12px', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #262626' }}>
-                <div style={{ width: '80%', height: '40px', background: '#171717', borderRadius: '8px', position: 'relative', overflow: 'hidden', border: '1px solid #333' }}>
-                   <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: '50%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)', animation: 'shimmer 3s infinite' }}></div>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0 1rem', height: '100%' }}>
-                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }}></div>
-                     <span style={{ color: '#888', fontSize: '0.85rem', fontFamily: 'monospace', letterSpacing: '0.05em' }}>AI_TRAINING_BLOCKED</span>
-                   </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#000', marginTop: '0.5rem' }}></div>
+                <div>
+                  <h4 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.5rem' }}>Bases de Datos Ciegas</h4>
+                  <p style={{ color: '#555', lineHeight: 1.5, margin: 0 }}>Almacenamos la identidad de tus pacientes en una bóveda separada de sus diagnósticos. En el backend, tus expedientes son estadísticamente anónimos.</p>
                 </div>
               </div>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#fff', marginBottom: '1rem' }}>Tu Data es Tuya</h3>
-              <p style={{ color: '#a3a3a3', lineHeight: 1.6 }}>Tus consultas y audios JAMÁS serán utilizados para alimentar, entrenar o mejorar modelos de Inteligencia Artificial públicos.</p>
+              <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#000', marginTop: '0.5rem' }}></div>
+                <div>
+                  <h4 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.5rem' }}>Bloqueo de Entrenamiento de IA</h4>
+                  <p style={{ color: '#555', lineHeight: 1.5, margin: 0 }}>Tus consultas jamás se envían a bases públicas ni se usan para entrenar modelos de IA. Tu inteligencia médica es 100% tuya.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Abstract Security Animation */}
+          <div style={{ height: '500px', backgroundColor: '#f4f4f4', borderRadius: '24px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            
+            {/* Círculos concéntricos de escudo */}
+            <div style={{ position: 'absolute', width: '300px', height: '300px', borderRadius: '50%', border: '1px solid #e5e5e5', animation: 'spin-slow 20s linear infinite' }}>
+               <div style={{ position: 'absolute', top: '-4px', left: '50%', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div>
+            </div>
+            <div style={{ position: 'absolute', width: '400px', height: '400px', borderRadius: '50%', border: '1px solid #e5e5e5', animation: 'spin-slow 30s linear infinite reverse' }}>
+               <div style={{ position: 'absolute', bottom: '-4px', left: '20%', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div>
+            </div>
+            
+            {/* Núcleo de documentos encriptados */}
+            <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '70%' }}>
+              
+              {/* Doc 1 */}
+              <div style={{ padding: '1.5rem', background: '#fff', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', animation: 'float 5s ease-in-out infinite' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+                  <div style={{ width: '40%', height: '10px', background: '#e5e5e5', borderRadius: '4px' }}></div>
+                  <Lock size={16} color="#10b981" />
+                </div>
+                <div style={{ height: '6px', background: '#f4f4f4', borderRadius: '4px', width: '100%', marginBottom: '0.75rem' }}></div>
+                <div style={{ height: '6px', background: '#f4f4f4', borderRadius: '4px', width: '80%' }}></div>
+              </div>
+
+              {/* Doc 2 */}
+              <div style={{ padding: '1.5rem', background: '#fff', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', animation: 'float 5s ease-in-out infinite 2.5s' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+                  <div style={{ width: '60%', height: '10px', background: '#e5e5e5', borderRadius: '4px' }}></div>
+                  <Lock size={16} color="#10b981" />
+                </div>
+                <div style={{ height: '6px', background: '#f4f4f4', borderRadius: '4px', width: '90%', marginBottom: '0.75rem' }}></div>
+                <div style={{ height: '6px', background: '#f4f4f4', borderRadius: '4px', width: '70%' }}></div>
+              </div>
+
             </div>
 
           </div>
+
         </div>
       </section>
 
