@@ -358,7 +358,7 @@ app.post('/api/ai/parse-consultation', authenticateToken, async (req, res) => {
 app.post('/api/consultations', authenticateToken, validate(schemas.consultation), async (req, res) => {
   try {
     const doctorId = req.userId;
-    const { patientId, soap, treatments, indications, rawTranscriptionTexto, patientHistoryUpdates } = req.body;
+    const { patientId, soap, treatments, indications, rawTranscriptionTexto, patientHistoryUpdates, audioBase64 } = req.body;
     if (!patientId) return res.status(400).json({ error: 'Falta patientId' });
 
     // Verificar que el paciente pertenece al doctor autenticado
@@ -403,10 +403,12 @@ app.post('/api/consultations', authenticateToken, validate(schemas.consultation)
           subjective: soap.subjective,
           objective: soap.objective,
           assessment: soap.assessment,
+          icd10Code: soap.icd10Code, // Estandarización Internacional
           plan: planText,
           rawTranscription: rawTranscriptionTexto ? { text: rawTranscriptionTexto, source: 'audio' } : null,
           cost: consultationCost,
-          hasVariableCost: isVariable
+          hasVariableCost: isVariable,
+          ...(audioBase64 ? { audio: { create: { audioBase64 } } } : {}) // Guardamos audio si existe
         }
       });
     });

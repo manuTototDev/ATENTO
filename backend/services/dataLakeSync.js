@@ -65,10 +65,11 @@ const syncDataLake = async () => {
 
         const consDate = new Date(c.createdAt);
 
-        await prisma.analyticsConsultation.upsert({
+        const analyticsConsultation = await prisma.analyticsConsultation.upsert({
           where: { id: c.id },
           update: {
             diagnoses,
+            icd10Code: c.icd10Code,
             treatmentsCount,
             cost: c.cost || 0
           },
@@ -77,6 +78,7 @@ const syncDataLake = async () => {
             analyticsPatientId: analyticsPatient.id,
             doctorId: c.doctorId,
             diagnoses,
+            icd10Code: c.icd10Code,
             treatmentsCount,
             cost: c.cost || 0,
             hasVariableCost: c.hasVariableCost,
@@ -85,6 +87,37 @@ const syncDataLake = async () => {
             createdAt: consDate
           }
         });
+
+        // 3. Sincronizar Medicamentos Recetados (AnalyticsPrescription)
+        try {
+          if (c.plan) {
+            const planParsed = JSON.parse(c.plan);
+            if (planParsed.treatments && Array.isArray(planParsed.treatments)) {
+              for (const [index, t] of planParsed.treatments.entries()) {
+                // Generamos un ID pseudo-único para el upsert basado en consulta + index
+                const prescriptionId = `${analyticsConsultation.id}-rx-${index}`;
+                
+                await prisma.analyticsPrescription.upsert({
+                  where: { id: prescriptionId },
+                  update: {
+                    activePrinciple: t.activePrinciple || 'Desconocido',
+                    medicationName: t.medication || 'Desconocido',
+                    dose: t.dose || '',
+                    durationDays: parseInt(t.durationNumber) || null
+                  },
+                  create: {
+                    id: prescriptionId,
+                    analyticsConsultationId: analyticsConsultation.id,
+                    activePrinciple: t.activePrinciple || 'Desconocido',
+                    medicationName: t.medication || 'Desconocido',
+                    dose: t.dose || '',
+                    durationDays: parseInt(t.durationNumber) || null
+                  }
+                });
+              }
+            }
+          }
+        } catch(e) {} // Error parseando json o upserting meds
       }
       syncCount++;
     }

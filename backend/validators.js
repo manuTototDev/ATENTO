@@ -54,12 +54,14 @@ const consultationSchema = z.object({
     subjective: z.string().optional(),
     objective: z.string().optional(),
     assessment: z.string().optional(),
+    icd10Code: z.string().optional(),
     plan: z.string().optional()
   }).optional(),
   treatments: z.array(z.any()).optional(),
   indications: z.array(z.any()).optional(),
   rawTranscriptionTexto: z.string().optional(),
-  patientHistoryUpdates: z.any().optional()
+  patientHistoryUpdates: z.any().optional(),
+  audioBase64: z.string().optional()
 });
 
 const inventorySchema = z.object({

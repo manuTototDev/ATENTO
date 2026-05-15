@@ -10,11 +10,13 @@ const ConsultationSchema = z.object({
   soap: z.object({
     subjective: z.string().describe("Síntomas, motivo de consulta, y lo que refiere el paciente."),
     objective: z.string().describe("Signos vitales, exploración física y observaciones clínicas."),
-    assessment: z.string().describe("Diagnóstico o evaluación del médico basado en los síntomas."),
+    assessment: z.string().describe("Diagnóstico o evaluación clínica en texto libre."),
+    icd10Code: z.string().optional().describe("Código oficial internacional CIE-10 (ICD-10) que mejor clasifique el diagnóstico principal."),
     plan: z.string().describe("Tratamiento a seguir, medicamentos recetados y próximas citas."),
   }).optional(),
   treatments: z.array(z.object({
-    medication: z.string(),
+    activePrinciple: z.string().describe("El ingrediente o principio activo principal del medicamento (ej. Paracetamol, Amoxicilina)."),
+    medication: z.string().describe("El nombre comercial o recetado."),
     dose: z.coerce.string(),
     frequencyNumber: z.coerce.string(),
     frequencyUnit: z.enum(['horas', 'días']).or(z.string()),
@@ -52,10 +54,11 @@ async function processTranscription(rawTranscriptionTexto) {
           "subjective": "...",
           "objective": "...",
           "assessment": "...",
+          "icd10Code": "A09.9",
           "plan": "..."
         },
         "treatments": [
-          { "medication": "Nombre", "dose": "Ej. 1 tableta", "frequencyNumber": "8", "frequencyUnit": "horas", "durationNumber": "5", "durationUnit": "días" }
+          { "activePrinciple": "Ibuprofeno", "medication": "Advil 400mg", "dose": "1 tableta", "frequencyNumber": "8", "frequencyUnit": "horas", "durationNumber": "5", "durationUnit": "días" }
         ],
         "indications": [
           { "type": "Dieta", "instruction": "Descripción" }

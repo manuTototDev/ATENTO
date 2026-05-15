@@ -121,17 +121,27 @@ model Consultation {
   subjective      String?        @db.Text // Síntomas, motivo de consulta
   objective       String?        @db.Text // Exploración física, signos vitales
   assessment      String?        @db.Text // Diagnóstico
+  icd10Code       String?        // Código CIE-10 (ICD-10) internacional
   plan            String?        @db.Text // Tratamiento, Receta
   
   // Cobro
   cost            Float          @default(0)
   hasVariableCost Boolean        @default(false) // Si se aplicó tarifa nocturna o fin de semana
   
-  // Transcripción Original
-  rawTranscription Json?          // Guardamos la transcripción completa original sin alterar (puede incluir texto, metadatos, etc)
+  // Transcripción Original y Audio
+  rawTranscription Json?          // Guardamos la transcripción completa original sin alterar (texto y metadatos)
+  audio            ConsultationAudio?
   
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+}
+
+model ConsultationAudio {
+  id              String         @id @default(uuid())
+  consultationId  String         @unique
+  consultation    Consultation   @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  audioBase64     String         @db.Text // ¡Cuidado! Puede crecer rápido. A futuro migrar a S3/Supabase Storage.
+  createdAt       DateTime       @default(now())
 }
 
 model Appointment {
@@ -209,11 +219,27 @@ model AnalyticsConsultation {
   
   doctorId           String
   diagnoses          String?  // Derivado del assessment del SOAP
+  icd10Code          String?  // Estandarización Internacional CIE-10
   treatmentsCount    Int
   cost               Float
   hasVariableCost    Boolean
   dayOfWeek          Int
   hourOfDay          Int
   
+  analyticsPrescriptions AnalyticsPrescription[]
+
   createdAt          DateTime @default(now())
+}
+
+model AnalyticsPrescription {
+  id                    String   @id @default(uuid())
+  analyticsConsultationId String
+  consultation          AnalyticsConsultation @relation(fields: [analyticsConsultationId], references: [id])
+  
+  activePrinciple       String   // Ej: Paracetamol
+  medicationName        String   // Ej: Tylenol
+  dose                  String
+  durationDays          Int?
+  
+  createdAt             DateTime @default(now())
 }
