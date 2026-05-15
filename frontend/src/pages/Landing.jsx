@@ -605,74 +605,74 @@ const Landing = () => {
       </section>
 
       {/* Trust - Minimalist Iteration */}
-      <section style={{ padding: '10rem 5%', backgroundColor: '#fff', color: '#000', borderTop: '1px solid #E5E5E5' }}>
+      <section style={{ padding: '10rem 5%', backgroundColor: '#0a0a0a', color: '#fff', borderTop: '1px solid #262626' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '6rem', alignItems: 'center' }}>
           
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#f4f4f4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Lock size={20} color="#000" />
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#262626', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Lock size={20} color="#10b981" />
               </div>
-              <span style={{ fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', fontSize: '0.875rem', color: '#888' }}>Privacidad por Diseño</span>
+              <span style={{ fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', fontSize: '0.875rem', color: '#a3a3a3' }}>Privacidad por Diseño</span>
             </div>
             
-            <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '2rem' }}>
+            <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '2rem', color: '#fff' }}>
               Lo que se dice en consulta, se queda en consulta.
             </h2>
-            <p style={{ fontSize: '1.25rem', color: '#555', lineHeight: 1.6, marginBottom: '3rem' }}>
+            <p style={{ fontSize: '1.25rem', color: '#a3a3a3', lineHeight: 1.6, marginBottom: '3rem' }}>
               La tecnología debe protegerte, no exponerte. Latento opera bajo una arquitectura de confianza cero (Zero-Trust) cumpliendo con los estándares de salud más estrictos.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#000', marginTop: '0.5rem' }}></div>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', marginTop: '0.5rem', boxShadow: '0 0 10px rgba(16, 185, 129, 0.5)' }}></div>
                 <div>
-                  <h4 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.5rem' }}>Bases de Datos Ciegas</h4>
-                  <p style={{ color: '#555', lineHeight: 1.5, margin: 0 }}>Almacenamos la identidad de tus pacientes en una bóveda separada de sus diagnósticos. En el backend, tus expedientes son estadísticamente anónimos.</p>
+                  <h4 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.5rem', color: '#fff' }}>Bases de Datos Ciegas</h4>
+                  <p style={{ color: '#888', lineHeight: 1.5, margin: 0 }}>Almacenamos la identidad de tus pacientes en una bóveda separada de sus diagnósticos. En el backend, tus expedientes son estadísticamente anónimos.</p>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#000', marginTop: '0.5rem' }}></div>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', marginTop: '0.5rem', boxShadow: '0 0 10px rgba(16, 185, 129, 0.5)' }}></div>
                 <div>
-                  <h4 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.5rem' }}>Entorno Privado y Aislado</h4>
-                  <p style={{ color: '#555', lineHeight: 1.5, margin: 0 }}>Tus consultas no se comparten con terceros ni alimentan modelos de IA públicos. Todo el procesamiento se realiza en nuestra infraestructura propia y anonimizada.</p>
+                  <h4 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.5rem', color: '#fff' }}>Entorno Privado y Aislado</h4>
+                  <p style={{ color: '#888', lineHeight: 1.5, margin: 0 }}>Tus consultas no se comparten con terceros ni alimentan modelos de IA públicos. Todo el procesamiento se realiza en nuestra infraestructura propia y anonimizada.</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Abstract Security Animation */}
-          <div style={{ height: '500px', backgroundColor: '#f4f4f4', borderRadius: '24px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ height: '500px', backgroundColor: '#171717', borderRadius: '24px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #262626' }}>
             
             {/* Círculos concéntricos de escudo */}
-            <div style={{ position: 'absolute', width: '300px', height: '300px', borderRadius: '50%', border: '1px solid #e5e5e5', animation: 'spin-slow 20s linear infinite' }}>
-               <div style={{ position: 'absolute', top: '-4px', left: '50%', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div>
+            <div style={{ position: 'absolute', width: '300px', height: '300px', borderRadius: '50%', border: '1px solid #333', animation: 'spin-slow 20s linear infinite' }}>
+               <div style={{ position: 'absolute', top: '-4px', left: '50%', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 10px rgba(16, 185, 129, 0.8)' }}></div>
             </div>
-            <div style={{ position: 'absolute', width: '400px', height: '400px', borderRadius: '50%', border: '1px solid #e5e5e5', animation: 'spin-slow 30s linear infinite reverse' }}>
-               <div style={{ position: 'absolute', bottom: '-4px', left: '20%', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div>
+            <div style={{ position: 'absolute', width: '400px', height: '400px', borderRadius: '50%', border: '1px solid #333', animation: 'spin-slow 30s linear infinite reverse' }}>
+               <div style={{ position: 'absolute', bottom: '-4px', left: '20%', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 10px rgba(16, 185, 129, 0.8)' }}></div>
             </div>
             
             {/* Núcleo de documentos encriptados */}
             <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '70%' }}>
               
               {/* Doc 1 */}
-              <div style={{ padding: '1.5rem', background: '#fff', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', animation: 'float 5s ease-in-out infinite' }}>
+              <div style={{ padding: '1.5rem', background: '#0a0a0a', borderRadius: '16px', border: '1px solid #333', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', animation: 'float 5s ease-in-out infinite' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-                  <div style={{ width: '40%', height: '10px', background: '#e5e5e5', borderRadius: '4px' }}></div>
+                  <div style={{ width: '40%', height: '10px', background: '#262626', borderRadius: '4px' }}></div>
                   <Lock size={16} color="#10b981" />
                 </div>
-                <div style={{ height: '6px', background: '#f4f4f4', borderRadius: '4px', width: '100%', marginBottom: '0.75rem' }}></div>
-                <div style={{ height: '6px', background: '#f4f4f4', borderRadius: '4px', width: '80%' }}></div>
+                <div style={{ height: '6px', background: '#262626', borderRadius: '4px', width: '100%', marginBottom: '0.75rem' }}></div>
+                <div style={{ height: '6px', background: '#262626', borderRadius: '4px', width: '80%' }}></div>
               </div>
 
               {/* Doc 2 */}
-              <div style={{ padding: '1.5rem', background: '#fff', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', animation: 'float 5s ease-in-out infinite 2.5s' }}>
+              <div style={{ padding: '1.5rem', background: '#0a0a0a', borderRadius: '16px', border: '1px solid #333', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', animation: 'float 5s ease-in-out infinite 2.5s' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-                  <div style={{ width: '60%', height: '10px', background: '#e5e5e5', borderRadius: '4px' }}></div>
+                  <div style={{ width: '60%', height: '10px', background: '#262626', borderRadius: '4px' }}></div>
                   <Lock size={16} color="#10b981" />
                 </div>
-                <div style={{ height: '6px', background: '#f4f4f4', borderRadius: '4px', width: '90%', marginBottom: '0.75rem' }}></div>
-                <div style={{ height: '6px', background: '#f4f4f4', borderRadius: '4px', width: '70%' }}></div>
+                <div style={{ height: '6px', background: '#262626', borderRadius: '4px', width: '90%', marginBottom: '0.75rem' }}></div>
+                <div style={{ height: '6px', background: '#262626', borderRadius: '4px', width: '70%' }}></div>
               </div>
 
             </div>
