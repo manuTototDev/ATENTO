@@ -300,7 +300,7 @@ const Landing = () => {
       {/* Navbar: Ultra minimal */}
       <nav style={{ padding: '2rem 5%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff' }}>
         <div style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.05em' }}>
-          Latento.
+          Lemmatica.
         </div>
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
           <button onClick={() => navigate('/login')} style={{ background: 'none', border: 'none', fontSize: '1rem', fontWeight: 500, cursor: 'pointer', color: '#000' }}>Log in</button>
@@ -315,10 +315,10 @@ const Landing = () => {
             Tu consulta, <br/> humana de nuevo.
           </h1>
           <p style={{ fontSize: 'clamp(1.25rem, 3vw, 1.5rem)', color: '#555', maxWidth: '600px', lineHeight: 1.5, marginBottom: '3rem' }}>
-            La IA médica que escribe por ti. Latento escucha tus consultas y redacta el expediente clínico y la receta automáticamente. Recupera hasta 2 horas de tu día y vuelve a disfrutar de la medicina.
+            La IA médica que escribe por ti. Lemmatica escucha tus consultas y redacta el expediente clínico y la receta automáticamente. Recupera hasta 2 horas de tu día y vuelve a disfrutar de la medicina.
           </p>
           <button onClick={() => navigate('/register')} style={{ background: '#000', color: '#fff', border: 'none', borderRadius: '100px', fontSize: '1.125rem', fontWeight: 500, padding: '1rem 2.5rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.75rem', transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity = 0.8} onMouseOut={e => e.currentTarget.style.opacity = 1}>
-            Prueba Latento <ArrowRight size={20} />
+            Prueba Lemmatica <ArrowRight size={20} />
           </button>
         </div>
       </header>
@@ -446,7 +446,7 @@ const Landing = () => {
             }}>
               <div style={{ borderBottom: '2px solid #e5e5e5', paddingBottom: '0.5rem', marginBottom: '1rem', textAlign: 'center' }}>
                 <h3 style={{ fontSize: '1rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Receta y Evaluación Médica</h3>
-                <span style={{ fontSize: '0.65rem', color: '#888', fontWeight: 600 }}>LATENTO HEALTHCARE AI</span>
+                <span style={{ fontSize: '0.65rem', color: '#888', fontWeight: 600 }}>LEMMATICA HEALTHCARE AI</span>
               </div>
               <div style={{ fontFamily: 'monospace', fontSize: '0.875rem', lineHeight: 1.5, whiteSpace: 'pre-line', color: '#222', fontWeight: 600 }}>
                 {prescriptionScenarios[rxScenarioIndex].rx}
@@ -466,7 +466,7 @@ const Landing = () => {
             </h2>
             <p style={{ fontSize: '1.25rem', color: '#555', lineHeight: 1.6, maxWidth: '450px' }}>
               <strong>Deja de ser un capturista de datos y vuelve a ser médico.</strong><br/><br/>
-              La tecnología no debería interponerse entre tú y quien confía en ti. Latento escucha, analiza y estructura tu consulta automáticamente, permitiéndote recuperar la mirada y la conexión con tu paciente.
+              La tecnología no debería interponerse entre tú y quien confía en ti. Lemmatica escucha, analiza y estructura tu consulta automáticamente, permitiéndote recuperar la mirada y la conexión con tu paciente.
             </p>
           </div>
         </div>
@@ -622,7 +622,7 @@ const Landing = () => {
               Lo que se dice en consulta, se queda en consulta.
             </h2>
             <p style={{ fontSize: '1.25rem', color: '#555', lineHeight: 1.6, marginBottom: '3rem' }}>
-              La tecnología debe protegerte, no exponerte. Latento opera bajo una arquitectura de confianza cero (Zero-Trust) cumpliendo con los estándares de salud más estrictos.
+              La tecnología debe protegerte, no exponerte. Lemmatica opera bajo una arquitectura de confianza cero (Zero-Trust) cumpliendo con los estándares de salud más estrictos.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -696,7 +696,7 @@ const Landing = () => {
 
       {/* Footer */}
       <footer style={{ padding: '3rem 5%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eee', fontSize: '0.875rem', color: '#888' }}>
-        <div style={{ fontWeight: 600, color: '#000' }}>Latento © 2026</div>
+        <div style={{ fontWeight: 600, color: '#000' }}>Lemmatica © 2026</div>
         <div style={{ display: 'flex', gap: '2rem' }}>
           <Link to="/terminos" style={{ cursor: 'pointer', transition: 'color 0.2s', color: '#888', textDecoration: 'none' }} onMouseOver={e=>e.target.style.color='#000'} onMouseOut={e=>e.target.style.color='#888'}>Términos y Condiciones</Link>
           <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.target.style.color='#000'} onMouseOut={e=>e.target.style.color='#888'}>Contacto</span>
@@ -706,4 +706,4 @@ const Landing = () => {
   );
 };
 
-export default Landing;
+export defa

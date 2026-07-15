@@ -180,7 +180,7 @@ const Onboarding = () => {
       {/* Left Side: Black Cover (Sticky on desktop) */}
       <div style={{ flex: '1 1 400px', backgroundColor: '#000', color: '#fff', padding: '4rem 5%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '50vh', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
         <div style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.05em' }}>
-          Latento.
+          Lemmatica.
         </div>
         
         <div style={{ margin: 'auto 0' }}>
@@ -193,7 +193,7 @@ const Onboarding = () => {
         </div>
         
         <div style={{ fontSize: '0.875rem', color: '#555' }}>
-          Latento © 2026. Cumplimiento médico y cifrado de extremo a extremo.
+          Lemmatica © 2026. Cumplimiento médico y cifrado de extremo a extremo.
         </div>
       </div>
 
@@ -479,4 +479,4 @@ const Onboarding = () => {
     </div>
   );
 };
-export default Onboarding;
+export default Onboardin

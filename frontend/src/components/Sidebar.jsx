@@ -46,7 +46,7 @@ const Sidebar = () => {
       }}>
         <Activity size={28} strokeWidth={2.5} color="#fff" />
         <h1 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.05em', margin: 0, color: '#fff' }}>
-          Latento.
+          Lemmatica.
         </h1>
       </div>
 

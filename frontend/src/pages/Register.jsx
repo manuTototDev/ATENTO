@@ -96,7 +96,7 @@ const Register = () => {
           onClick={() => navigate('/')} 
           style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.05em', cursor: 'pointer' }}
         >
-          Latento.
+          Lemmatica.
         </div>
         
         <div style={{ margin: 'auto 0' }}>
@@ -109,7 +109,7 @@ const Register = () => {
         </div>
         
         <div style={{ fontSize: '0.875rem', color: '#555' }}>
-          Latento © 2026. Cumplimiento médico y cifrado de extremo a extremo.
+          Lemmatica © 2026. Cumplimiento médico y cifrado de extremo a extremo.
         </div>
       </div>
 
@@ -299,7 +299,7 @@ const Register = () => {
                     Términos y Condiciones, Política de Privacidad y Política de Uso de IA
                     <ExternalLink size={13} />
                   </Link>
-                  {' '}de Latento, incluyendo el almacenamiento, procesamiento y tratamiento de mis datos profesionales y los datos de pacientes bajo mi responsabilidad, conforme a la LFPDPPP.
+                  {' '}de Lemmatica, incluyendo el almacenamiento, procesamiento y tratamiento de mis datos profesionales y los datos de pacientes bajo mi responsabilidad, conforme a la LFPDPPP.
                 </span>
               </label>
               {termsError && (
@@ -333,4 +333,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Regis

@@ -1,9 +1,11 @@
-# Atentia: Asistente Clínico Inteligente
+# Lemmatica: Asistente Clínico Inteligente
 
-Atentia es la plataforma de documentación médica impulsada por IA que permite a los médicos independientes enfocarse en sus pacientes, no en su computadora.
+Lemmatica es la plataforma de documentación médica impulsada por IA que permite a los médicos independientes enfocarse en sus pacientes, no en su computadora.
+
+Lemmatica es propiedad de **Lemma Sistemas Inteligentes S.A. de C.V.**
 
 ## Características Principales
-- **Atención plena:** Deja que Atentia tome las notas mientras tú cuidas al paciente.
+- **Atención plena:** Deja que Lemmatica tome las notas mientras tú cuidas al paciente.
 - **Eficiencia:** Genera expedientes clínicos, notas SOAP y recetas en segundos.
 - **Fricción Cero:** Tu smartphone es el micrófono, tu PC es el centro de mando.
 
@@ -20,9 +22,7 @@ Atentia es la plataforma de documentación médica impulsada por IA que permite 
 
 ## 📁 Estructura del Proyecto
 ```text
-/atentia-ai
+/lemmatica-ai
 ├── /frontend        # Interfaz médico (React.js + Vite)
 └── /backend         # API, WebSockets, DB y Servicios de IA
-    ├── /db          # Esquema Postgres
-    └── /services    # Integración Gemini
-```
+    ├── /db   

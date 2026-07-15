@@ -675,5 +675,4 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
 initCronJobs(); // Iniciar tareas programadas (ETL Data Lake)
 
 app.listen(PORT, () => {
-  console.log(`[Latento — Totot Estudio] Servidor corriendo en puerto ${PORT} · Modo: ${process.env.NODE_ENV}`);
-});
+  console.log(`[Lemmatica — Lemma Sistemas Inteligentes S.A. de C.V.] Servidor corriendo en puerto ${PORT} · Modo: ${pr
