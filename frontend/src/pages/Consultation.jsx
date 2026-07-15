@@ -93,7 +93,8 @@ const Consultation = () => {
         .then(res => res?.json())
         .then(data => { if (data) setDoctorProfile(data); })
         .catch(console.error);
-    
+    }
+
     if (id && id !== 'new') {
       apiFetch(`/api/patients/${id}`)
         .then(res => res?.json())
