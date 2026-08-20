@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Eye, Edit, Trash2, X, Plus, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
 
 const PatientDirectory = () => {
   const navigate = useNavigate();
@@ -11,16 +12,14 @@ const PatientDirectory = () => {
   const [patientToDelete, setPatientToDelete] = useState(null);
   const [dobConfirm, setDobConfirm] = useState('');
   
-  const userId = localStorage.getItem('userId');
-
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [patientsRes, profileRes] = await Promise.all([
-          fetch(`http://localhost:5000/api/patients?userId=${userId}`),
-          fetch(`http://localhost:5000/api/profile?userId=${userId}`)
+          apiFetch('/api/patients'),
+          apiFetch('/api/profile')
         ]);
-        
+
         if (patientsRes.ok) {
           const data = await patientsRes.json();
           setPatients(data);
@@ -33,8 +32,8 @@ const PatientDirectory = () => {
         console.error(error);
       }
     };
-    if (userId) fetchData();
-  }, [userId]);
+    fetchData();
+  }, []);
 
   const handleDeleteClick = (p) => {
     setPatientToDelete(p);
@@ -42,12 +41,12 @@ const PatientDirectory = () => {
   };
 
   const confirmDelete = async () => {
-    if (dobConfirm !== patientToDelete.dob) {
+    if (dobConfirm.trim() !== patientToDelete.dob) {
       alert('La fecha de nacimiento no coincide. Debe tener el formato exacto (ej. 15/05/1990).');
       return;
     }
     try {
-      const res = await fetch(`http://localhost:5000/api/patients/${patientToDelete.id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/patients/${patientToDelete.id}`, { method: 'DELETE' });
       if (res.ok) {
         setPatients(patients.filter(p => p.id !== patientToDelete.id));
         setPatientToDelete(null);
@@ -60,9 +59,9 @@ const PatientDirectory = () => {
     }
   };
 
-  const filteredPatients = patients.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    p.phone.includes(searchTerm)
+  const filteredPatients = patients.filter(p =>
+    (p.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.phone || '').includes(searchTerm)
   );
 
   return (

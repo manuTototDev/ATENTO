@@ -1,9 +1,31 @@
-const BASE_URL = 'http://localhost:5000';
+export const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+/**
+ * Fetch público — para endpoints SIN autenticación (login, register).
+ * No agrega Authorization, no intenta refresh, no redirige.
+ * Un 401 aquí significa "credenciales inválidas", no "sesión expirada".
+ */
+export async function publicFetch(path, options = {}) {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+  return fetch(`${BASE_URL}${path}`, {
+    ...options,
+    headers,
+    credentials: 'include', // Necesario para recibir/enviar la cookie httpOnly del refresh token
+  });
+}
 
 /**
  * Fetch autenticado — agrega Authorization: Bearer <token> automáticamente.
- * Si el token de acceso expiró (401), intenta renovarlo con el refresh token (cookie httpOnly)
- * y reintenta la petición una vez. Si falla, redirige al login.
+ * Si el access token expiró (401), intenta renovarlo con el refresh token (cookie httpOnly)
+ * y reintenta la petición una vez. Si el refresh falla, redirige al login.
+ *
+ * IMPORTANTE: un 403 NO dispara refresh ni logout — el backend usa 403 para
+ * "no tienes permiso sobre este recurso" (ej. paciente de otro médico).
+ * Siempre devuelve un objeto Response (nunca null), para que los callers
+ * puedan hacer res.ok / res.json() sin guardias extra.
  */
 export async function apiFetch(path, options = {}) {
   const token = localStorage.getItem('token');
@@ -20,11 +42,11 @@ export async function apiFetch(path, options = {}) {
   let response = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers,
-    credentials: 'include', // Necesario para enviar la cookie httpOnly del refresh token
+    credentials: 'include',
   });
 
-  // Si expiró el access token, intentamos renovarlo
-  if (response.status === 401 || response.status === 403) {
+  // Solo 401 = access token expirado → intentar renovar
+  if (response.status === 401) {
     const refreshed = await tryRefreshToken();
     if (refreshed) {
       headers['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
@@ -38,7 +60,7 @@ export async function apiFetch(path, options = {}) {
       localStorage.removeItem('token');
       localStorage.removeItem('userId');
       window.location.href = '/login';
-      return null;
+      // Devolvemos la respuesta original (401) para que el caller no truene con null
     }
   }
 

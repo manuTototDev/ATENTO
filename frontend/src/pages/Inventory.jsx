@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Plus, Save, X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { apiFetch } from '../utils/api';
 
 const Inventory = () => {
@@ -8,7 +8,6 @@ const Inventory = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({ name: '', description: '', stock: 0, price: 0 });
 
-  const userId = localStorage.getItem('userId');
 
   const fetchInventory = async () => {
     try {
@@ -23,8 +22,8 @@ const Inventory = () => {
   };
 
   useEffect(() => {
-    if (userId) fetchInventory();
-  }, [userId]);
+    fetchInventory();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Activity, LogOut } from 'lucide-react';
 import { apiLogout } from '../utils/api';
 
@@ -46,7 +46,7 @@ const Sidebar = () => {
       }}>
         <Activity size={28} strokeWidth={2.5} color="#fff" />
         <h1 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.05em', margin: 0, color: '#fff' }}>
-          Latento.
+          Lemmatica.
         </h1>
       </div>
 
@@ -92,6 +92,15 @@ const Sidebar = () => {
           onMouseOut={e=>{if(e.currentTarget.style.fontWeight !== '800') { e.currentTarget.style.color='#666'; }}}
         >
           Finanzas.
+        </NavLink>
+
+        <NavLink 
+          to="/inventory" 
+          style={({isActive}) => navItemStyle(isActive)}
+          onMouseOver={e=>{if(e.currentTarget.style.color !== 'rgb(255, 255, 255)') { e.currentTarget.style.color='#a3a3a3'; }}}
+          onMouseOut={e=>{if(e.currentTarget.style.fontWeight !== '800') { e.currentTarget.style.color='#666'; }}}
+        >
+          Inventario.
         </NavLink>
       </nav>
 

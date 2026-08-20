@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, User, Activity, Clock, FileText } from 'lucide-react';
+import { ArrowLeft, User } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
 
 const PatientDetail = () => {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ const PatientDetail = () => {
   useEffect(() => {
     const fetchPatient = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/patients/${id}`);
+        const res = await apiFetch(`/api/patients/${id}`);
         if (!res.ok) throw new Error('Error al obtener datos del paciente');
         const data = await res.json();
         setPatient(data);
@@ -30,11 +31,14 @@ const PatientDetail = () => {
   if (error) return <div style={{ padding: '2rem', color: 'red' }}>{error}</div>;
   if (!patient) return <div style={{ padding: '2rem' }}>Paciente no encontrado.</div>;
 
-  // Calcular edad
+  // Calcular edad (diferencia real de años, ajustando si aún no cumple años este año)
   const dob = new Date(patient.dateOfBirth);
-  const ageDifMs = Date.now() - dob.getTime();
-  const ageDate = new Date(ageDifMs);
-  const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+  const today = new Date();
+  let age = today.getFullYear() - dob.getUTCFullYear();
+  const hasBirthdayPassed =
+    today.getMonth() > dob.getUTCMonth() ||
+    (today.getMonth() === dob.getUTCMonth() && today.getDate() >= dob.getUTCDate());
+  if (!hasBirthdayPassed) age -= 1;
 
   const formatDate = (d) => {
     const date = new Date(d);

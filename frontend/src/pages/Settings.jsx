@@ -1,17 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Building2, 
-  MapPin, 
-  Phone, 
-  GraduationCap, 
-  Award, 
-  FileCheck, 
-  Upload, 
-  Map,
-  Search,
-  User,
-  ArrowLeft
-} from 'lucide-react';
+import { Upload, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../utils/api';
 
@@ -64,8 +52,6 @@ const Settings = () => {
   const [isFetchingZip, setIsFetchingZip] = useState(false);
   const [availableColonias, setAvailableColonias] = useState([]);
 
-  const userId = localStorage.getItem('userId');
-
   const [formData, setFormData] = useState({
     fullName: '',
     specialty: '',
@@ -97,7 +83,8 @@ const Settings = () => {
               neighborhood = parts[1] || '';
               city = parts[2] || '';
               state = parts[3] || '';
-              zipCode = parts[4] ? parts[4].replace('CP ', '') : '';
+              // Tolerante a "CP 11000", "C.P. 11000" o solo "11000" (formatos históricos)
+              zipCode = parts[4] ? parts[4].replace(/^C\.?P\.?\s*/i, '').trim() : '';
             }
           }
 
@@ -130,8 +117,9 @@ const Settings = () => {
       }
     };
 
-    if (userId) fetchProfile();
-  }, [userId]);
+    fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleChange = (e) => {
     const { id, value } = e.target;

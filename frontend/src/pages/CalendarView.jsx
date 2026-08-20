@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Clock, Plus, X, Settings } from 'lucide-react';
+import { Clock, Plus, X, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../utils/api';
 
@@ -10,8 +10,6 @@ const CalendarView = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [doctorProfile, setDoctorProfile] = useState(null);
   const [formData, setFormData] = useState({ patientName: '', reason: '', date: '', startTime: '', endTime: '' });
-
-  const userId = localStorage.getItem('userId');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,8 +31,8 @@ const CalendarView = () => {
         console.error(error);
       }
     };
-    if (userId) fetchData();
-  }, [userId]);
+    fetchData();
+  }, []);
 
   const handleDelete = async (id) => {
     if(window.confirm('¿Estás seguro de eliminar esta cita?')) {
@@ -44,10 +42,14 @@ const CalendarView = () => {
           method: 'DELETE'
         });
         if (res.ok) {
-          setAppointments(appointments.filter(a => a.id !== id));
+          setAppointments(prev => prev.filter(a => a.id !== id));
+        } else {
+          const errData = await res.json().catch(() => null);
+          alert(errData?.error || 'No se pudo eliminar la cita.');
         }
       } catch (e) {
         console.error(e);
+        alert('Error de red al eliminar la cita.');
       } finally {
         setIsLoading(false);
       }
@@ -56,10 +58,25 @@ const CalendarView = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const startDateTime = new Date(`${formData.date}T${formData.startTime}:00`);
+    const endDateTime = new Date(`${formData.date}T${formData.endTime}:00`);
+
+    if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+      alert('Fecha u hora inválida. Revisa los campos.');
+      return;
+    }
+    if (endDateTime <= startDateTime) {
+      alert('La hora de término debe ser posterior a la hora de inicio.');
+      return;
+    }
+    if (startDateTime < new Date()) {
+      alert('No puedes agendar una cita en el pasado.');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const startDateTime = new Date(`${formData.date}T${formData.startTime}:00`);
-      const endDateTime = new Date(`${formData.date}T${formData.endTime}:00`);
       const res = await apiFetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

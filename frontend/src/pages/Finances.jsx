@@ -14,7 +14,6 @@ const Finances = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [totalEarnings, setTotalEarnings] = useState(0);
 
-  const userId = localStorage.getItem('userId');
 
   useEffect(() => {
     const fetchProfileAndAnalytics = async () => {
@@ -45,11 +44,10 @@ const Finances = () => {
         console.error(error);
       }
     };
-    if (userId) fetchProfileAndAnalytics();
-  }, [userId]);
+    fetchProfileAndAnalytics();
+  }, []);
 
   const handleSavePricing = async () => {
-    if (!userId) return;
     setIsSaving(true);
     try {
       const response = await apiFetch('/api/profile', {

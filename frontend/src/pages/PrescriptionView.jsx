@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Printer, ArrowLeft } from 'lucide-react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
 
 const PrescriptionView = () => {
   const navigate = useNavigate();
@@ -24,23 +25,35 @@ const PrescriptionView = () => {
   };
 
   useEffect(() => {
-    const userId = localStorage.getItem('userId');
-    if (userId) {
-      fetch(`http://localhost:5000/api/profile?userId=${userId}`)
-        .then(res => res.json())
-        .then(data => setDoctorProfile(data))
-        .catch(err => console.error("Error fetching profile", err));
+    let cancelled = false;
 
-      if ((!patient || !patient.firstName) && id) {
-        fetch(`http://localhost:5000/api/patients/${id}`)
-          .then(res => res.json())
-          .then(data => {
-            if (data && !data.error) setPatient(data);
-          })
-          .catch(err => console.error(err));
+    const fetchData = async () => {
+      try {
+        const profileRes = await apiFetch('/api/profile');
+        if (!cancelled && profileRes.ok) {
+          setDoctorProfile(await profileRes.json());
+        }
+      } catch (err) {
+        console.error('Error fetching profile', err);
       }
-    }
-  }, [patient, id]);
+
+      // Solo buscar al paciente si no llegó por location.state y el id es un registro real
+      if (!statePatient && id && id !== 'new') {
+        try {
+          const patientRes = await apiFetch(`/api/patients/${id}`);
+          if (!cancelled && patientRes.ok) {
+            setPatient(await patientRes.json());
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    };
+
+    fetchData();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5', fontFamily: 'Inter, system-ui, sans-serif' }}>
@@ -102,8 +115,11 @@ const PrescriptionView = () => {
                 {doctorProfile?.profile?.specialty?.name || ''}
               </p>
               <div style={{ color: '#555', fontSize: '0.75rem', lineHeight: 1.5 }}>
-                {doctorProfile?.profile?.university?.name || doctorProfile?.profile?.university || 'Universidad Nacional Autónoma de México'}<br/>
-                Céd. Prof. {doctorProfile?.profile?.licenseNumber || '12345678'} 
+                {doctorProfile?.profile?.university?.name || doctorProfile?.profile?.university || ''}
+                {(doctorProfile?.profile?.university?.name || doctorProfile?.profile?.university) && <br/>}
+                {doctorProfile?.profile?.licenseNumber
+                  ? <>Céd. Prof. {doctorProfile.profile.licenseNumber}</>
+                  : <span style={{ color: '#b91c1c', fontWeight: 700 }}>⚠ Falta cédula profesional — completa tu perfil antes de imprimir</span>}
                 {doctorProfile?.profile?.specialtyLicense ? ` | Céd. Esp. ${doctorProfile.profile.specialtyLicense}` : ''}
               </div>
             </div>
@@ -122,7 +138,7 @@ const PrescriptionView = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0', border: '2px solid #000', fontSize: '0.875rem', marginBottom: '2rem' }}>
             <div style={{ padding: '0.75rem', borderBottom: '2px solid #000', borderRight: '2px solid #000' }}>
               <strong style={{ color: '#555', fontSize: '0.65rem', textTransform: 'uppercase', display: 'block', marginBottom: '0.125rem' }}>Paciente</strong>
-              <div style={{ fontWeight: 600, color: '#000' }}>{patient?.firstName || patient?.name || 'Cargando...'} {patient?.lastName || ''}</div>
+              <div style={{ fontWeight: 600, color: '#000' }}>{patient ? `${patient.firstName || patient.name || ''} ${patient.lastName || ''}`.trim() : 'Cargando...'}</div>
             </div>
             <div style={{ padding: '0.75rem', borderBottom: '2px solid #000' }}>
               <strong style={{ color: '#555', fontSize: '0.65rem', textTransform: 'uppercase', display: 'block', marginBottom: '0.125rem' }}>Fecha</strong>

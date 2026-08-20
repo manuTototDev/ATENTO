@@ -9,7 +9,7 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('Iniciando el script de Seed para la base de datos de Latento...');
+  console.log('Iniciando el script de Seed para la base de datos de Lemmatica...');
 
   // 1. Obtener al primer doctor de la base de datos
   const doctor = await prisma.user.findFirst({

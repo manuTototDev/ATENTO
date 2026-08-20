@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Save, Printer, ArrowLeft, Plus, Trash2, Loader2, Settings } from 'lucide-react';
+import { Mic, MicOff, Printer, ArrowLeft, Plus, Trash2, Loader2, Settings } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../utils/api';
+
+// Genera claves estables para filas dinámicas (React keys), sin depender del índice
+const newRowKey = () =>
+  (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
 
 const Consultation = () => {
   const navigate = useNavigate();
@@ -24,23 +28,19 @@ const Consultation = () => {
   const [patientHistoryUpdates, setPatientHistoryUpdates] = useState(null);
 
   const [treatments, setTreatments] = useState([
-    { medication: '', dose: '', frequencyNumber: '', frequencyUnit: 'horas', durationNumber: '', durationUnit: 'días' }
+    { _key: newRowKey(), medication: '', dose: '', frequencyNumber: '', frequencyUnit: 'horas', durationNumber: '', durationUnit: 'días' }
   ]);
 
   const [indications, setIndications] = useState([
-    { type: 'Dieta', instruction: '' }
+    { _key: newRowKey(), type: 'Dieta', instruction: '' }
   ]);
 
   const [medSuggestions, setMedSuggestions] = useState([]);
   const [activeMedInput, setActiveMedInput] = useState(null);
 
-  const userId = localStorage.getItem('userId');
-
-  const addTreatment = () => setTreatments([...treatments, { medication: '', dose: '', frequencyNumber: '', frequencyUnit: 'horas', durationNumber: '', durationUnit: 'días' }]);
+  const addTreatment = () => setTreatments(prev => [...prev, { _key: newRowKey(), medication: '', dose: '', frequencyNumber: '', frequencyUnit: 'horas', durationNumber: '', durationUnit: 'días' }]);
   const updateTreatment = (index, field, value) => {
-    const newT = [...treatments];
-    newT[index][field] = value;
-    setTreatments(newT);
+    setTreatments(prev => prev.map((t, i) => i === index ? { ...t, [field]: value } : t));
   };
   const removeTreatment = (index) => {
     setTreatments(treatments.filter((_, i) => i !== index));
@@ -50,11 +50,9 @@ const Consultation = () => {
     }
   };
 
-  const addIndication = () => setIndications([...indications, { type: 'General', instruction: '' }]);
+  const addIndication = () => setIndications(prev => [...prev, { _key: newRowKey(), type: 'General', instruction: '' }]);
   const updateIndication = (index, field, value) => {
-    const newI = [...indications];
-    newI[index][field] = value;
-    setIndications(newI);
+    setIndications(prev => prev.map((ind, i) => i === index ? { ...ind, [field]: value } : ind));
   };
   const removeIndication = (index) => {
     setIndications(indications.filter((_, i) => i !== index));
@@ -65,7 +63,7 @@ const Consultation = () => {
     setActiveMedInput(index);
     if (value.length > 1) {
       try {
-        const res = await apiFetch(`/api/medications?query=${value}`);
+        const res = await apiFetch(`/api/medications?query=${encodeURIComponent(value)}`);
         if (res.ok) {
           const data = await res.json();
           setMedSuggestions(data);
@@ -87,132 +85,188 @@ const Consultation = () => {
     setMedSuggestions([]);
   };
 
+  // Espejo de la transcripción en un ref para leer siempre el valor más reciente
+  // (los eventos de onresult pueden llegar después del último render)
+  const transcriptionRef = useRef('');
+  const manualStopRef = useRef(false);
+
+  // Datos del médico y del paciente
   useEffect(() => {
-    if (userId) {
-      apiFetch(`/api/profile`)
-        .then(res => res?.json())
-        .then(data => { if (data) setDoctorProfile(data); })
-        .catch(console.error);
-    
+    apiFetch(`/api/profile`)
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => { if (data) setDoctorProfile(data); })
+      .catch(console.error);
+
     if (id && id !== 'new') {
       apiFetch(`/api/patients/${id}`)
-        .then(res => res?.json())
+        .then(res => (res.ok ? res.json() : null))
         .then(data => {
           if (data && !data.error) setPatientData(data);
         })
         .catch(err => console.error(err));
     }
+  }, [id]);
 
-    // Inicializar Speech Recognition
+  // Reconocimiento de voz: se crea una vez y se limpia al desmontar
+  useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = true;
-      recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = 'es-MX';
+    if (!SpeechRecognition) return undefined;
 
-      recognitionRef.current.onresult = (event) => {
-        let finalTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript + ' ';
-          }
-        }
-        if (finalTranscript) {
-          setTranscription(prev => prev + finalTranscript);
-        }
-      };
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'es-MX';
 
-      recognitionRef.current.onerror = (event) => {
-        console.error('Error de reconocimiento:', event.error);
-        setIsRecording(false);
-      };
-    }
-  }, [id, userId]);
+    recognition.onresult = (event) => {
+      let finalTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript + ' ';
+        }
+      }
+      if (finalTranscript) {
+        transcriptionRef.current += finalTranscript;
+        setTranscription(transcriptionRef.current);
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Error de reconocimiento:', event.error);
+      setIsRecording(false);
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        alert('No hay permiso para usar el micrófono. Habilítalo en la configuración del navegador.');
+      }
+    };
+
+    // Chrome corta la escucha tras un silencio largo: sincronizamos la UI
+    // y procesamos lo dictado hasta ese momento (igual que un stop manual).
+    recognition.onend = () => {
+      setIsRecording(false);
+      if (!manualStopRef.current && transcriptionRef.current.trim()) {
+        processTranscription();
+      }
+      manualStopRef.current = false;
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      recognition.onresult = null;
+      recognition.onerror = null;
+      recognition.onend = null;
+      try { recognition.stop(); } catch { /* ya detenido */ }
+      recognitionRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const toggleRecording = () => {
+    if (!recognitionRef.current) {
+      alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge, o escribe la nota manualmente.');
+      return;
+    }
     if (isRecording) {
-      recognitionRef.current?.stop();
+      manualStopRef.current = true;
+      recognitionRef.current.stop();
       setIsRecording(false);
       processTranscription();
     } else {
+      transcriptionRef.current = '';
       setTranscription('');
-      recognitionRef.current?.start();
+      recognitionRef.current.start();
       setIsRecording(true);
     }
   };
 
   const processTranscription = async () => {
-    setTimeout(async () => {
-      setIsProcessingAI(true);
-      try {
-        const res = await apiFetch('/api/ai/parse-consultation', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ transcription: transcription || 'El paciente refiere dolor de cabeza' })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.soap) {
-            setSoapNotes(prev => ({
-              subjective: data.soap.subjective || prev.subjective,
-              objective: data.soap.objective || prev.objective,
-              assessment: data.soap.assessment || prev.assessment
-            }));
-          }
-          if (data.treatments && data.treatments.length > 0) {
-            setTreatments(prev => {
-              const current = prev.length === 1 && !prev[0].medication ? [] : prev;
-              return [...current, ...data.treatments];
-            });
-          }
-          if (data.indications && data.indications.length > 0) {
-            setIndications(prev => {
-              const current = prev.length === 1 && !prev[0].instruction ? [] : prev;
-              return [...current, ...data.indications];
-            });
-          }
-          if (data.patientHistoryUpdates) {
-            setPatientHistoryUpdates(data.patientHistoryUpdates);
-          }
+    const text = transcriptionRef.current.trim();
+    if (!text) {
+      // NUNCA enviar texto clínico inventado a la IA: sin dictado, no hay nada que procesar.
+      alert('No se capturó ningún dictado. Intenta grabar de nuevo o escribe la nota manualmente.');
+      return;
+    }
+    setIsProcessingAI(true);
+    try {
+      const res = await apiFetch('/api/ai/parse-consultation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transcription: text })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.soap) {
+          setSoapNotes(prev => ({
+            subjective: data.soap.subjective || prev.subjective,
+            objective: data.soap.objective || prev.objective,
+            assessment: data.soap.assessment || prev.assessment
+          }));
         }
-      } catch (err) {
-        console.error(err);
-        alert('Error al procesar con Gemini IA.');
-      } finally {
-        setIsProcessingAI(false);
+        if (data.treatments && data.treatments.length > 0) {
+          setTreatments(prev => {
+            const current = prev.length === 1 && !prev[0].medication ? [] : prev;
+            return [...current, ...data.treatments.map(t => ({ _key: newRowKey(), ...t }))];
+          });
+        }
+        if (data.indications && data.indications.length > 0) {
+          setIndications(prev => {
+            const current = prev.length === 1 && !prev[0].instruction ? [] : prev;
+            return [...current, ...data.indications.map(ind => ({ _key: newRowKey(), ...ind }))];
+          });
+        }
+        if (data.patientHistoryUpdates) {
+          setPatientHistoryUpdates(data.patientHistoryUpdates);
+        }
+      } else {
+        alert('La IA no pudo procesar la transcripción. Puedes completar la nota manualmente.');
       }
-    }, 500);
+    } catch (err) {
+      console.error(err);
+      alert('Error al procesar la transcripción con IA.');
+    } finally {
+      setIsProcessingAI(false);
+    }
   };
 
   const handleFinish = async () => {
+    // El backend exige un UUID de paciente real; sin paciente no hay consulta que guardar.
+    if (!id || id === 'new') {
+      alert('Selecciona o registra primero al paciente para poder guardar la consulta.');
+      return;
+    }
     try {
+      // Quitar la clave interna de UI (_key) antes de enviar al backend
+      const cleanTreatments = treatments.map(({ _key, ...t }) => t);
+      const cleanIndications = indications.map(({ _key, ...ind }) => ind);
+
       const res = await apiFetch('/api/consultations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           patientId: id,
           soap: soapNotes,
-          treatments,
-          indications,
+          treatments: cleanTreatments,
+          indications: cleanIndications,
           rawTranscriptionTexto: transcription,
           patientHistoryUpdates
         })
       });
 
-      if (!res.ok) throw new Error('Error al guardar consulta');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.error || 'Error al guardar consulta');
+      }
 
-      navigate(`/prescription/${id}`, { 
-        state: { 
-          patient: patientData, 
-          treatments, 
-          indications, 
-          soap: soapNotes 
-        } 
+      navigate(`/prescription/${id}`, {
+        state: {
+          patient: patientData,
+          treatments: cleanTreatments,
+          indications: cleanIndications,
+          soap: soapNotes
+        }
       });
     } catch (e) {
       console.error(e);
-      alert('Hubo un error al guardar la consulta');
+      alert(e.message || 'Hubo un error al guardar la consulta');
     }
   };
 
@@ -262,7 +316,7 @@ const Consultation = () => {
               Consulta.
             </h1>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#555', letterSpacing: '-0.02em', margin: 0 }}>
-              {patientData ? patientData.name : (id === 'new' ? 'Nuevo Paciente' : 'Paciente Seleccionado')}
+              {patientData ? `${patientData.firstName || ''} ${patientData.lastName || ''}`.trim() : (id === 'new' ? 'Nuevo Paciente' : 'Paciente Seleccionado')}
             </h2>
           </div>
           {patientData?.allergies?.length > 0 && (
@@ -291,7 +345,7 @@ const Consultation = () => {
             </button>
             <div style={{ flex: 1 }}>
               <h3 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', margin: '0 0 0.5rem 0' }}>
-                {isProcessingAI ? 'Gemini AI estructurando...' : (isRecording ? 'Escuchando consulta...' : 'Asistente de Voz IA (Gemini 1.5)')}
+                {isProcessingAI ? 'IA estructurando la nota...' : (isRecording ? 'Escuchando consulta...' : 'Asistente de Voz IA')}
               </h3>
               <p style={{ fontSize: '1.125rem', color: isRecording ? '#ccc' : '#555', margin: 0 }}>
                 {isProcessingAI ? 'Aplicando estándares médicos y rellenando los campos...' : (isRecording ? 'Habla con naturalidad sobre síntomas, exploración y recetas.' : 'Presiona para dictar. La IA organizará la nota médica y el plan de tratamiento automáticamente.')}
@@ -367,7 +421,7 @@ const Consultation = () => {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {treatments.map((t, index) => (
-              <div key={index} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: '2rem', alignItems: 'start', padding: '1.5rem', border: '1px solid #e5e5e5' }}>
+              <div key={t._key || index} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: '2rem', alignItems: 'start', padding: '1.5rem', border: '1px solid #e5e5e5' }}>
                 <div style={{ position: 'relative' }}>
                   <label style={labelStyle}>Fármaco / Principio Activo</label>
                   <input 
@@ -458,7 +512,7 @@ const Consultation = () => {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {indications.map((ind, index) => (
-              <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 3fr auto', gap: '2rem', alignItems: 'start', padding: '1.5rem', border: '1px solid #e5e5e5' }}>
+              <div key={ind._key || index} style={{ display: 'grid', gridTemplateColumns: '1fr 3fr auto', gap: '2rem', alignItems: 'start', padding: '1.5rem', border: '1px solid #e5e5e5' }}>
                 <div>
                   <label style={labelStyle}>Categoría</label>
                   <select style={inputStyle} value={ind.type} onChange={e => updateIndication(index, 'type', e.target.value)} onFocus={e => e.target.style.borderBottom = '2px solid #000'} onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}>
@@ -500,9 +554,6 @@ const Consultation = () => {
           </label>
           
           <div style={{ display: 'flex', gap: '1.5rem', width: '100%', justifyContent: 'flex-end' }}>
-            <button style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '1.5rem 3rem', border: '2px solid #000', background: 'transparent', color: '#000', fontSize: '1.125rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.background='#f5f5f5'}} onMouseOut={e=>{e.currentTarget.style.background='transparent'}}>
-              <Save size={20} /> Guardar Borrador
-            </button>
             <button 
               onClick={handleFinish} 
               disabled={!isVerified}

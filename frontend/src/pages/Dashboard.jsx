@@ -1,18 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Activity, 
-  Users, 
-  Calendar, 
-  Plus, 
-  Search, 
-  Clock, 
-  FileText,
-  UserPlus,
-  Settings,
-  X,
-  ArrowRight
-} from 'lucide-react';
+import { Activity, Users, Plus, Search, Clock, FileText, UserPlus, Settings, X, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -26,32 +15,32 @@ const Dashboard = () => {
   const [recentConsults, setRecentConsults] = useState([]);
   const [patients, setPatients] = useState([]);
   
-  const userId = localStorage.getItem('userId');
-
-  // Fetch dashboard data
+  // Fetch dashboard data (la identidad la resuelve el backend a partir del JWT)
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [analyticsRes, appointmentsRes, patientsRes, profileRes] = await Promise.all([
-          fetch(`http://localhost:5000/api/analytics?userId=${userId}`),
-          fetch(`http://localhost:5000/api/appointments?userId=${userId}`),
-          fetch(`http://localhost:5000/api/patients?userId=${userId}`),
-          fetch(`http://localhost:5000/api/profile?userId=${userId}`)
+        const [analyticsRes, appointmentsRes, patientsRes, profileRes, consultsRes] = await Promise.all([
+          apiFetch('/api/analytics'),
+          apiFetch('/api/appointments'),
+          apiFetch('/api/patients'),
+          apiFetch('/api/profile'),
+          apiFetch('/api/consultations?limit=10')
         ]);
 
         if (analyticsRes.ok) {
           const aData = await analyticsRes.json();
-          setStats({
-            todayPatients: aData.totalAppointments, 
+          setStats(prev => ({
+            ...prev,
             todayEarnings: aData.totalEarnings,
             totalPatients: aData.totalPatients
-          });
+          }));
         }
 
         if (appointmentsRes.ok) {
           const appData = await appointmentsRes.json();
+          const now = new Date();
           const upcoming = appData
-            .filter(a => new Date(a.startTime) >= new Date())
+            .filter(a => new Date(a.startTime) >= now)
             .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
             .slice(0, 5)
             .map(a => ({
@@ -61,6 +50,15 @@ const Dashboard = () => {
               reason: a.reason
             }));
           setUpcomingAppointments(upcoming);
+
+          // "Consultas Hoy" = citas de HOY, no el acumulado histórico
+          const todayCount = appData.filter(a => {
+            const d = new Date(a.startTime);
+            return d.getFullYear() === now.getFullYear() &&
+                   d.getMonth() === now.getMonth() &&
+                   d.getDate() === now.getDate();
+          }).length;
+          setStats(prev => ({ ...prev, todayPatients: todayCount }));
         }
 
         if (patientsRes.ok) {
@@ -72,13 +70,23 @@ const Dashboard = () => {
           const profData = await profileRes.json();
           setDoctorProfile(profData);
         }
+
+        if (consultsRes.ok) {
+          const cData = await consultsRes.json();
+          setRecentConsults(cData.map(c => ({
+            id: c.id,
+            patient: c.patientName,
+            time: new Date(c.createdAt).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
+            status: 'Completada'
+          })));
+        }
       } catch (error) {
         console.error(error);
       }
     };
-    
-    if (userId) fetchDashboardData();
-  }, [userId]);
+
+    fetchDashboardData();
+  }, []);
 
   const startConsultation = (e) => {
     e.preventDefault();
@@ -249,7 +257,7 @@ const Dashboard = () => {
                 )) : (
                   <tr>
                     <td colSpan="3" style={{ padding: '3rem 0', textAlign: 'center', color: '#888' }}>
-                      Aún no hay consultas registradas hoy.
+                      Aún no hay consultas registradas.
                     </td>
                   </tr>
                 )}
@@ -327,7 +335,8 @@ const Dashboard = () => {
                         <div 
                           key={p.id} 
                           onClick={() => {
-                            setSearchQuery(p.name);
+                            navigate(`/consultation/${p.id}`);
+                            setShowNewConsultModal(false);
                           }}
                           style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #e5e5e5', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                         >

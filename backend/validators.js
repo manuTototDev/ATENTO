@@ -44,8 +44,8 @@ const patientSchema = z.object({
   phone: z.string().optional(),
   email: z.string().email("Correo inválido").optional().or(z.literal('')),
   bloodType: z.string().optional(),
-  allergies: z.string().optional(),
-  chronicDiseases: z.string().optional(),
+  allergies: z.union([z.string(), z.array(z.string())]).optional(),
+  chronicDiseases: z.union([z.string(), z.array(z.string())]).optional(),
 });
 
 const consultationSchema = z.object({

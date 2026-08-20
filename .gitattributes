@@ -1,0 +1,14 @@
+# Normalización de fin de línea: evita diffs gigantes CRLF↔LF entre Windows y otros entornos.
+# Tras agregar este archivo, correr una vez:  git add --renormalize .  y commitear.
+* text=auto eol=lf
+
+# Binarios: nunca tocar
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.docx binary
+*.woff binary
+*.woff2 binary

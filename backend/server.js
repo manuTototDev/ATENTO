@@ -74,6 +74,20 @@ const authenticateToken = (req, res, next) => {
   }
 };
 
+// Middleware de rol: exige que el usuario autenticado sea ADMIN
+const requireAdmin = async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user || user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Se requiere rol de administrador.' });
+    }
+    next();
+  } catch (error) {
+    console.error('[requireAdmin]', error.message);
+    return res.status(500).json({ error: 'Error al verificar permisos.' });
+  }
+};
+
 // ==========================================
 // HELPERS DE TOKEN
 // ==========================================
@@ -261,8 +275,8 @@ app.post('/api/patients', authenticateToken, validate(schemas.patient), async (r
         firstName, lastName,
         dateOfBirth: new Date(dateOfBirth),
         gender, phone, email, bloodType,
-        allergies: allergies ? [allergies] : [],
-        chronicDiseases: chronicDiseases ? [chronicDiseases] : []
+        allergies: Array.isArray(allergies) ? allergies.filter(Boolean) : (allergies ? [allergies] : []),
+        chronicDiseases: Array.isArray(chronicDiseases) ? chronicDiseases.filter(Boolean) : (chronicDiseases ? [chronicDiseases] : [])
       }
     });
     res.status(201).json(newPatient);
@@ -420,6 +434,30 @@ app.post('/api/consultations', authenticateToken, validate(schemas.consultation)
   }
 });
 
+app.get('/api/consultations', authenticateToken, async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
+    const consultations = await prisma.consultation.findMany({
+      where: { doctorId: req.userId },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      include: { patient: { select: { firstName: true, lastName: true } } }
+    });
+    res.json(consultations.map(c => ({
+      id: c.id,
+      patientId: c.patientId,
+      patientName: c.patient ? `${c.patient.firstName} ${c.patient.lastName}` : 'Paciente',
+      assessment: c.assessment,
+      icd10Code: c.icd10Code,
+      cost: c.cost,
+      createdAt: c.createdAt
+    })));
+  } catch (error) {
+    console.error('[Consultations GET]', error.message);
+    res.status(500).json({ error: 'Error al obtener consultas.' });
+  }
+});
+
 // ==========================================
 // MÓDULO DE INVENTARIO Y MEDICAMENTOS (Protegido)
 // ==========================================
@@ -529,9 +567,7 @@ app.delete('/api/appointments/:id', authenticateToken, async (req, res) => {
 // MÓDULO ADMINISTRATIVO (Data Lake)
 // ==========================================
 
-app.post('/api/admin/sync-datalake', authenticateToken, async (req, res) => {
-  // Nota: En producción esto debe validar que el req.userId pertenezca a un ADMIN.
-  // Por ahora lo dejamos accesible para pruebas/demo.
+app.post('/api/admin/sync-datalake', authenticateToken, requireAdmin, async (req, res) => {
   try {
     // Se ejecuta en background para no bloquear la petición
     syncDataLake(); 
@@ -675,5 +711,6 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
 initCronJobs(); // Iniciar tareas programadas (ETL Data Lake)
 
 app.listen(PORT, () => {
-  console.log(`[Latento — Totot Estudio] Servidor corriendo en puerto ${PORT} · Modo: ${process.env.NODE_ENV}`);
+  console.log(`[Lemmatica — Lemma Sistemas Inteligentes S.A. de C.V.] Servidor corriendo en puerto ${PORT} · Modo: ${process.env.NODE_ENV}`);
 });
+

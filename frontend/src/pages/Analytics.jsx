@@ -1,24 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart2, TrendingUp, DollarSign, Users, Calendar } from 'lucide-react';
+import { DollarSign, Users, Calendar } from 'lucide-react';
+import { apiFetch } from '../utils/api';
 
 const Analytics = () => {
   const [stats, setStats] = useState(null);
-  const userId = localStorage.getItem('userId');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/analytics?userId=${userId}`);
+        const res = await apiFetch('/api/analytics');
         if (res.ok) {
           const data = await res.json();
           setStats(data);
+        } else {
+          setError('No se pudieron cargar las métricas.');
         }
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error(err);
+        setError('Error de conexión al cargar métricas.');
       }
     };
-    if (userId) fetchStats();
-  }, [userId]);
+    fetchStats();
+  }, []);
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -26,7 +30,9 @@ const Analytics = () => {
         <h1 style={{ fontSize: '1.5rem', color: 'var(--text-dark)' }}>Reportes y Finanzas</h1>
       </div>
 
-      {!stats ? (
+      {error ? (
+        <div style={{ textAlign: 'center', padding: '3rem', color: '#b91c1c' }}>{error}</div>
+      ) : !stats ? (
         <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>Cargando métricas...</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -68,12 +74,12 @@ const Analytics = () => {
             
             {/* Gráfica Mockada con CSS simple para MVP */}
             <div style={{ display: 'flex', alignItems: 'flex-end', height: '200px', gap: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>
-              {stats.monthlyRevenue.map((rev, i) => {
-                const max = Math.max(...stats.monthlyRevenue.map(r => r.value), 1);
+              {(stats.monthlyRevenue || []).map((rev, i) => {
+                const max = Math.max(...(stats.monthlyRevenue || []).map(r => r.value), 1);
                 const height = Math.max((rev.value / max) * 100, 5); // min 5% height
                 
                 return (
-                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                  <div key={rev.name} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
                     <div style={{ width: '100%', maxWidth: '60px', height: `${height}%`, backgroundColor: 'var(--primary)', borderRadius: '4px 4px 0 0', transition: 'height 0.5s ease' }}></div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{rev.name}</div>
                     <div style={{ fontSize: '0.75rem', fontWeight: 600 }}>${rev.value}</div>

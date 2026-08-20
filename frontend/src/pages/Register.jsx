@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, ArrowRight, ExternalLink } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { apiFetch } from '../utils/api';
+import { publicFetch } from '../utils/api';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -51,15 +51,14 @@ const Register = () => {
       alert('Las contraseñas no coinciden');
       return;
     }
-    setIsLoading(true);
     if (!termsAccepted) {
       setTermsError(true);
-      setIsLoading(false);
       return;
     }
+    setIsLoading(true);
     
     try {
-      const response = await apiFetch('/api/auth/register', {
+      const response = await publicFetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -96,7 +95,7 @@ const Register = () => {
           onClick={() => navigate('/')} 
           style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.05em', cursor: 'pointer' }}
         >
-          Latento.
+          Lemmatica.
         </div>
         
         <div style={{ margin: 'auto 0' }}>
@@ -109,7 +108,7 @@ const Register = () => {
         </div>
         
         <div style={{ fontSize: '0.875rem', color: '#555' }}>
-          Latento © 2026. Cumplimiento médico y cifrado de extremo a extremo.
+          Lemmatica © 2026. Cumplimiento médico y cifrado de extremo a extremo.
         </div>
       </div>
 
@@ -299,7 +298,7 @@ const Register = () => {
                     Términos y Condiciones, Política de Privacidad y Política de Uso de IA
                     <ExternalLink size={13} />
                   </Link>
-                  {' '}de Latento, incluyendo el almacenamiento, procesamiento y tratamiento de mis datos profesionales y los datos de pacientes bajo mi responsabilidad, conforme a la LFPDPPP.
+                  {' '}de Lemmatica, incluyendo el almacenamiento, procesamiento y tratamiento de mis datos profesionales y los datos de pacientes bajo mi responsabilidad, conforme a la LFPDPPP.
                 </span>
               </label>
               {termsError && (

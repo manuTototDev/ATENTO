@@ -130,23 +130,24 @@ const Onboarding = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
+    const token = localStorage.getItem('token');
+    if (!token) {
       alert('Error de sesión: Por favor regístrate de nuevo.');
       navigate('/register');
       return;
     }
+    setIsLoading(true);
 
-    const fullClinicAddress = `${formData.street}, ${formData.neighborhood}, ${formData.city}, ${formData.state}, C.P. ${formData.zipCode}`;
+    // Formato "CP <código>" — consistente con lo que el servidor genera y Settings parsea
+    const fullClinicAddress = `${formData.street}, ${formData.neighborhood}, ${formData.city}, ${formData.state}, CP ${formData.zipCode}`;
 
     try {
+      // La identidad la toma el backend del JWT — no se envía userId en el body
       const response = await apiFetch('/api/auth/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId,
           specialty: formData.specialty,
           licenseNumber: formData.licenseNumber,
           specialtyLicense: formData.specialtyLicense,
@@ -180,7 +181,7 @@ const Onboarding = () => {
       {/* Left Side: Black Cover (Sticky on desktop) */}
       <div style={{ flex: '1 1 400px', backgroundColor: '#000', color: '#fff', padding: '4rem 5%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '50vh', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
         <div style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.05em' }}>
-          Latento.
+          Lemmatica.
         </div>
         
         <div style={{ margin: 'auto 0' }}>
@@ -193,7 +194,7 @@ const Onboarding = () => {
         </div>
         
         <div style={{ fontSize: '0.875rem', color: '#555' }}>
-          Latento © 2026. Cumplimiento médico y cifrado de extremo a extremo.
+          Lemmatica © 2026. Cumplimiento médico y cifrado de extremo a extremo.
         </div>
       </div>
 
@@ -323,7 +324,7 @@ const Onboarding = () => {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
               <div>
-                <label htmlFor="zipCode" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: isFetchingZip ? '#000' : '#000', marginBottom: '0.5rem' }}>C.P. {isFetchingZip && '(Buscando...)'}</label>
+                <label htmlFor="zipCode" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>C.P. {isFetchingZip && '(Buscando...)'}</label>
                 <input
                   type="text"
                   id="zipCode"

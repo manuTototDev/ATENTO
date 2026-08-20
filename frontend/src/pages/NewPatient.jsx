@@ -1,16 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  User, 
-  Calendar, 
-  Phone, 
-  Mail, 
-  Droplet, 
-  AlertTriangle, 
-  Activity,
-  ArrowLeft,
-  CheckCircle,
-  Stethoscope
-} from 'lucide-react';
+import { User, Phone, Mail, Droplet, AlertTriangle, Activity, ArrowLeft, Stethoscope } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../utils/api';
 import './Login.css'; // Reutilizamos los mismos estilos limpios
@@ -38,17 +27,36 @@ const NewPatient = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validar fecha de nacimiento real antes de enviar
+    const day = parseInt(formData.dobDay, 10);
+    const month = parseInt(formData.dobMonth, 10);
+    const year = parseInt(formData.dobYear, 10);
+    const currentYear = new Date().getFullYear();
+
+    if (!day || !month || !year || year < 1900 || year > currentYear) {
+      alert('Fecha de nacimiento inválida. Revisa el día, mes y año.');
+      return;
+    }
+    const testDate = new Date(Date.UTC(year, month - 1, day));
+    const isRealDate =
+      testDate.getUTCFullYear() === year &&
+      testDate.getUTCMonth() === month - 1 &&
+      testDate.getUTCDate() === day;
+    if (!isRealDate || testDate > new Date()) {
+      alert('Fecha de nacimiento inválida. Ese día no existe en el calendario o es futuro.');
+      return;
+    }
+
     setIsLoading(true);
-    
-    const userId = localStorage.getItem('userId');
-    const dateOfBirth = `${formData.dobYear}-${formData.dobMonth.padStart(2, '0')}-${formData.dobDay.padStart(2, '0')}T12:00:00Z`;
+    const dateOfBirth = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T12:00:00Z`;
 
     try {
+      // La identidad del médico la toma el backend del JWT — no se envía userId
       const response = await apiFetch('/api/patients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId,
           firstName: formData.firstName,
           lastName: formData.lastName,
           dateOfBirth,
