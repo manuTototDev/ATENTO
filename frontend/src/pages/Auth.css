@@ -1,0 +1,309 @@
+/* ==========================================
+   Auth (Login / Register) — composición fresca
+   Tarjeta flotante sobre fondo --ink con "manchas
+   de color" del moodboard de marca (pops difuminados
+   en mix-blend-mode: screen). Reemplaza el patrón de
+   split-screen negro/blanco usado en versiones previas.
+   ========================================== */
+
+.auth-scene {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--ink);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6.5rem var(--space-4) var(--space-7);
+}
+
+.auth-blobs {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.auth-blob {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  opacity: 0.75;
+  animation: auth-blob-float var(--drift-dur, 16s) ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes auth-blob-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(var(--drift-x, 30px), var(--drift-y, 20px)) scale(1.08); }
+}
+
+.auth-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  padding: var(--space-5) var(--space-6);
+}
+
+.auth-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fff;
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+.auth-wordmark svg {
+  color: var(--pop-blue);
+}
+
+.auth-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 440px;
+  background: var(--paper);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-7) var(--space-6);
+}
+
+.auth-card.auth-card-wide {
+  max-width: 560px;
+}
+
+.auth-card-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+}
+
+.auth-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-2);
+}
+
+.auth-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 1.9rem);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.4rem;
+}
+
+.auth-subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: var(--space-6);
+}
+
+.auth-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: var(--space-5);
+  line-height: 1.45;
+}
+
+.auth-banner.is-error {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+.auth-banner.is-warning {
+  background: var(--warning-bg);
+  color: #9a5b0c;
+}
+
+.auth-banner svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.auth-field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 480px) {
+  .auth-field-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.auth-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input-wrapper .form-input {
+  padding-right: 2.75rem;
+}
+
+.auth-toggle-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: var(--text-subtle);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.auth-toggle-btn:hover {
+  color: var(--text-dark);
+}
+
+.auth-strength {
+  margin-top: 0.6rem;
+}
+
+.auth-strength-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  margin-bottom: 0.3rem;
+}
+
+.auth-strength-row span:first-child {
+  color: var(--text-subtle);
+}
+
+.auth-strength-track {
+  height: 4px;
+  background: var(--border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.auth-strength-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease-out), background-color var(--duration-slow) var(--ease-out);
+}
+
+.auth-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-alt);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.auth-terms.has-error {
+  border-color: var(--error);
+  background: var(--error-bg);
+}
+
+.auth-terms.is-checked {
+  border-color: var(--pop-green);
+  background: var(--success-bg);
+}
+
+.auth-checkbox-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.auth-checkbox-box {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  border-radius: 5px;
+  border: 2px solid var(--border);
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.auth-checkbox-box.is-checked {
+  background: var(--pop-green);
+  border-color: var(--pop-green);
+}
+
+.auth-terms-text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.auth-terms-text a {
+  color: var(--text-dark);
+  font-weight: 700;
+  text-decoration: underline;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.auth-terms-error {
+  color: var(--error);
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: var(--space-6);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.auth-switch a {
+  color: var(--text-dark);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px solid var(--text-dark);
+  padding-bottom: 1px;
+}
+
+.auth-footnote {
+  position: relative;
+  z-index: 2;
+  margin-top: var(--space-6);
+  color: rgba(254, 250, 252, 0.5);
+  font-size: 0.8rem;
+  text-align: center;
+}

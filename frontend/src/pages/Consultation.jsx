@@ -1,44 +1,53 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Printer, ArrowLeft, Plus, Trash2, Loader2, Settings } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mic, MicOff, Loader2, ArrowLeft, Plus, Trash2, Settings, AlertTriangle, FileCheck2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../utils/api';
+import './Consultation.css';
 
 // Genera claves estables para filas dinámicas (React keys), sin depender del índice
 const newRowKey = () =>
   (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+
+const emptyTreatment = () => ({ _key: newRowKey(), medication: '', dose: '', frequencyNumber: '', frequencyUnit: 'horas', durationNumber: '', durationUnit: 'días' });
+const emptyIndication = () => ({ _key: newRowKey(), type: 'Dieta', instruction: '' });
+
+const easeOut = [0.16, 1, 0.3, 1];
+const fadeUp = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.3, ease: easeOut },
+};
 
 const Consultation = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [patientData, setPatientData] = useState(null);
   const [doctorProfile, setDoctorProfile] = useState(null);
-  
+
   const [isRecording, setIsRecording] = useState(false);
   const [transcription, setTranscription] = useState('');
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const recognitionRef = useRef(null);
 
   const [soapNotes, setSoapNotes] = useState({
     subjective: '',
     objective: '',
-    assessment: ''
+    assessment: '',
+    icd10Code: '',
+    plan: '',
   });
 
   const [patientHistoryUpdates, setPatientHistoryUpdates] = useState(null);
-
-  const [treatments, setTreatments] = useState([
-    { _key: newRowKey(), medication: '', dose: '', frequencyNumber: '', frequencyUnit: 'horas', durationNumber: '', durationUnit: 'días' }
-  ]);
-
-  const [indications, setIndications] = useState([
-    { _key: newRowKey(), type: 'Dieta', instruction: '' }
-  ]);
+  const [treatments, setTreatments] = useState([emptyTreatment()]);
+  const [indications, setIndications] = useState([emptyIndication()]);
 
   const [medSuggestions, setMedSuggestions] = useState([]);
   const [activeMedInput, setActiveMedInput] = useState(null);
 
-  const addTreatment = () => setTreatments(prev => [...prev, { _key: newRowKey(), medication: '', dose: '', frequencyNumber: '', frequencyUnit: 'horas', durationNumber: '', durationUnit: 'días' }]);
+  const addTreatment = () => setTreatments(prev => [...prev, emptyTreatment()]);
   const updateTreatment = (index, field, value) => {
     setTreatments(prev => prev.map((t, i) => i === index ? { ...t, [field]: value } : t));
   };
@@ -50,7 +59,7 @@ const Consultation = () => {
     }
   };
 
-  const addIndication = () => setIndications(prev => [...prev, { _key: newRowKey(), type: 'General', instruction: '' }]);
+  const addIndication = () => setIndications(prev => [...prev, emptyIndication()]);
   const updateIndication = (index, field, value) => {
     setIndications(prev => prev.map((ind, i) => i === index ? { ...ind, [field]: value } : ind));
   };
@@ -198,7 +207,9 @@ const Consultation = () => {
           setSoapNotes(prev => ({
             subjective: data.soap.subjective || prev.subjective,
             objective: data.soap.objective || prev.objective,
-            assessment: data.soap.assessment || prev.assessment
+            assessment: data.soap.assessment || prev.assessment,
+            icd10Code: data.soap.icd10Code || prev.icd10Code,
+            plan: data.soap.plan || prev.plan,
           }));
         }
         if (data.treatments && data.treatments.length > 0) {
@@ -227,12 +238,34 @@ const Consultation = () => {
     }
   };
 
+  const hasUnsavedWork = () =>
+    Boolean(
+      transcription.trim() ||
+      soapNotes.subjective || soapNotes.objective || soapNotes.assessment || soapNotes.plan ||
+      treatments.some(t => t.medication) ||
+      indications.some(ind => ind.instruction)
+    );
+
+  const goBackTarget = () => (id && id !== 'new' ? `/pacientes/${id}` : '/hoy');
+
+  const handleExit = () => {
+    if (hasUnsavedWork() && !window.confirm('Tienes datos de esta consulta sin guardar. ¿Deseas salir de todas formas?')) {
+      return;
+    }
+    if (isRecording) {
+      manualStopRef.current = true;
+      try { recognitionRef.current?.stop(); } catch { /* ya detenido */ }
+    }
+    navigate(goBackTarget());
+  };
+
   const handleFinish = async () => {
     // El backend exige un UUID de paciente real; sin paciente no hay consulta que guardar.
     if (!id || id === 'new') {
       alert('Selecciona o registra primero al paciente para poder guardar la consulta.');
       return;
     }
+    setIsSaving(true);
     try {
       // Quitar la clave interna de UI (_key) antes de enviar al backend
       const cleanTreatments = treatments.map(({ _key, ...t }) => t);
@@ -256,7 +289,9 @@ const Consultation = () => {
         throw new Error(errData?.error || 'Error al guardar consulta');
       }
 
-      navigate(`/prescription/${id}`, {
+      const savedConsultation = await res.json();
+
+      navigate(`/prescription/${savedConsultation.id}`, {
         state: {
           patient: patientData,
           treatments: cleanTreatments,
@@ -267,305 +302,298 @@ const Consultation = () => {
     } catch (e) {
       console.error(e);
       alert(e.message || 'Hubo un error al guardar la consulta');
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const inputStyle = { width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s', fontFamily: 'Inter' };
-  const labelStyle = { display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#555', marginBottom: '0.5rem' };
+  const patientName = patientData
+    ? `${patientData.firstName || ''} ${patientData.lastName || ''}`.trim()
+    : (id === 'new' ? 'Nuevo paciente' : 'Paciente');
+
+  const voiceTitle = isProcessingAI
+    ? 'IA estructurando la nota...'
+    : (isRecording ? 'Escuchando la consulta...' : 'Asistente de voz IA');
+
+  const voiceSub = isProcessingAI
+    ? 'Aplicando estándares médicos y llenando los campos automáticamente.'
+    : (isRecording
+      ? 'Habla con naturalidad sobre síntomas, exploración y tratamiento.'
+      : 'Presiona para dictar. La IA organizará la nota clínica y el plan de tratamiento.');
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#fff', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      {/* HEADER TOP BAR */}
-      <header style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        padding: '1.5rem 3rem',
-        borderBottom: '2px solid #000'
-      }}>
-        <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: 'none', color: '#000', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '1rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', transition: 'opacity 0.2s' }} onMouseOver={e=>e.currentTarget.style.opacity=0.6} onMouseOut={e=>e.currentTarget.style.opacity=1}>
-          <ArrowLeft size={20} /> Salir
+    <div className="consult-page">
+      <header className="consult-topbar">
+        <button className="btn-ghost" onClick={handleExit}>
+          <ArrowLeft size={18} /> Salir
         </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '1rem', fontWeight: 600, color: '#000' }}>
+        <div className="consult-doctor">
+          <div className="consult-doctor-info">
+            <div className="consult-doctor-name">
               Dr. {doctorProfile?.firstName || 'Médico'} {doctorProfile?.lastName || ''}
             </div>
-            <div style={{ fontSize: '0.75rem', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div className="consult-doctor-specialty">
               {doctorProfile?.profile?.specialty?.name || 'Especialista'}
             </div>
           </div>
-          <button 
-            onClick={() => navigate('/settings')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#000', display: 'flex', alignItems: 'center', transition: 'transform 0.2s' }}
-            title="Configuración de Perfil"
-            onMouseOver={e=>e.currentTarget.style.transform='rotate(45deg)'}
-            onMouseOut={e=>e.currentTarget.style.transform='rotate(0deg)'}
-          >
-            <Settings size={24} />
+          <button className="consult-settings-btn" onClick={() => navigate('/ajustes')} title="Configuración de perfil">
+            <Settings size={20} />
           </button>
         </div>
       </header>
 
-      <main style={{ padding: '3rem', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '4rem' }}>
-        
-        {/* PAGE HEADER */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <main className="consult-main">
+        <motion.div className="consult-heading" {...fadeUp}>
           <div>
-            <h1 style={{ fontSize: '4rem', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: '#000', margin: '0 0 1rem 0' }}>
-              Consulta.
-            </h1>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#555', letterSpacing: '-0.02em', margin: 0 }}>
-              {patientData ? `${patientData.firstName || ''} ${patientData.lastName || ''}`.trim() : (id === 'new' ? 'Nuevo Paciente' : 'Paciente Seleccionado')}
-            </h2>
+            <p className="consult-eyebrow">Nueva consulta</p>
+            <h1 className="font-display consult-title">{patientName}</h1>
           </div>
           {patientData?.allergies?.length > 0 && (
-            <div style={{ border: '2px solid #ef4444', padding: '1rem 2rem', color: '#ef4444', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div className="consult-allergy-alert">
+              <AlertTriangle size={18} />
               Alergias: {patientData.allergies.join(', ')}
             </div>
           )}
-        </div>
+        </motion.div>
 
-        {/* ÁREA DE VOZ */}
-        <div style={{ border: '2px solid #000', padding: '3rem', background: isRecording ? '#000' : '#fff', color: isRecording ? '#fff' : '#000', transition: 'all 0.3s ease' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-            <button 
+        <motion.section
+          className={`consult-voice-card${isRecording ? ' is-recording' : ''}`}
+          {...fadeUp}
+          transition={{ ...fadeUp.transition, delay: 0.05 }}
+        >
+          <div className="consult-mic-wrap">
+            {isRecording && (
+              <motion.div
+                className="consult-mic-ring"
+                animate={{ scale: [1, 1.55, 1], opacity: [0.35, 0, 0.35] }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+              />
+            )}
+            <button
+              className={`consult-mic-btn${isRecording ? ' is-recording' : ''}`}
               onClick={toggleRecording}
-              style={{ 
-                width: '80px', height: '80px', borderRadius: '50%', 
-                backgroundColor: isRecording ? '#fff' : '#000', 
-                color: isRecording ? '#ef4444' : '#fff', 
-                border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'transform 0.2s' 
-              }}
-              onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'}
-              onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}
               disabled={isProcessingAI}
+              aria-label={isRecording ? 'Detener grabación' : 'Iniciar grabación'}
             >
-              {isProcessingAI ? <Loader2 size={40} className="spin" color={isRecording ? '#000' : '#fff'} /> : (isRecording ? <MicOff size={40} /> : <Mic size={40} />)}
+              {isProcessingAI ? <Loader2 size={32} className="spin" /> : (isRecording ? <MicOff size={32} /> : <Mic size={32} />)}
             </button>
-            <div style={{ flex: 1 }}>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', margin: '0 0 0.5rem 0' }}>
-                {isProcessingAI ? 'IA estructurando la nota...' : (isRecording ? 'Escuchando consulta...' : 'Asistente de Voz IA')}
-              </h3>
-              <p style={{ fontSize: '1.125rem', color: isRecording ? '#ccc' : '#555', margin: 0 }}>
-                {isProcessingAI ? 'Aplicando estándares médicos y rellenando los campos...' : (isRecording ? 'Habla con naturalidad sobre síntomas, exploración y recetas.' : 'Presiona para dictar. La IA organizará la nota médica y el plan de tratamiento automáticamente.')}
-              </p>
-            </div>
           </div>
-          
+          <div className="consult-voice-copy">
+            <h3 className="consult-voice-title">{voiceTitle}</h3>
+            <p className="consult-voice-sub">{voiceSub}</p>
+          </div>
+        </motion.section>
+
+        <AnimatePresence>
           {transcription && (
-            <div style={{ marginTop: '2rem', padding: '1.5rem', borderLeft: `4px solid ${isRecording ? '#fff' : '#000'}`, fontSize: '1.25rem', fontStyle: 'italic', lineHeight: 1.6 }}>
+            <motion.blockquote
+              className="consult-transcript"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: easeOut }}
+            >
               "{transcription}"
-            </div>
+            </motion.blockquote>
           )}
-        </div>
+        </AnimatePresence>
 
         {/* NOTAS SOAP */}
-        <div>
-          <h2 style={{ fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.04em', borderBottom: '2px solid #000', paddingBottom: '1rem', marginBottom: '2rem' }}>
-            Expediente Clínico (SOAP)
-          </h2>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
-            <div>
-              <label style={labelStyle}>Subjetivo (Síntomas, Motivo)</label>
-              <textarea 
-                style={{ ...inputStyle, minHeight: '120px', resize: 'vertical' }} 
-                value={soapNotes.subjective} 
-                onChange={e => setSoapNotes({...soapNotes, subjective: e.target.value})} 
-                placeholder="El paciente refiere..." 
-                onFocus={e => e.target.style.borderBottom = '2px solid #000'}
-                onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}
+        <motion.section {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.1 }}>
+          <div className="consult-section-head">
+            <h2 className="consult-section-title">
+              Nota clínica <span className="soap-tag">SOAP</span>
+            </h2>
+          </div>
+
+          <div className="soap-grid">
+            <div className="form-field">
+              <label className="form-label">Subjetivo — síntomas, motivo</label>
+              <textarea
+                className="form-input"
+                value={soapNotes.subjective}
+                onChange={e => setSoapNotes({ ...soapNotes, subjective: e.target.value })}
+                placeholder="El paciente refiere..."
               />
             </div>
-            <div>
-              <label style={labelStyle}>Objetivo (Exploración, Signos vitales)</label>
-              <textarea 
-                style={{ ...inputStyle, minHeight: '120px', resize: 'vertical' }} 
-                value={soapNotes.objective} 
-                onChange={e => setSoapNotes({...soapNotes, objective: e.target.value})} 
-                placeholder="TA 120/80, FC 80..." 
-                onFocus={e => e.target.style.borderBottom = '2px solid #000'}
-                onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}
+            <div className="form-field">
+              <label className="form-label">Objetivo — exploración, signos vitales</label>
+              <textarea
+                className="form-input"
+                value={soapNotes.objective}
+                onChange={e => setSoapNotes({ ...soapNotes, objective: e.target.value })}
+                placeholder="TA 120/80, FC 80..."
               />
             </div>
-            <div style={{ gridColumn: '1 / -1' }}>
-              <label style={labelStyle}>Análisis (Diagnóstico)</label>
-              <textarea 
-                style={{ ...inputStyle, minHeight: '120px', resize: 'vertical' }} 
-                value={soapNotes.assessment} 
-                onChange={e => setSoapNotes({...soapNotes, assessment: e.target.value})} 
-                placeholder="Faringoamigdalitis aguda..." 
-                onFocus={e => e.target.style.borderBottom = '2px solid #000'}
-                onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}
+            <div className="form-field span-2">
+              <div className="soap-field-head">
+                <label className="form-label">Análisis — diagnóstico</label>
+                <div className="icd-field">
+                  <label className="form-label">CIE-10</label>
+                  <input
+                    type="text"
+                    className="form-input icd-input"
+                    value={soapNotes.icd10Code}
+                    onChange={e => setSoapNotes({ ...soapNotes, icd10Code: e.target.value })}
+                    placeholder="Ej. J02.9"
+                  />
+                </div>
+              </div>
+              <textarea
+                className="form-input"
+                value={soapNotes.assessment}
+                onChange={e => setSoapNotes({ ...soapNotes, assessment: e.target.value })}
+                placeholder="Faringoamigdalitis aguda..."
+              />
+            </div>
+            <div className="form-field span-2">
+              <label className="form-label">Plan — tratamiento y próximos pasos</label>
+              <textarea
+                className="form-input"
+                value={soapNotes.plan}
+                onChange={e => setSoapNotes({ ...soapNotes, plan: e.target.value })}
+                placeholder="Manejo sintomático, control en 5 días si persisten los síntomas..."
               />
             </div>
           </div>
-        </div>
+        </motion.section>
 
         {/* TRATAMIENTO */}
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #000', paddingBottom: '1rem', marginBottom: '2rem' }}>
-            <h2 style={{ fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.04em', margin: 0 }}>
-              Plan de Tratamiento
-            </h2>
-            <button 
-              onClick={addTreatment} 
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#000', color: '#fff', border: 'none', padding: '0.75rem 1.5rem', fontWeight: 600, cursor: 'pointer', transition: 'opacity 0.2s' }}
-              onMouseOver={e=>e.currentTarget.style.opacity=0.8}
-              onMouseOut={e=>e.currentTarget.style.opacity=1}
-            >
-              <Plus size={18} /> Añadir Fármaco
+        <motion.section {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.15 }}>
+          <div className="consult-section-head">
+            <h2 className="consult-section-title">Plan de tratamiento</h2>
+            <button className="btn-secondary" onClick={addTreatment}>
+              <Plus size={16} /> Añadir fármaco
             </button>
           </div>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+          <div className="consult-rows">
             {treatments.map((t, index) => (
-              <div key={t._key || index} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: '2rem', alignItems: 'start', padding: '1.5rem', border: '1px solid #e5e5e5' }}>
-                <div style={{ position: 'relative' }}>
-                  <label style={labelStyle}>Fármaco / Principio Activo</label>
-                  <input 
-                    type="text" 
-                    style={inputStyle} 
-                    value={t.medication} 
-                    onChange={e => handleMedicationChange(index, e.target.value)} 
-                    onFocus={(e) => {
-                      e.target.style.borderBottom = '2px solid #000';
+              <div key={t._key} className="treatment-row">
+                <div className="form-field med-field">
+                  <label className="form-label">Fármaco</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={t.medication}
+                    onChange={e => handleMedicationChange(index, e.target.value)}
+                    onFocus={() => {
                       setActiveMedInput(index);
                       if (t.medication.length > 1) handleMedicationChange(index, t.medication);
                     }}
-                    onBlur={(e) => {
-                      e.target.style.borderBottom = '2px solid #e5e5e5';
-                      setTimeout(() => setActiveMedInput(null), 200);
-                    }}
-                    placeholder="Ej. Paracetamol 500mg" 
+                    onBlur={() => setTimeout(() => setActiveMedInput(null), 200)}
+                    placeholder="Ej. Paracetamol 500mg"
                   />
-                  {activeMedInput === index && medSuggestions.length > 0 && (
-                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '2px solid #000', marginTop: '0.25rem', zIndex: 10, maxHeight: '250px', overflowY: 'auto' }}>
-                      {medSuggestions.map(med => (
-                        <div 
-                          key={med.id} 
-                          onClick={() => selectMedication(index, med)}
-                          style={{ padding: '1rem', borderBottom: '1px solid #e5e5e5', cursor: 'pointer' }}
-                        >
-                          <div style={{ fontWeight: 600, color: '#000' }}>{med.name}</div>
-                          <div style={{ fontSize: '0.875rem', color: '#555' }}>{med.activePrinciple} {med.presentation ? `| ${med.presentation}` : ''}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <AnimatePresence>
+                    {activeMedInput === index && medSuggestions.length > 0 && (
+                      <motion.div
+                        className="med-suggestions"
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        {medSuggestions.map(med => (
+                          <div key={med.id} className="med-suggestion-item" onClick={() => selectMedication(index, med)}>
+                            <div className="med-suggestion-name">{med.name}</div>
+                            <div className="med-suggestion-meta">{med.activePrinciple} {med.presentation ? `| ${med.presentation}` : ''}</div>
+                          </div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-                <div>
-                  <label style={labelStyle}>Dosis</label>
-                  <input type="text" style={inputStyle} value={t.dose} onChange={e => updateTreatment(index, 'dose', e.target.value)} placeholder="Ej. 1 tableta" onFocus={e => e.target.style.borderBottom = '2px solid #000'} onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'} />
+                <div className="form-field">
+                  <label className="form-label">Dosis</label>
+                  <input type="text" className="form-input" value={t.dose} onChange={e => updateTreatment(index, 'dose', e.target.value)} placeholder="Ej. 1 tableta" />
                 </div>
-                <div>
-                  <label style={labelStyle}>Frecuencia (Cada)</label>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <input type="text" style={{...inputStyle, width: '60px'}} value={t.frequencyNumber || ''} onChange={e => updateTreatment(index, 'frequencyNumber', e.target.value)} placeholder="8" onFocus={e => e.target.style.borderBottom = '2px solid #000'} onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'} />
-                    <select style={{...inputStyle, flex: 1}} value={t.frequencyUnit} onChange={e => updateTreatment(index, 'frequencyUnit', e.target.value)} onFocus={e => e.target.style.borderBottom = '2px solid #000'} onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}>
+                <div className="form-field">
+                  <label className="form-label">Frecuencia (cada)</label>
+                  <div className="freq-duration-inputs">
+                    <input type="text" className="form-input" value={t.frequencyNumber || ''} onChange={e => updateTreatment(index, 'frequencyNumber', e.target.value)} placeholder="8" />
+                    <select className="form-input" value={t.frequencyUnit} onChange={e => updateTreatment(index, 'frequencyUnit', e.target.value)}>
                       <option value="horas">Horas</option>
                       <option value="días">Días</option>
                     </select>
                   </div>
                 </div>
-                <div>
-                  <label style={labelStyle}>Duración (Por)</label>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <input type="text" style={{...inputStyle, width: '60px'}} value={t.durationNumber || ''} onChange={e => updateTreatment(index, 'durationNumber', e.target.value)} placeholder="5" onFocus={e => e.target.style.borderBottom = '2px solid #000'} onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'} />
-                    <select style={{...inputStyle, flex: 1}} value={t.durationUnit} onChange={e => updateTreatment(index, 'durationUnit', e.target.value)} onFocus={e => e.target.style.borderBottom = '2px solid #000'} onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}>
+                <div className="form-field">
+                  <label className="form-label">Duración (por)</label>
+                  <div className="freq-duration-inputs">
+                    <input type="text" className="form-input" value={t.durationNumber || ''} onChange={e => updateTreatment(index, 'durationNumber', e.target.value)} placeholder="5" />
+                    <select className="form-input" value={t.durationUnit} onChange={e => updateTreatment(index, 'durationUnit', e.target.value)}>
                       <option value="días">Días</option>
                       <option value="semanas">Semanas</option>
                       <option value="meses">Meses</option>
                     </select>
                   </div>
                 </div>
-                <button onClick={() => removeTreatment(index)} style={{ marginTop: '2rem', background: 'transparent', border: 'none', color: '#000', cursor: 'pointer', padding: '0.5rem' }} title="Eliminar este tratamiento" onMouseOver={e=>e.currentTarget.style.color='#ef4444'} onMouseOut={e=>e.currentTarget.style.color='#000'}>
-                  <Trash2 size={24} />
+                <button className="row-remove-btn" onClick={() => removeTreatment(index)} title="Eliminar este tratamiento">
+                  <Trash2 size={20} />
                 </button>
               </div>
             ))}
-            
+
             {treatments.length === 0 && (
-              <div style={{ padding: '4rem 0', textAlign: 'center', color: '#888', fontSize: '1.125rem' }}>
-                No hay tratamientos agregados.
+              <div className="empty-state">
+                <p>No hay tratamientos agregados.</p>
               </div>
             )}
           </div>
-        </div>
+        </motion.section>
 
         {/* INDICACIONES */}
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #000', paddingBottom: '1rem', marginBottom: '2rem' }}>
-            <h2 style={{ fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.04em', margin: 0 }}>
-              Indicaciones Generales
-            </h2>
-            <button 
-              onClick={addIndication} 
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', color: '#000', border: '2px solid #000', padding: '0.75rem 1.5rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}
-              onMouseOver={e=>{e.currentTarget.style.background='#000'; e.currentTarget.style.color='#fff'}}
-              onMouseOut={e=>{e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#000'}}
-            >
-              <Plus size={18} /> Añadir Indicación
+        <motion.section {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.2 }}>
+          <div className="consult-section-head">
+            <h2 className="consult-section-title">Indicaciones generales</h2>
+            <button className="btn-secondary" onClick={addIndication}>
+              <Plus size={16} /> Añadir indicación
             </button>
           </div>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+          <div className="consult-rows">
             {indications.map((ind, index) => (
-              <div key={ind._key || index} style={{ display: 'grid', gridTemplateColumns: '1fr 3fr auto', gap: '2rem', alignItems: 'start', padding: '1.5rem', border: '1px solid #e5e5e5' }}>
-                <div>
-                  <label style={labelStyle}>Categoría</label>
-                  <select style={inputStyle} value={ind.type} onChange={e => updateIndication(index, 'type', e.target.value)} onFocus={e => e.target.style.borderBottom = '2px solid #000'} onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'}>
+              <div key={ind._key} className="indication-row">
+                <div className="form-field">
+                  <label className="form-label">Categoría</label>
+                  <select className="form-input" value={ind.type} onChange={e => updateIndication(index, 'type', e.target.value)}>
                     <option value="General">General</option>
                     <option value="Dieta">Dieta</option>
-                    <option value="Reposo">Reposo / Actividad</option>
-                    <option value="Cuidados">Cuidados Específicos</option>
-                    <option value="Signos de Alarma">Signos de Alarma</option>
+                    <option value="Reposo">Reposo / actividad</option>
+                    <option value="Cuidados">Cuidados específicos</option>
+                    <option value="Signos de Alarma">Signos de alarma</option>
                   </select>
                 </div>
-                <div>
-                  <label style={labelStyle}>Instrucción</label>
-                  <input type="text" style={inputStyle} value={ind.instruction} onChange={e => updateIndication(index, 'instruction', e.target.value)} placeholder="Ej. Evitar grasas e irritantes, reposo relativo" onFocus={e => e.target.style.borderBottom = '2px solid #000'} onBlur={e => e.target.style.borderBottom = '2px solid #e5e5e5'} />
+                <div className="form-field">
+                  <label className="form-label">Instrucción</label>
+                  <input type="text" className="form-input" value={ind.instruction} onChange={e => updateIndication(index, 'instruction', e.target.value)} placeholder="Ej. Evitar grasas e irritantes, reposo relativo" />
                 </div>
-                <button onClick={() => removeIndication(index)} style={{ marginTop: '2rem', background: 'transparent', border: 'none', color: '#000', cursor: 'pointer', padding: '0.5rem' }} title="Eliminar indicación" onMouseOver={e=>e.currentTarget.style.color='#ef4444'} onMouseOut={e=>e.currentTarget.style.color='#000'}>
-                  <Trash2 size={24} />
+                <button className="row-remove-btn" onClick={() => removeIndication(index)} title="Eliminar indicación">
+                  <Trash2 size={20} />
                 </button>
               </div>
             ))}
-            
+
             {indications.length === 0 && (
-              <div style={{ padding: '4rem 0', textAlign: 'center', color: '#888', fontSize: '1.125rem' }}>
-                No hay indicaciones generales agregadas.
+              <div className="empty-state">
+                <p>No hay indicaciones generales agregadas.</p>
               </div>
             )}
           </div>
-        </div>
+        </motion.section>
 
         {/* VERIFICACIÓN Y ACCIONES */}
-        <div style={{ borderTop: '2px solid #000', paddingTop: '3rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2rem' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', fontSize: '1.125rem', color: '#000', fontWeight: 600 }}>
-            <input 
-              type="checkbox" 
-              checked={isVerified} 
-              onChange={(e) => setIsVerified(e.target.checked)} 
-              style={{ width: '1.5rem', height: '1.5rem', accentColor: '#000' }}
-            />
+        <motion.div className="consult-footer" {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.25 }}>
+          <label className="consult-verify">
+            <input type="checkbox" checked={isVerified} onChange={(e) => setIsVerified(e.target.checked)} />
             He verificado que la transcripción y el plan de tratamiento son correctos.
           </label>
-          
-          <div style={{ display: 'flex', gap: '1.5rem', width: '100%', justifyContent: 'flex-end' }}>
-            <button 
-              onClick={handleFinish} 
-              disabled={!isVerified}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '1.5rem 3rem', border: 'none', background: '#000', color: '#fff', fontSize: '1.125rem', fontWeight: 700, cursor: isVerified ? 'pointer' : 'not-allowed', opacity: isVerified ? 1 : 0.5, transition: 'opacity 0.2s' }}
-              onMouseOver={e=>{if(isVerified) e.currentTarget.style.opacity=0.8}} 
-              onMouseOut={e=>{if(isVerified) e.currentTarget.style.opacity=1}}
-            >
-              <Printer size={20} /> Crear Receta
-            </button>
-          </div>
-        </div>
 
+          <button className="btn-primary consult-finish-btn" onClick={handleFinish} disabled={!isVerified || isSaving}>
+            {isSaving ? <Loader2 size={20} className="spin" /> : <FileCheck2 size={20} />}
+            {isSaving ? 'Guardando...' : 'Crear receta'}
+          </button>
+        </motion.div>
       </main>
     </div>
   );

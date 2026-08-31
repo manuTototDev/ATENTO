@@ -1,0 +1,430 @@
+.consult-page {
+  min-height: 100vh;
+  background: var(--bg-color);
+}
+
+.consult-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.consult-doctor {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.consult-doctor-info {
+  text-align: right;
+}
+
+.consult-doctor-name {
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 0.95rem;
+}
+
+.consult-doctor-specialty {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.consult-settings-btn {
+  background: none;
+  border: none;
+  color: var(--text-dark);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.consult-settings-btn:hover {
+  background: var(--input-bg);
+}
+
+.consult-main {
+  padding: var(--space-6);
+  max-width: 980px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.consult-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.consult-eyebrow {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.consult-title {
+  font-size: clamp(1.8rem, 3.4vw, 2.6rem);
+}
+
+.consult-allergy-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid var(--error);
+  background: var(--error-bg);
+  color: var(--error);
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.85rem;
+  max-width: 420px;
+}
+
+/* Voice capture */
+
+.consult-voice-card {
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--duration-slow) var(--ease-out), border-color var(--duration-slow) var(--ease-out), color var(--duration-slow) var(--ease-out);
+}
+
+.consult-voice-card.is-recording {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.consult-voice-card.is-recording .consult-voice-sub {
+  color: #C7C0BD;
+}
+
+.consult-voice-card.is-recording .consult-voice-title {
+  color: #fff;
+}
+
+.consult-mic-wrap {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.consult-mic-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--error);
+  pointer-events: none;
+}
+
+.consult-mic-btn {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  color: #fff;
+  transition: transform var(--duration-fast) var(--ease-out), background-color var(--duration-base) var(--ease-out), color var(--duration-base) var(--ease-out);
+}
+
+.consult-mic-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.consult-mic-btn.is-recording {
+  background: #fff;
+  color: var(--error);
+}
+
+.consult-mic-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.consult-voice-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.consult-voice-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.consult-voice-sub {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.consult-transcript {
+  border-left: 3px solid var(--ink);
+  padding: 1rem 1.5rem;
+  font-size: 1.05rem;
+  font-style: italic;
+  color: var(--text-dark);
+  line-height: 1.6;
+  background: var(--surface-alt);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+/* Sections */
+
+.consult-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.consult-section-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.soap-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  background: var(--surface-alt);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.soap-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+.soap-grid .span-2 {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 760px) {
+  .soap-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.soap-field-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--space-4);
+  margin-bottom: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.icd-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icd-field .form-label {
+  white-space: nowrap;
+}
+
+.icd-input {
+  width: 110px;
+}
+
+textarea.form-input {
+  resize: vertical;
+  min-height: 110px;
+  line-height: 1.5;
+}
+
+/* Treatments & indications rows */
+
+.consult-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.treatment-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: var(--space-4);
+  align-items: end;
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  position: relative;
+}
+
+@media (max-width: 900px) {
+  .treatment-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.freq-duration-inputs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.freq-duration-inputs .form-input:first-child {
+  width: 60px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.med-field {
+  position: relative;
+}
+
+.med-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.35rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: 20;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.med-suggestion-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+
+.med-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.med-suggestion-item:hover {
+  background: var(--surface-alt);
+}
+
+.med-suggestion-name {
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+}
+
+.med-suggestion-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.indication-row {
+  display: grid;
+  grid-template-columns: 180px 1fr auto;
+  gap: var(--space-4);
+  align-items: end;
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+@media (max-width: 700px) {
+  .indication-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.row-remove-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-subtle);
+  cursor: pointer;
+  padding: 0.6rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--duration-fast) var(--ease-out);
+  height: fit-content;
+}
+
+.row-remove-btn:hover {
+  color: var(--error);
+  background: var(--error-bg);
+}
+
+/* Footer / actions */
+
+.consult-footer {
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-4);
+}
+
+.consult-verify {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.consult-verify input {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--ink);
+  flex-shrink: 0;
+}
+
+.consult-finish-btn {
+  width: auto;
+  padding: 1rem 2.25rem;
+  font-size: 1rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}

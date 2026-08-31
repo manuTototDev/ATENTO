@@ -1,219 +1,217 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, Eye, Edit, Trash2, X, Plus, Settings } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Plus, Trash2, X, Users, UserPlus, Phone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../utils/api';
+import './PatientDirectory.css';
+
+const initialsOf = (name) => {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  const first = parts[0]?.[0] || '';
+  const second = parts[1]?.[0] || '';
+  return (first + second).toUpperCase();
+};
 
 const PatientDirectory = () => {
   const navigate = useNavigate();
   const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [doctorProfile, setDoctorProfile] = useState(null);
-  
+
   const [patientToDelete, setPatientToDelete] = useState(null);
   const [dobConfirm, setDobConfirm] = useState('');
-  
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [patientsRes, profileRes] = await Promise.all([
-          apiFetch('/api/patients'),
-          apiFetch('/api/profile')
-        ]);
+  const [deleteError, setDeleteError] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
-        if (patientsRes.ok) {
-          const data = await patientsRes.json();
-          setPatients(data);
-        }
-        if (profileRes.ok) {
-          const profData = await profileRes.json();
-          setDoctorProfile(profData);
-        }
-      } catch (error) {
-        console.error(error);
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const res = await apiFetch('/api/patients');
+        if (res.ok) setPatients(await res.json());
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchData();
+    fetchPatients();
   }, []);
+
+  const filteredPatients = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return patients;
+    return patients.filter(p =>
+      (p.name || '').toLowerCase().includes(q) || (p.phone || '').includes(searchTerm.trim())
+    );
+  }, [patients, searchTerm]);
 
   const handleDeleteClick = (p) => {
     setPatientToDelete(p);
     setDobConfirm('');
+    setDeleteError('');
   };
 
   const confirmDelete = async () => {
     if (dobConfirm.trim() !== patientToDelete.dob) {
-      alert('La fecha de nacimiento no coincide. Debe tener el formato exacto (ej. 15/05/1990).');
+      setDeleteError('La fecha no coincide. Escríbela igual que aparece arriba (DD/MM/AAAA).');
       return;
     }
+    setDeleting(true);
     try {
       const res = await apiFetch(`/api/patients/${patientToDelete.id}`, { method: 'DELETE' });
       if (res.ok) {
-        setPatients(patients.filter(p => p.id !== patientToDelete.id));
+        setPatients(prev => prev.filter(p => p.id !== patientToDelete.id));
         setPatientToDelete(null);
       } else {
-        alert('Error al eliminar paciente.');
+        setDeleteError('No se pudo eliminar al paciente. Intenta de nuevo.');
       }
     } catch (e) {
       console.error(e);
-      alert('Error de red al eliminar paciente.');
+      setDeleteError('Error de red al eliminar paciente.');
+    } finally {
+      setDeleting(false);
     }
   };
 
-  const filteredPatients = patients.filter(p =>
-    (p.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (p.phone || '').includes(searchTerm)
-  );
-
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#fff', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      {/* HEADER TOP BAR */}
-      <header style={{ 
-        display: 'flex', 
-        justifyContent: 'flex-end', 
-        alignItems: 'center', 
-        padding: '1.5rem 3rem',
-        borderBottom: '2px solid #000'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '1rem', fontWeight: 600, color: '#000' }}>
-              Dr. {doctorProfile?.firstName || 'Médico'} {doctorProfile?.lastName || ''}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {doctorProfile?.profile?.specialty?.name || 'Especialista'}
-            </div>
-          </div>
-          <button 
-            onClick={() => navigate('/settings')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#000', display: 'flex', alignItems: 'center', transition: 'transform 0.2s' }}
-            title="Configuración de Perfil"
-            onMouseOver={e=>e.currentTarget.style.transform='rotate(45deg)'}
-            onMouseOut={e=>e.currentTarget.style.transform='rotate(0deg)'}
-          >
-            <Settings size={24} />
-          </button>
+    <div className="patients-page">
+      <div className="patients-header">
+        <div>
+          <p className="patients-eyebrow">
+            {loading ? 'Cargando…' : `${patients.length} paciente${patients.length !== 1 ? 's' : ''} registrado${patients.length !== 1 ? 's' : ''}`}
+          </p>
+          <h1 className="font-display patients-title">Pacientes.</h1>
         </div>
-      </header>
+        <button className="btn-primary" style={{ width: 'auto' }} onClick={() => navigate('/pacientes/nuevo')}>
+          <Plus size={18} /> Nuevo Paciente
+        </button>
+      </div>
 
-      <main style={{ padding: '3rem', maxWidth: '1400px', margin: '0 auto' }}>
-        
-        {/* PAGE HEADER */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
-          <div>
-            <h1 style={{ fontSize: '3rem', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: '#000', margin: 0 }}>
-              Directorio de <br/> Pacientes.
-            </h1>
+      <div className="input-wrapper patients-search">
+        <Search size={18} className="input-icon" />
+        <input
+          type="text"
+          className="form-input"
+          placeholder="Buscar por nombre o teléfono…"
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      <div className="dashboard-panel patients-panel">
+        {loading ? (
+          <div className="patients-list">
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} className="patient-row patient-row-skeleton">
+                <div className="skeleton" style={{ width: 44, height: 44, borderRadius: '50%' }} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <div className="skeleton" style={{ width: '40%', height: 14 }} />
+                  <div className="skeleton" style={{ width: '25%', height: 12 }} />
+                </div>
+              </div>
+            ))}
           </div>
-          <button 
-            onClick={() => navigate('/patient/new')}
-            style={{ 
-              backgroundColor: '#000', 
-              color: '#fff', 
-              border: 'none', 
-              padding: '1rem 2rem', 
-              fontSize: '1rem', 
-              fontWeight: 700, 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.5rem', 
-              cursor: 'pointer',
-              transition: 'opacity 0.2s'
-            }}
-            onMouseOver={e=>e.currentTarget.style.opacity=0.8}
-            onMouseOut={e=>e.currentTarget.style.opacity=1}
-          >
-            <Plus size={20} /> Nuevo Paciente
-          </button>
-        </div>
-
-        {/* CONTROLS */}
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', borderBottom: '2px solid #e5e5e5', transition: 'border-color 0.2s', paddingBottom: '0.5rem' }}>
-            <Search size={24} color="#000" style={{ marginRight: '1rem' }} />
-            <input 
-              type="text" 
-              placeholder="Buscar por nombre o teléfono..." 
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              style={{ width: '100%', border: 'none', fontSize: '1.25rem', color: '#000', outline: 'none', background: 'transparent' }}
-              onFocus={e => e.target.parentElement.style.borderBottom = '2px solid #000'}
-              onBlur={e => e.target.parentElement.style.borderBottom = '2px solid #e5e5e5'}
-            />
+        ) : patients.length === 0 ? (
+          <div className="empty-state">
+            <Users size={32} />
+            <p style={{ fontWeight: 500, color: 'var(--text-dark)' }}>Aún no tienes pacientes registrados.</p>
+            <p style={{ fontSize: '0.85rem', marginBottom: 'var(--space-3)' }}>Da de alta tu primer expediente para empezar a llevar su historial.</p>
+            <button className="btn-primary" style={{ width: 'auto' }} onClick={() => navigate('/pacientes/nuevo')}>
+              <UserPlus size={18} /> Registrar el primer paciente
+            </button>
           </div>
-          <button 
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', background: 'transparent', border: '2px solid #000', color: '#000', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}
-            onMouseOver={e=>{e.currentTarget.style.background='#000'; e.currentTarget.style.color='#fff'}}
-            onMouseOut={e=>{e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#000'}}
-          >
-            <Filter size={20} /> Filtros
-          </button>
-        </div>
-
-        {/* TABLE */}
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #000' }}>
-              <th style={{ padding: '1.5rem 0', fontWeight: 600, color: '#000', textTransform: 'uppercase', fontSize: '0.875rem', letterSpacing: '0.05em' }}>Nombre Completo</th>
-              <th style={{ padding: '1.5rem 0', fontWeight: 600, color: '#000', textTransform: 'uppercase', fontSize: '0.875rem', letterSpacing: '0.05em' }}>Nacimiento</th>
-              <th style={{ padding: '1.5rem 0', fontWeight: 600, color: '#000', textTransform: 'uppercase', fontSize: '0.875rem', letterSpacing: '0.05em' }}>Teléfono</th>
-              <th style={{ padding: '1.5rem 0', fontWeight: 600, color: '#000', textTransform: 'uppercase', fontSize: '0.875rem', letterSpacing: '0.05em' }}>Última Visita</th>
-              <th style={{ padding: '1.5rem 0', fontWeight: 600, color: '#000', textTransform: 'uppercase', fontSize: '0.875rem', letterSpacing: '0.05em', textAlign: 'right' }}>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredPatients.length === 0 ? (
-              <tr><td colSpan="5" style={{ padding: '4rem 0', textAlign: 'center', color: '#888', fontSize: '1.125rem' }}>No se encontraron pacientes.</td></tr>
-            ) : (
-              filteredPatients.map(p => (
-                <tr key={p.id} style={{ borderBottom: '1px solid #e5e5e5', transition: 'background-color 0.2s' }} onMouseOver={e=>e.currentTarget.style.backgroundColor='#f9f9f9'} onMouseOut={e=>e.currentTarget.style.backgroundColor='transparent'}>
-                  <td style={{ padding: '1.5rem 0', fontWeight: 700, color: '#000', fontSize: '1.125rem' }}>{p.name}</td>
-                  <td style={{ padding: '1.5rem 0', color: '#555' }}>{p.dob}</td>
-                  <td style={{ padding: '1.5rem 0', color: '#555', fontWeight: 500 }}>{p.phone}</td>
-                  <td style={{ padding: '1.5rem 0', color: '#555' }}>{p.lastVisit}</td>
-                  <td style={{ padding: '1.5rem 0', textAlign: 'right' }}>
-                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                      <button onClick={() => navigate(`/patients/${p.id}`)} style={{ background: 'none', border: 'none', color: '#000', cursor: 'pointer', transition: 'color 0.2s' }} title="Ver Expediente" onMouseOver={e=>e.currentTarget.style.color='#666'} onMouseOut={e=>e.currentTarget.style.color='#000'}><Eye size={20} /></button>
-                      <button style={{ background: 'none', border: 'none', color: '#000', cursor: 'pointer', transition: 'color 0.2s' }} title="Editar Datos" onMouseOver={e=>e.currentTarget.style.color='#666'} onMouseOut={e=>e.currentTarget.style.color='#000'}><Edit size={20} /></button>
-                      <button onClick={() => handleDeleteClick(p)} style={{ background: 'none', border: 'none', color: '#000', cursor: 'pointer', transition: 'color 0.2s' }} title="Eliminar Paciente" onMouseOver={e=>e.currentTarget.style.color='#ef4444'} onMouseOut={e=>e.currentTarget.style.color='#000'}><Trash2 size={20} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </main>
-
-      {patientToDelete && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setPatientToDelete(null)}>
-          <div style={{ backgroundColor: '#fff', width: '100%', maxWidth: '500px', padding: '4rem', position: 'relative' }} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setPatientToDelete(null)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', cursor: 'pointer', color: '#000' }}><X size={32} /></button>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: 800, letterSpacing: '-0.04em', color: '#000', marginBottom: '1rem', lineHeight: 1 }}>Eliminar <br/>Paciente</h2>
-            <p style={{ color: '#555', fontSize: '1.125rem', marginBottom: '2rem', lineHeight: 1.5 }}>
-              Estás a punto de eliminar a <strong style={{ color: '#000' }}>{patientToDelete.name}</strong>. Esta acción eliminará permanentemente su expediente y consultas asociadas.
-            </p>
-            <div style={{ marginBottom: '2rem' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Para confirmar, teclea su fecha de nacimiento ({patientToDelete.dob}):</label>
-              <input 
-                type="text" 
-                placeholder="DD/MM/YYYY" 
-                value={dobConfirm} 
-                onChange={e => setDobConfirm(e.target.value)} 
-                autoFocus 
-                style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #000', backgroundColor: 'transparent', fontSize: '1.25rem', color: '#000', outline: 'none' }}
-              />
-            </div>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <button onClick={confirmDelete} style={{ flex: 1, backgroundColor: '#000', color: '#fff', border: 'none', padding: '1.25rem', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', transition: 'background-color 0.2s' }} onMouseOver={e=>e.currentTarget.style.backgroundColor='#ef4444'} onMouseOut={e=>e.currentTarget.style.backgroundColor='#000'}>
-                Eliminar
-              </button>
-              <button onClick={() => setPatientToDelete(null)} style={{ flex: 1, backgroundColor: 'transparent', color: '#000', border: '2px solid #000', padding: '1.25rem', fontSize: '1rem', fontWeight: 700, cursor: 'pointer' }}>
-                Cancelar
-              </button>
-            </div>
+        ) : filteredPatients.length === 0 ? (
+          <div className="empty-state">
+            <Search size={32} />
+            <p style={{ fontWeight: 500, color: 'var(--text-dark)' }}>Sin coincidencias para “{searchTerm}”.</p>
+            <p style={{ fontSize: '0.85rem' }}>Prueba con otro nombre o número de teléfono.</p>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="patients-list">
+            {filteredPatients.map((p, i) => (
+              <motion.div
+                key={p.id}
+                className="patient-row"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: Math.min(i * 0.03, 0.3) }}
+                onClick={() => navigate(`/pacientes/${p.id}`)}
+              >
+                <div className="patient-avatar">{initialsOf(p.name)}</div>
+                <div className="patient-row-main">
+                  <div className="patient-row-name">{p.name}</div>
+                  <div className="patient-row-meta">
+                    {p.dob && p.dob !== 'N/A' && <span>Nac. {p.dob}</span>}
+                    {p.phone && p.phone !== 'N/A' && (
+                      <span className="patient-row-phone"><Phone size={12} /> {p.phone}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="patient-row-visit">
+                  {p.lastVisit === 'Sin visitas' ? (
+                    <span className="status-badge status-scheduled">Primera vez</span>
+                  ) : (
+                    <>
+                      <span className="patient-row-visit-label">Última visita</span>
+                      <span className="patient-row-visit-date">{p.lastVisit}</span>
+                    </>
+                  )}
+                </div>
+                <button
+                  className="patient-row-delete"
+                  onClick={(e) => { e.stopPropagation(); handleDeleteClick(p); }}
+                  aria-label={`Eliminar a ${p.name}`}
+                  title="Eliminar paciente"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <AnimatePresence>
+        {patientToDelete && (
+          <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setPatientToDelete(null)}>
+            <motion.div className="modal-content" initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-3)' }}>
+                <h2 className="font-display" style={{ fontSize: '1.4rem' }}>Eliminar paciente</h2>
+                <button className="btn-ghost" onClick={() => setPatientToDelete(null)}><X size={20} /></button>
+              </div>
+              <p style={{ color: 'var(--text-muted)', marginBottom: 'var(--space-5)', lineHeight: 1.5 }}>
+                Estás a punto de eliminar a <strong style={{ color: 'var(--text-dark)' }}>{patientToDelete.name}</strong>. Esta acción borra permanentemente su expediente y consultas asociadas.
+              </p>
+              <div className="form-field" style={{ marginBottom: 'var(--space-4)' }}>
+                <label className="form-label">Para confirmar, escribe su fecha de nacimiento ({patientToDelete.dob}):</label>
+                <input
+                  type="text"
+                  className={`form-input${deleteError ? ' has-error' : ''}`}
+                  placeholder="DD/MM/AAAA"
+                  value={dobConfirm}
+                  onChange={e => { setDobConfirm(e.target.value); setDeleteError(''); }}
+                  autoFocus
+                />
+                {deleteError && <span className="form-error">{deleteError}</span>}
+              </div>
+              <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                <button
+                  className="btn-primary"
+                  style={{ flex: 1, backgroundColor: 'var(--error)', borderColor: 'var(--error)', boxShadow: 'none' }}
+                  onClick={confirmDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? 'Eliminando…' : 'Eliminar'}
+                </button>
+                <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setPatientToDelete(null)}>
+                  Cancelar
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

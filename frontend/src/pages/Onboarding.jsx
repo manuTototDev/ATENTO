@@ -1,19 +1,23 @@
 import React, { useState, useRef } from 'react';
-import { Upload, CheckCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Stethoscope, GraduationCap, Award, BadgeCheck, Building2, Phone, MapPin,
+  UploadCloud, ArrowLeft, ArrowRight, Check, AlertCircle, Loader2, Activity
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../utils/api';
+import './Onboarding.css';
 
-// Listas comunes (Ejemplo para México expandido)
 const COMMON_SPECIALTIES = [
   "Alergología", "Anestesiología", "Angiología", "Biología de la Reproducción",
-  "Cardiología", "Cardiología Pediátrica", "Cirugía Bariátrica", "Cirugía General", 
-  "Cirugía Maxilofacial", "Cirugía Oncológica", "Cirugía Pediátrica", "Cirugía Plástica", 
-  "Dermatología", "Endocrinología", "Gastroenterología", "Genética Médica", 
-  "Geriatría", "Ginecología y Obstetricia", "Hematología", "Infectología", 
-  "Medicina de Rehabilitación", "Medicina del Deporte", "Medicina del Trabajo", 
-  "Medicina Familiar", "Medicina General", "Medicina Interna", "Nefrología", 
+  "Cardiología", "Cardiología Pediátrica", "Cirugía Bariátrica", "Cirugía General",
+  "Cirugía Maxilofacial", "Cirugía Oncológica", "Cirugía Pediátrica", "Cirugía Plástica",
+  "Dermatología", "Endocrinología", "Gastroenterología", "Genética Médica",
+  "Geriatría", "Ginecología y Obstetricia", "Hematología", "Infectología",
+  "Medicina de Rehabilitación", "Medicina del Deporte", "Medicina del Trabajo",
+  "Medicina Familiar", "Medicina General", "Medicina Interna", "Nefrología",
   "Neumología", "Neurocirugía", "Neurología", "Nutriología Clínica", "Odontología",
-  "Oftalmología", "Oncología Médica", "Ortopedia", "Otorrinolaringología", 
+  "Oftalmología", "Oncología Médica", "Ortopedia", "Otorrinolaringología",
   "Pediatría", "Proctología", "Psiquiatría", "Reumatología", "Traumatología", "Urología",
   "Otra Especialidad"
 ];
@@ -45,14 +49,23 @@ const COMMON_UNIVERSITIES = [
   "Otra Universidad"
 ];
 
+const STEPS = [
+  { key: 'identity', label: 'Identidad', color: 'var(--pop-blue)' },
+  { key: 'clinic', label: 'Consultorio', color: 'var(--pop-gold)' },
+  { key: 'letterhead', label: 'Membrete', color: 'var(--pop-violet)' },
+];
+
 const Onboarding = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const [step, setStep] = useState(0);
+  const [direction, setDirection] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [logoPreview, setLogoPreview] = useState(null);
   const [isFetchingZip, setIsFetchingZip] = useState(false);
-
   const [availableColonias, setAvailableColonias] = useState([]);
+  const [stepError, setStepError] = useState('');
+  const [submitError, setSubmitError] = useState('');
 
   const [formData, setFormData] = useState({
     specialty: '',
@@ -72,40 +85,27 @@ const Onboarding = () => {
   const handleChange = (e) => {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
+    setStepError('');
 
-    // Si es el Código Postal y tiene 5 dígitos (México)
-    if (id === 'zipCode' && value.length === 5) {
-      fetchLocationFromZip(value);
-    }
-    // Si cambia el CP o borra, reseteamos las colonias si no es de 5
-    if (id === 'zipCode' && value.length !== 5) {
-      setAvailableColonias([]);
-    }
+    if (id === 'zipCode' && value.length === 5) fetchLocationFromZip(value);
+    if (id === 'zipCode' && value.length !== 5) setAvailableColonias([]);
   };
 
   const fetchLocationFromZip = async (zip) => {
     setIsFetchingZip(true);
     try {
-      // Zippopotam API: Provee estado y múltiples colonias (no provee municipio exacto en México)
       const res = await fetch(`https://api.zippopotam.us/mx/${zip}`);
       if (res.ok) {
         const data = await res.json();
         const state = data.places[0].state;
         const colonias = data.places.map(p => p['place name']);
-        
         setAvailableColonias(colonias);
-        
-        setFormData(prev => ({
-          ...prev,
-          state: state,
-          city: '', // El usuario ingresa el municipio manualmente ya que la API gratuita no lo separa bien
-          neighborhood: '' // Forzamos a que seleccione de la lista
-        }));
+        setFormData(prev => ({ ...prev, state, city: '', neighborhood: '' }));
       } else {
         setAvailableColonias([]);
       }
     } catch (error) {
-      console.error("Error fetching ZIP", error);
+      console.error('Error fetching ZIP', error);
       setAvailableColonias([]);
     } finally {
       setIsFetchingZip(false);
@@ -114,36 +114,62 @@ const Onboarding = () => {
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert("El logo no debe superar los 2MB.");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result);
-        setFormData(prev => ({ ...prev, logoBase64: reader.result }));
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setStepError('El logo no debe superar los 2MB.');
+      return;
     }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setLogoPreview(reader.result);
+      setFormData(prev => ({ ...prev, logoBase64: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const validateStep = () => {
+    if (step === 0) {
+      if (!formData.specialty || !formData.licenseNumber || !formData.university) {
+        setStepError('Completa especialidad, universidad y cédula profesional para continuar.');
+        return false;
+      }
+    }
+    if (step === 1) {
+      if (!formData.clinicName || !formData.phoneNumber || !formData.zipCode || !formData.state || !formData.city || !formData.neighborhood || !formData.street) {
+        setStepError('Completa todos los datos del consultorio para continuar.');
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const goNext = () => {
+    if (!validateStep()) return;
+    setStepError('');
+    setDirection(1);
+    setStep(s => Math.min(s + 1, STEPS.length - 1));
+  };
+
+  const goBack = () => {
+    setStepError('');
+    setDirection(-1);
+    setStep(s => Math.max(s - 1, 0));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Error de sesión: Por favor regístrate de nuevo.');
-      navigate('/register');
+      setSubmitError('Tu sesión expiró. Regístrate de nuevo.');
+      setTimeout(() => navigate('/register'), 1200);
       return;
     }
     setIsLoading(true);
+    setSubmitError('');
 
-    // Formato "CP <código>" — consistente con lo que el servidor genera y Settings parsea
     const fullClinicAddress = `${formData.street}, ${formData.neighborhood}, ${formData.city}, ${formData.state}, CP ${formData.zipCode}`;
 
     try {
-      // La identidad la toma el backend del JWT — no se envía userId en el body
       const response = await apiFetch('/api/auth/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -159,325 +185,217 @@ const Onboarding = () => {
         })
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (response.ok) {
-        alert('¡Perfil configurado con éxito!');
-        navigate('/dashboard');
+        navigate('/hoy');
       } else {
-        alert(data.error || 'Hubo un error al guardar el perfil.');
+        setSubmitError(data.error || 'Hubo un error al guardar tu perfil.');
       }
     } catch (error) {
       console.error(error);
-      alert('Error de conexión con el servidor.');
+      setSubmitError('Error de conexión con el servidor.');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const variants = {
+    enter: (dir) => ({ opacity: 0, x: dir > 0 ? 24 : -24 }),
+    center: { opacity: 1, x: 0 },
+    exit: (dir) => ({ opacity: 0, x: dir > 0 ? -24 : 24 }),
+  };
+
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Inter, system-ui, sans-serif', flexWrap: 'wrap' }}>
-      
-      {/* Left Side: Black Cover (Sticky on desktop) */}
-      <div style={{ flex: '1 1 400px', backgroundColor: '#000', color: '#fff', padding: '4rem 5%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '50vh', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
-        <div style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.05em' }}>
-          Lemmatica.
+    <div className="onboarding-page">
+      <div className="onboarding-shell">
+        <div className="onboarding-brand">
+          <Activity size={22} strokeWidth={2.5} />
+          <span className="font-display">Lemmatica.</span>
         </div>
-        
-        <div style={{ margin: 'auto 0' }}>
-          <h1 style={{ fontSize: 'clamp(3rem, 5vw, 5rem)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.04em', marginBottom: '1.5rem', color: '#fff' }}>
-            Prepara tu <br/> consultorio.
-          </h1>
-          <p style={{ fontSize: '1.25rem', color: '#a3a3a3', maxWidth: '400px', lineHeight: 1.6 }}>
-            Completa tu información clínica. Estos datos se usarán exclusivamente para generar tus recetas médicas y membretes profesionales automáticamente.
-          </p>
+
+        <div className="onboarding-progress">
+          {STEPS.map((s, i) => (
+            <div key={s.key} className={`onboarding-step${i === step ? ' active' : ''}${i < step ? ' done' : ''}`} style={{ '--step-color': s.color }}>
+              <div className="onboarding-step-dot">{i < step ? <Check size={13} /> : i + 1}</div>
+              <span className="onboarding-step-label">{s.label}</span>
+              {i < STEPS.length - 1 && <div className="onboarding-step-line" />}
+            </div>
+          ))}
         </div>
-        
-        <div style={{ fontSize: '0.875rem', color: '#555' }}>
-          Lemmatica © 2026. Cumplimiento médico y cifrado de extremo a extremo.
-        </div>
-      </div>
 
-      {/* Right Side: White Minimal Form */}
-      <div style={{ flex: '2 1 600px', backgroundColor: '#fff', padding: '4rem 5%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center' }}>
-        <div style={{ width: '100%', maxWidth: '600px' }}>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 600, letterSpacing: '-0.04em', marginBottom: '0.5rem', color: '#000' }}>
-            Perfil Profesional
-          </h2>
-          <p style={{ color: '#555', marginBottom: '3rem', fontSize: '1.125rem' }}>
-            Tu identidad médica oficial.
-          </p>
+        <form onSubmit={step === STEPS.length - 1 ? handleSubmit : (e) => e.preventDefault()}>
+          <AnimatePresence mode="wait" custom={direction}>
 
-          <form onSubmit={handleSubmit}>
-            {/* DATOS ACADÉMICOS Y LEGALES */}
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#000', marginBottom: '1.5rem', borderBottom: '2px solid #000', paddingBottom: '0.5rem' }}>
-              Académico y Legal
-            </h3>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-              <div>
-                <label htmlFor="specialty" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Especialidad</label>
-                <input
-                  type="text"
-                  id="specialty"
-                  list={formData.specialty.length >= 2 ? "specialties-list" : undefined}
-                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
-                  placeholder="Ej. Pediatría"
-                  value={formData.specialty}
-                  onChange={handleChange}
-                  onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
-                  onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
-                  required
-                />
-                <datalist id="specialties-list">
-                  {COMMON_SPECIALTIES.map(s => <option key={s} value={s} />)}
-                </datalist>
-              </div>
+            {step === 0 && (
+              <motion.div key="identity" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}>
+                <h1 className="font-display onboarding-headline">Tu identidad profesional.</h1>
+                <p className="onboarding-sub">Estos datos aparecerán en cada receta que emitas — son obligatorios para su validez legal.</p>
 
-              <div>
-                <label htmlFor="university" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Universidad de Egreso</label>
-                <input
-                  type="text"
-                  id="university"
-                  list={formData.university.length >= 2 ? "universities-list" : undefined}
-                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
-                  placeholder="Universidad..."
-                  value={formData.university}
-                  onChange={handleChange}
-                  onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
-                  onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
-                  required
-                />
-                <datalist id="universities-list">
-                  {COMMON_UNIVERSITIES.map(u => <option key={u} value={u} />)}
-                </datalist>
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
-              <div>
-                <label htmlFor="licenseNumber" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Cédula Profesional</label>
-                <input
-                  type="text"
-                  id="licenseNumber"
-                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
-                  placeholder="Ej. 1234567"
-                  value={formData.licenseNumber}
-                  onChange={handleChange}
-                  onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
-                  onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="specialtyLicense" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Cédula de Especialidad</label>
-                <input
-                  type="text"
-                  id="specialtyLicense"
-                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
-                  placeholder="Si aplica"
-                  value={formData.specialtyLicense}
-                  onChange={handleChange}
-                  onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
-                  onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
-                />
-              </div>
-            </div>
-
-            {/* UBICACIÓN Y CONTACTO */}
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#000', marginBottom: '1.5rem', borderBottom: '2px solid #000', paddingBottom: '0.5rem' }}>
-              Contacto del Consultorio
-            </h3>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-              <div>
-                <label htmlFor="clinicName" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Nombre de Clínica / Consultorio</label>
-                <input
-                  type="text"
-                  id="clinicName"
-                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
-                  placeholder="Ej. Clínica San Miguel"
-                  value={formData.clinicName}
-                  onChange={handleChange}
-                  onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
-                  onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="phoneNumber" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Teléfono</label>
-                <input
-                  type="tel"
-                  id="phoneNumber"
-                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
-                  placeholder="(55) 1234 5678"
-                  value={formData.phoneNumber}
-                  onChange={handleChange}
-                  onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
-                  onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
-                  required
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-              <div>
-                <label htmlFor="zipCode" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>C.P. {isFetchingZip && '(Buscando...)'}</label>
-                <input
-                  type="text"
-                  id="zipCode"
-                  maxLength="5"
-                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
-                  placeholder="Ej. 11000"
-                  value={formData.zipCode}
-                  onChange={handleChange}
-                  onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
-                  onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
-                  required
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="state" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Estado</label>
-                <input
-                  type="text"
-                  id="state"
-                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
-                  placeholder="Estado"
-                  value={formData.state}
-                  onChange={handleChange}
-                  onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
-                  onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
-                  required
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-              <div>
-                <label htmlFor="city" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Ciudad / Municipio</label>
-                <input
-                  type="text"
-                  id="city"
-                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
-                  placeholder="Ciudad o Alcaldía"
-                  value={formData.city}
-                  onChange={handleChange}
-                  onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
-                  onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="neighborhood" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Colonia</label>
-                {availableColonias.length > 0 ? (
-                  <select
-                    id="neighborhood"
-                    style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s', appearance: 'none', cursor: 'pointer' }}
-                    value={formData.neighborhood}
-                    onChange={handleChange}
-                    onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
-                    onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
-                    required
-                  >
-                    <option value="" disabled>Selecciona una colonia...</option>
-                    {availableColonias.map((colonia, idx) => (
-                      <option key={idx} value={colonia}>{colonia}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type="text"
-                    id="neighborhood"
-                    style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
-                    placeholder="Ej. Polanco"
-                    value={formData.neighborhood}
-                    onChange={handleChange}
-                    onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
-                    onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
-                    required
-                  />
-                )}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '3rem' }}>
-              <label htmlFor="street" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Calle y Número</label>
-              <input
-                type="text"
-                id="street"
-                style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.125rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
-                placeholder="Ej. Av. Reforma 123, Int 4"
-                value={formData.street}
-                onChange={handleChange}
-                onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
-                onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
-                required
-              />
-            </div>
-
-            {/* LOGO */}
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#000', marginBottom: '1.5rem', borderBottom: '2px solid #000', paddingBottom: '0.5rem' }}>
-              Membrete de Receta
-            </h3>
-
-            <div style={{ marginBottom: '3rem' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '1rem' }}>Logo de la Institución</label>
-              <div 
-                style={{
-                  border: '2px dashed #e5e5e5',
-                  padding: '2rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  backgroundColor: '#fafafa',
-                  transition: 'border-color 0.2s'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.borderColor = '#000'}
-                onMouseOut={(e) => e.currentTarget.style.borderColor = '#e5e5e5'}
-                onClick={() => fileInputRef.current.click()}
-              >
-                {logoPreview ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <img src={logoPreview} alt="Logo" style={{ maxHeight: '100px', objectFit: 'contain', marginBottom: '1rem' }} />
-                    <span style={{ fontSize: '0.875rem', color: '#000', fontWeight: 600, borderBottom: '1px solid #000' }}>Cambiar imagen</span>
+                <div className="onboarding-field-row">
+                  <div className="form-field">
+                    <label className="form-label" htmlFor="specialty"><Stethoscope size={14} className="pop-blue" /> Especialidad</label>
+                    <input
+                      id="specialty" className="form-input"
+                      list={formData.specialty.length >= 2 ? 'specialties-list' : undefined}
+                      placeholder="Ej. Pediatría" value={formData.specialty} onChange={handleChange}
+                    />
+                    <datalist id="specialties-list">
+                      {COMMON_SPECIALTIES.map(s => <option key={s} value={s} />)}
+                    </datalist>
                   </div>
-                ) : (
-                  <>
-                    <Upload size={24} color="#000" style={{ marginBottom: '1rem' }} />
-                    <span style={{ fontSize: '1rem', color: '#000', fontWeight: 500 }}>Subir logo para tus recetas</span>
-                    <span style={{ fontSize: '0.875rem', color: '#888', marginTop: '0.5rem' }}>Formatos soportados: JPG, PNG</span>
-                  </>
-                )}
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handleImageUpload} 
-                  accept="image/png, image/jpeg"
-                  style={{ display: 'none' }}
-                />
-              </div>
-            </div>
+                  <div className="form-field">
+                    <label className="form-label" htmlFor="university"><GraduationCap size={14} className="pop-blue" /> Universidad de egreso</label>
+                    <input
+                      id="university" className="form-input"
+                      list={formData.university.length >= 2 ? 'universities-list' : undefined}
+                      placeholder="Universidad..." value={formData.university} onChange={handleChange}
+                    />
+                    <datalist id="universities-list">
+                      {COMMON_UNIVERSITIES.map(u => <option key={u} value={u} />)}
+                    </datalist>
+                  </div>
+                </div>
 
-            <button 
-              type="submit" 
-              disabled={isLoading}
-              style={{ width: '100%', background: '#000', color: '#fff', border: 'none', padding: '1.25rem', fontSize: '1.125rem', fontWeight: 500, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.75rem', transition: 'opacity 0.2s' }} 
-              onMouseOver={e=>e.target.style.opacity=0.8} 
-              onMouseOut={e=>e.target.style.opacity=1}
+                <div className="onboarding-field-row">
+                  <div className="form-field">
+                    <label className="form-label" htmlFor="licenseNumber"><Award size={14} className="pop-blue" /> Cédula profesional</label>
+                    <input id="licenseNumber" className="form-input" placeholder="Ej. 1234567" value={formData.licenseNumber} onChange={handleChange} />
+                  </div>
+                  <div className="form-field">
+                    <label className="form-label" htmlFor="specialtyLicense"><BadgeCheck size={14} className="pop-blue" /> Cédula de especialidad</label>
+                    <input id="specialtyLicense" className="form-input" placeholder="Si aplica" value={formData.specialtyLicense} onChange={handleChange} />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 1 && (
+              <motion.div key="clinic" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}>
+                <h1 className="font-display onboarding-headline">Tu consultorio.</h1>
+                <p className="onboarding-sub">Dónde y cómo te contactan tus pacientes.</p>
+
+                <div className="onboarding-field-row">
+                  <div className="form-field">
+                    <label className="form-label" htmlFor="clinicName"><Building2 size={14} className="pop-gold" /> Nombre de clínica / consultorio</label>
+                    <input id="clinicName" className="form-input" placeholder="Ej. Clínica San Miguel" value={formData.clinicName} onChange={handleChange} />
+                  </div>
+                  <div className="form-field">
+                    <label className="form-label" htmlFor="phoneNumber"><Phone size={14} className="pop-gold" /> Teléfono</label>
+                    <input id="phoneNumber" type="tel" className="form-input" placeholder="(55) 1234 5678" value={formData.phoneNumber} onChange={handleChange} />
+                  </div>
+                </div>
+
+                <div className="onboarding-address-head">
+                  <MapPin size={13} className="pop-gold" /> Dirección
+                  {isFetchingZip && <span className="onboarding-zip-loading">Buscando...</span>}
+                </div>
+
+                <div className="onboarding-field-row onboarding-field-row-3">
+                  <div className="form-field">
+                    <label className="form-label" htmlFor="zipCode">C.P.</label>
+                    <input id="zipCode" maxLength="5" className="form-input" placeholder="Ej. 11000" value={formData.zipCode} onChange={handleChange} />
+                  </div>
+                  <div className="form-field">
+                    <label className="form-label" htmlFor="state">Estado</label>
+                    <input id="state" className="form-input" placeholder="Estado" value={formData.state} onChange={handleChange} />
+                  </div>
+                  <div className="form-field">
+                    <label className="form-label" htmlFor="city">Ciudad / municipio</label>
+                    <input id="city" className="form-input" placeholder="Ciudad o alcaldía" value={formData.city} onChange={handleChange} />
+                  </div>
+                </div>
+
+                <div className="onboarding-field-row">
+                  <div className="form-field">
+                    <label className="form-label" htmlFor="neighborhood">Colonia</label>
+                    {availableColonias.length > 0 ? (
+                      <select id="neighborhood" className="form-input" value={formData.neighborhood} onChange={handleChange}>
+                        <option value="" disabled>Selecciona una colonia...</option>
+                        {availableColonias.map((colonia, idx) => <option key={idx} value={colonia}>{colonia}</option>)}
+                      </select>
+                    ) : (
+                      <input id="neighborhood" className="form-input" placeholder="Ej. Polanco" value={formData.neighborhood} onChange={handleChange} />
+                    )}
+                  </div>
+                  <div className="form-field">
+                    <label className="form-label" htmlFor="street">Calle y número</label>
+                    <input id="street" className="form-input" placeholder="Ej. Av. Reforma 123, Int 4" value={formData.street} onChange={handleChange} />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 2 && (
+              <motion.div key="letterhead" custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}>
+                <h1 className="font-display onboarding-headline">Membrete de receta.</h1>
+                <p className="onboarding-sub">Opcional: sube el logo de tu consultorio para imprimirlo en tus recetas.</p>
+
+                <div className="onboarding-letterhead-grid">
+                  <div className="onboarding-upload-zone" onClick={() => fileInputRef.current.click()}>
+                    {logoPreview ? (
+                      <div className="onboarding-upload-preview">
+                        <img src={logoPreview} alt="Logo" />
+                        <span>Cambiar imagen</span>
+                      </div>
+                    ) : (
+                      <>
+                        <UploadCloud size={24} />
+                        <span className="onboarding-upload-title">Subir logo</span>
+                        <span className="onboarding-upload-sub">JPG o PNG</span>
+                      </>
+                    )}
+                    <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/png, image/jpeg" style={{ display: 'none' }} />
+                  </div>
+
+                  <div className="onboarding-preview-card">
+                    {logoPreview && <img src={logoPreview} alt="" className="onboarding-preview-logo" />}
+                    <div className="onboarding-preview-specialty">{formData.specialty || 'Especialidad'}</div>
+                    <div className="onboarding-preview-divider" />
+                    <div className="onboarding-preview-line">Céd. Prof. {formData.licenseNumber || '—'}</div>
+                    <div className="onboarding-preview-divider" />
+                    <div className="onboarding-preview-line onboarding-preview-strong">{formData.clinicName || 'Nombre del consultorio'}</div>
+                    <div className="onboarding-preview-line">{[formData.city, formData.state].filter(Boolean).join(', ') || 'Ciudad, Estado'}</div>
+                    <div className="onboarding-preview-line">{formData.phoneNumber || 'Teléfono'}</div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {stepError && (
+            <div className="onboarding-error"><AlertCircle size={15} /> {stepError}</div>
+          )}
+          {submitError && (
+            <div className="onboarding-error"><AlertCircle size={15} /> {submitError}</div>
+          )}
+
+          <div className="onboarding-nav">
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={goBack}
+              disabled={step === 0}
+              style={{ visibility: step === 0 ? 'hidden' : 'visible' }}
             >
-              {isLoading ? 'Guardando perfil...' : 'Guardar y Continuar'}
-              {!isLoading && <CheckCircle size={20} />}
+              <ArrowLeft size={16} /> Atrás
             </button>
-          </form>
-        </div>
+
+            {step < STEPS.length - 1 ? (
+              <button type="button" className="btn-primary onboarding-next-btn" onClick={goNext}>
+                Continuar <ArrowRight size={16} />
+              </button>
+            ) : (
+              <button type="submit" className="btn-primary onboarding-next-btn" disabled={isLoading}>
+                {isLoading ? <Loader2 size={16} className="onboarding-spin" /> : <Check size={16} />}
+                {isLoading ? 'Guardando...' : 'Finalizar y entrar'}
+              </button>
+            )}
+          </div>
+        </form>
       </div>
     </div>
   );
 };
-export default Onboardin
+
+export default Onboarding;

@@ -1,0 +1,322 @@
+/* ==========================================
+   Términos y Condiciones — presentación nueva
+   El contenido legal no cambia; solo tipografía, espaciado y tokens.
+   ========================================== */
+
+.tc-page {
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+.tc-header {
+  background: var(--ink);
+  color: #fff;
+  padding: clamp(2.5rem, 6vw, 3.5rem) 0 clamp(2rem, 5vw, 2.75rem);
+}
+
+.tc-header-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 clamp(1.5rem, 5vw, 2rem);
+}
+
+.tc-header-top {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.tc-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out);
+}
+
+.tc-back:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tc-brand {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #fff;
+  padding: 0;
+}
+
+.tc-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 5vw, 3.25rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  margin-bottom: 0.9rem;
+  color: #fff;
+}
+
+.tc-meta {
+  color: #C7C0BD;
+  font-size: 0.95rem;
+  margin-bottom: 0.4rem;
+}
+
+.tc-meta-sub {
+  color: #9A928F;
+  font-size: 0.85rem;
+}
+
+.tc-meta-sub strong {
+  color: #fff;
+}
+
+/* Tabs — reutiliza .tab-bar / .tab-btn del sistema, con sticky propio */
+
+.tc-tabs-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--paper);
+  border-bottom: 1px solid var(--border);
+}
+
+.tc-tabs {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 clamp(1.5rem, 5vw, 2rem);
+}
+
+.tc-tabs .tab-bar {
+  margin-bottom: 0;
+  flex-wrap: wrap;
+  overflow-x: auto;
+}
+
+/* Contenido */
+
+.tc-content {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vw, 3.5rem) clamp(1.5rem, 5vw, 2rem) clamp(3rem, 7vw, 4rem);
+}
+
+.tc-alert {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: clamp(2rem, 5vw, 3rem);
+  border: 1px solid transparent;
+}
+
+.tc-alert p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.tc-alert-warning { background: var(--warning-bg); border-color: rgba(247, 155, 55, 0.35); color: var(--ink-soft); }
+.tc-alert-success { background: var(--success-bg); border-color: rgba(53, 181, 71, 0.3); color: var(--ink-soft); }
+.tc-alert-info { background: var(--accent-light); border-color: rgba(105, 175, 232, 0.35); color: var(--ink-soft); }
+.tc-alert-violet { background: var(--info-bg); border-color: rgba(114, 103, 193, 0.3); color: var(--ink-soft); }
+
+.tc-intro {
+  color: var(--text-muted);
+  line-height: 1.75;
+  font-size: 0.98rem;
+  margin-bottom: clamp(2rem, 5vw, 3rem);
+}
+
+.tc-section {
+  margin-bottom: clamp(2.5rem, 5vw, 3.25rem);
+  padding-bottom: clamp(2.5rem, 5vw, 3.25rem);
+  border-bottom: 1px solid var(--border);
+}
+
+.tc-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.tc-section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1.4rem;
+}
+
+.tc-section-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+.tc-section-icon.blue { background: var(--pop-blue); }
+.tc-section-icon.green { background: var(--pop-green); }
+.tc-section-icon.violet { background: var(--pop-violet); }
+.tc-section-icon.gold { background: var(--pop-gold); }
+
+.tc-section-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.tc-section-body {
+  color: var(--ink-soft);
+  line-height: 1.8;
+  font-size: 0.98rem;
+}
+
+.tc-section-body p + p {
+  margin-top: 0.9rem;
+}
+
+.tc-section-body strong {
+  color: var(--text-dark);
+}
+
+.tc-bullet {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.tc-bullet-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-subtle);
+  flex-shrink: 0;
+  margin-top: 0.65rem;
+}
+
+.tc-clause {
+  margin-bottom: 1.85rem;
+}
+
+.tc-clause:last-child {
+  margin-bottom: 0;
+}
+
+.tc-clause-title {
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 0.55rem;
+}
+
+.tc-clause-body {
+  color: var(--ink-soft);
+  line-height: 1.8;
+  font-size: 0.95rem;
+}
+
+.tc-clause-body p + p {
+  margin-top: 0.75rem;
+}
+
+.tc-clause-body strong {
+  color: var(--text-dark);
+}
+
+.tc-sub-label {
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 0.85rem;
+  margin-top: 1.4rem;
+}
+
+.tc-sub-label:first-child {
+  margin-top: 0;
+}
+
+/* Contacto */
+
+.tc-contact {
+  background: var(--ink);
+  color: #fff;
+  border-radius: var(--radius-xl);
+  padding: clamp(2rem, 5vw, 3rem);
+  text-align: center;
+  margin-top: clamp(2rem, 5vw, 2.5rem);
+}
+
+.tc-contact h3 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.9rem;
+}
+
+.tc-contact > p {
+  color: #C7C0BD;
+  margin-bottom: 1.75rem;
+  line-height: 1.6;
+}
+
+.tc-contact-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.75rem;
+}
+
+.tc-contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+.tc-contact-link:hover {
+  transform: translateY(-1px);
+}
+
+.tc-contact-link-fill {
+  background: #fff;
+  color: var(--ink);
+}
+
+.tc-contact-link-outline {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.tc-contact-foot {
+  color: #7A716D;
+  font-size: 0.8rem;
+}

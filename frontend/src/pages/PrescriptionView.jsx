@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Download, Printer, ArrowLeft } from 'lucide-react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { apiFetch } from '../utils/api';
+import './PrescriptionView.css';
 
 const PrescriptionView = () => {
   const navigate = useNavigate();
@@ -55,163 +57,149 @@ const PrescriptionView = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  const goBack = () => {
+    if (patient?.id) navigate(`/pacientes/${patient.id}`);
+    else navigate('/hoy');
+  };
+
+  const patientName = patient ? `${patient.firstName || patient.name || ''} ${patient.lastName || ''}`.trim() : 'Cargando...';
+
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      
-      {/* HEADER / ACTIONS (No se imprime) */}
-      <div className="no-print" style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        padding: '1.5rem 3rem',
-        backgroundColor: '#fff',
-        borderBottom: '2px solid #000',
-        marginBottom: '3rem'
-      }}>
-        <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: 'none', color: '#000', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '1rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', transition: 'opacity 0.2s' }} onMouseOver={e=>e.currentTarget.style.opacity=0.6} onMouseOut={e=>e.currentTarget.style.opacity=1}>
-          <ArrowLeft size={20} /> Volver al Inicio
+    <div className="rx-page">
+      {/* HEADER / ACCIONES (No se imprime) */}
+      <div className="no-print rx-topbar">
+        <button className="btn-ghost" onClick={goBack}>
+          <ArrowLeft size={18} /> Volver
         </button>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button 
-            onClick={() => window.print()}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', border: '2px solid #000', background: 'transparent', color: '#000', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}
-            onMouseOver={e=>{e.currentTarget.style.background='#000'; e.currentTarget.style.color='#fff'}}
-            onMouseOut={e=>{e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#000'}}
-          >
-            <Download size={20} /> Descargar PDF
+        <div className="rx-actions">
+          <button className="btn-secondary" onClick={() => window.print()}>
+            <Download size={18} /> Descargar PDF
           </button>
-          <button 
-            onClick={() => window.print()}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', border: 'none', background: '#000', color: '#fff', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', transition: 'opacity 0.2s' }}
-            onMouseOver={e=>e.currentTarget.style.opacity=0.8}
-            onMouseOut={e=>e.currentTarget.style.opacity=1}
-          >
-            <Printer size={20} /> Imprimir
+          <button className="btn-primary" onClick={() => window.print()}>
+            <Printer size={18} /> Imprimir
           </button>
         </div>
       </div>
 
-      {/* DOCUMENTO RECETA MÉDICA (Formato A4 aprox) */}
-      <div style={{ maxWidth: '800px', margin: '0 auto', paddingBottom: '3rem' }}>
-        <div 
-          className="printable-prescription" 
-          style={{ 
-            background: '#fff', 
-            minHeight: '1050px', 
-            padding: '3rem', 
-            position: 'relative', 
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            border: '2px solid #000'
-          }}
+      <div className="rx-wrap">
+        <motion.div
+          className="rx-preview-head no-print"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
         >
-          
-          {/* Header Doctor */}
-          <div style={{ borderBottom: '3px solid #000', paddingBottom: '1.5rem', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#000', letterSpacing: '-0.03em', margin: '0 0 0.25rem 0', lineHeight: 1 }}>
-                Dr. {doctorProfile?.firstName || ''} {doctorProfile?.lastName || ''}
-              </h1>
-              <p style={{ color: '#000', fontSize: '1rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.5rem 0' }}>
-                {doctorProfile?.profile?.specialty?.name || ''}
-              </p>
-              <div style={{ color: '#555', fontSize: '0.75rem', lineHeight: 1.5 }}>
-                {doctorProfile?.profile?.university?.name || doctorProfile?.profile?.university || ''}
-                {(doctorProfile?.profile?.university?.name || doctorProfile?.profile?.university) && <br/>}
-                {doctorProfile?.profile?.licenseNumber
-                  ? <>Céd. Prof. {doctorProfile.profile.licenseNumber}</>
-                  : <span style={{ color: '#b91c1c', fontWeight: 700 }}>⚠ Falta cédula profesional — completa tu perfil antes de imprimir</span>}
-                {doctorProfile?.profile?.specialtyLicense ? ` | Céd. Esp. ${doctorProfile.profile.specialtyLicense}` : ''}
-              </div>
-            </div>
-            <div style={{ width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-              {doctorProfile?.profile?.logoUrl ? (
-                <img src={doctorProfile.profile.logoUrl} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-              ) : (
-                <div style={{ width: '100%', height: '100%', border: '2px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontSize: '0.75rem', fontWeight: 600, textAlign: 'center', textTransform: 'uppercase' }}>
-                  Logo
+          <span className="rx-preview-eyebrow">Receta generada</span>
+          <span className="rx-preview-status">{patientName}</span>
+        </motion.div>
+
+        <motion.div
+          className="rx-doc-shell"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {/* DOCUMENTO RECETA MÉDICA — se mantiene neutro en pantalla e impresión */}
+          <div className="printable-prescription">
+
+            {/* Membrete del médico */}
+            <div className="rx-header">
+              <div>
+                <h1 className="rx-doctor-name">
+                  Dr. {doctorProfile?.firstName || ''} {doctorProfile?.lastName || ''}
+                </h1>
+                <p className="rx-doctor-specialty">
+                  {doctorProfile?.profile?.specialty?.name || ''}
+                </p>
+                <div className="rx-doctor-meta">
+                  {doctorProfile?.profile?.university?.name || ''}
+                  {doctorProfile?.profile?.university?.name && <br />}
+                  {doctorProfile?.profile?.licenseNumber
+                    ? <>Céd. Prof. {doctorProfile.profile.licenseNumber}</>
+                    : <span className="rx-license-warning">⚠ Falta cédula profesional — completa tu perfil antes de imprimir</span>}
+                  {doctorProfile?.profile?.specialtyLicense ? ` | Céd. Esp. ${doctorProfile.profile.specialtyLicense}` : ''}
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Datos Paciente */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0', border: '2px solid #000', fontSize: '0.875rem', marginBottom: '2rem' }}>
-            <div style={{ padding: '0.75rem', borderBottom: '2px solid #000', borderRight: '2px solid #000' }}>
-              <strong style={{ color: '#555', fontSize: '0.65rem', textTransform: 'uppercase', display: 'block', marginBottom: '0.125rem' }}>Paciente</strong>
-              <div style={{ fontWeight: 600, color: '#000' }}>{patient ? `${patient.firstName || patient.name || ''} ${patient.lastName || ''}`.trim() : 'Cargando...'}</div>
-            </div>
-            <div style={{ padding: '0.75rem', borderBottom: '2px solid #000' }}>
-              <strong style={{ color: '#555', fontSize: '0.65rem', textTransform: 'uppercase', display: 'block', marginBottom: '0.125rem' }}>Fecha</strong>
-              <div style={{ fontWeight: 600, color: '#000' }}>{new Date().toLocaleDateString('es-MX')}</div>
-            </div>
-            <div style={{ padding: '0.75rem', borderBottom: '2px solid #000', borderRight: '2px solid #000' }}>
-              <strong style={{ color: '#555', fontSize: '0.65rem', textTransform: 'uppercase', display: 'block', marginBottom: '0.125rem' }}>Fecha de Nacimiento</strong>
-              <div style={{ fontWeight: 600, color: '#000' }}>
-                {patient?.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('es-MX', { timeZone: 'UTC' }) : (patient?.dob || '--')}
+              </div>
+              <div className="rx-logo-box">
+                {doctorProfile?.profile?.logoUrl ? (
+                  <img src={doctorProfile.profile.logoUrl} alt="Logo de la clínica" />
+                ) : 'Logo'}
               </div>
             </div>
-            <div style={{ padding: '0.75rem', borderBottom: '2px solid #000' }}>
-              <strong style={{ color: '#555', fontSize: '0.65rem', textTransform: 'uppercase', display: 'block', marginBottom: '0.125rem' }}>Edad</strong>
-              <div style={{ fontWeight: 600, color: '#000' }}>
-                {patient?.dateOfBirth ? `${calculateAge(patient.dateOfBirth)} años` : (patient?.dob ? `${calculateAge(patient.dob.split('/').reverse().join('-'))} años` : '--')}
+
+            {/* Datos del paciente */}
+            <div className="rx-meta-grid">
+              <div className="rx-meta-cell">
+                <strong className="rx-meta-label">Paciente</strong>
+                <div className="rx-meta-value">{patientName}</div>
+              </div>
+              <div className="rx-meta-cell">
+                <strong className="rx-meta-label">Fecha</strong>
+                <div className="rx-meta-value">{new Date().toLocaleDateString('es-MX')}</div>
+              </div>
+              <div className="rx-meta-cell">
+                <strong className="rx-meta-label">Fecha de nacimiento</strong>
+                <div className="rx-meta-value">
+                  {patient?.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('es-MX', { timeZone: 'UTC' }) : (patient?.dob || '--')}
+                </div>
+              </div>
+              <div className="rx-meta-cell">
+                <strong className="rx-meta-label">Edad</strong>
+                <div className="rx-meta-value">
+                  {patient?.dateOfBirth ? `${calculateAge(patient.dateOfBirth)} años` : (patient?.dob ? `${calculateAge(patient.dob.split('/').reverse().join('-'))} años` : '--')}
+                </div>
+              </div>
+              <div className="rx-meta-cell span-2">
+                <strong className="rx-meta-label">Diagnóstico{soap?.icd10Code ? ` (CIE-10: ${soap.icd10Code})` : ''}</strong>
+                <div className="rx-meta-value">{soap?.assessment || 'No especificado'}</div>
               </div>
             </div>
-            <div style={{ padding: '0.75rem', gridColumn: '1 / -1' }}>
-              <strong style={{ color: '#555', fontSize: '0.65rem', textTransform: 'uppercase', display: 'block', marginBottom: '0.125rem' }}>Diagnóstico</strong>
-              <div style={{ fontWeight: 600, color: '#000' }}>{soap?.assessment || 'No especificado'}</div>
-            </div>
-          </div>
 
-          {/* Medicamentos */}
-          <div style={{ minHeight: '200px', marginBottom: '2rem' }}>
-            <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#000', marginBottom: '1.5rem', letterSpacing: '-0.05em', lineHeight: 1 }}>
-              Rx.
-            </h2>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {treatments && treatments.length > 0 ? treatments.map((t, i) => (
-                <div key={i} style={{ paddingLeft: '1rem', borderLeft: '3px solid #000' }}>
-                  <div style={{ fontSize: '1rem', fontWeight: 700, color: '#000', marginBottom: '0.25rem' }}>{t.medication}</div>
-                  <div style={{ color: '#000', fontSize: '0.875rem' }}>
-                    Tomar <span style={{ fontWeight: 600 }}>{t.dose}</span> cada <span style={{ fontWeight: 600 }}>{t.frequencyNumber} {t.frequencyUnit}</span> por <span style={{ fontWeight: 600 }}>{t.durationNumber} {t.durationUnit}</span>.
+            {/* Medicamentos */}
+            <div className="rx-body-block">
+              <h2 className="rx-symbol">Rx.</h2>
+              <div className="rx-med-list">
+                {treatments && treatments.length > 0 ? treatments.map((t, i) => (
+                  <div key={i} className="rx-med-item">
+                    <div className="rx-med-name">{t.medication}</div>
+                    <div className="rx-med-detail">
+                      Tomar <strong>{t.dose}</strong> cada <strong>{t.frequencyNumber} {t.frequencyUnit}</strong> por <strong>{t.durationNumber} {t.durationUnit}</strong>.
+                    </div>
                   </div>
-                </div>
-              )) : (
-                <div style={{ color: '#555', fontStyle: 'italic', fontSize: '0.875rem' }}>Sin prescripción farmacológica.</div>
-              )}
+                )) : (
+                  <div className="rx-empty">Sin prescripción farmacológica.</div>
+                )}
+              </div>
             </div>
+
+            {/* Indicaciones generales */}
+            {indications && indications.length > 0 && (
+              <div>
+                <h2 className="rx-indications-title">Indicaciones generales</h2>
+                <ul className="rx-indications-list">
+                  {indications.map((ind, i) => (
+                    <li key={i}>
+                      <strong>[{ind.type}]</strong> {ind.instruction}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Firma y datos de la clínica */}
+            <div className="rx-footer">
+              <div className="rx-clinic">
+                <strong>{doctorProfile?.profile?.clinicName || 'Clínica / consultorio'}</strong><br />
+                {doctorProfile?.profile?.clinicAddress || 'Dirección no registrada'}<br />
+                Tel: {doctorProfile?.profile?.phoneNumber || 'No registrado'}
+              </div>
+              <div className="rx-signature">
+                <div className="rx-signature-line" />
+                <div className="rx-signature-label">Firma del médico</div>
+              </div>
+            </div>
+
           </div>
-
-          {/* Indicaciones Generales */}
-          {indications && indications.length > 0 && (
-            <div style={{ minHeight: '100px' }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#000', marginBottom: '1rem', borderBottom: '2px solid #000', paddingBottom: '0.5rem' }}>
-                Indicaciones Generales
-              </h2>
-              <ul style={{ paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', color: '#000', fontSize: '0.875rem' }}>
-                {indications.map((ind, i) => (
-                  <li key={i}>
-                    <strong style={{ textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', marginRight: '0.5rem' }}>[{ind.type}]</strong> {ind.instruction}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Footer Firmas */}
-          <div style={{ position: 'absolute', bottom: '3rem', left: '3rem', right: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '2px solid #000', paddingTop: '1.5rem' }}>
-            <div style={{ fontSize: '0.75rem', color: '#555', lineHeight: 1.5 }}>
-              <strong style={{ color: '#000', fontSize: '0.875rem', textTransform: 'uppercase' }}>{doctorProfile?.profile?.clinicName || 'Clínica / Consultorio'}</strong><br/>
-              {doctorProfile?.profile?.clinicAddress || 'Dirección no registrada'}<br/>
-              Tel: {doctorProfile?.profile?.phoneNumber || 'No registrado'}
-            </div>
-            <div style={{ textAlign: 'center', width: '200px' }}>
-              <div style={{ borderBottom: '2px solid #000', height: '50px', marginBottom: '0.5rem' }}></div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#000', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Firma del Médico</div>
-            </div>
-          </div>
-
-        </div>
+        </motion.div>
       </div>
     </div>
   );

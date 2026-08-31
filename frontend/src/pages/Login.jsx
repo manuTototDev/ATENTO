@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Eye, EyeOff, ArrowRight, Activity, LogIn, Lock, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { publicFetch } from '../utils/api';
+import './Auth.css';
+
+const BLOBS = [
+  { size: 460, top: '-12%', left: '-10%', color: 'var(--pop-blue)', blur: 90, tx: 40, ty: 25, dur: '18s' },
+  { size: 380, top: '55%', left: '78%', color: 'var(--pop-violet)', blur: 80, tx: -35, ty: 30, dur: '22s' },
+  { size: 300, top: '75%', left: '5%', color: 'var(--pop-cyan)', blur: 70, tx: 25, ty: -20, dur: '15s' },
+];
 
 const Login = () => {
   const navigate = useNavigate();
@@ -10,151 +18,149 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [errorType, setErrorType] = useState('error'); // 'error' | 'warning' (cuenta bloqueada)
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMsg('');
-    
+
     try {
       const response = await publicFetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
       });
-      
+
       const data = await response.json();
-      
+
       if (response.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('userId', data.userId);
-        navigate('/dashboard');
-      } else {
-        setErrorMsg(data.error || 'Error al iniciar sesión');
+        navigate('/hoy');
+        return;
       }
+
+      setErrorType(response.status === 423 ? 'warning' : 'error');
+      setErrorMsg(data.error || 'No se pudo iniciar sesión. Intenta de nuevo.');
     } catch (error) {
-      setErrorMsg('Error de conexión con el servidor');
+      setErrorType('error');
+      setErrorMsg('Error de conexión con el servidor.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Inter, system-ui, sans-serif', flexWrap: 'wrap' }}>
-      
-      {/* Left Side: Black Cover */}
-      <div style={{ flex: '1 1 500px', backgroundColor: '#000', color: '#fff', padding: '4rem 5%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '50vh' }}>
-        <div 
-          onClick={() => navigate('/')} 
-          style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.05em', cursor: 'pointer' }}
-        >
+    <div className="auth-scene">
+      <div className="auth-blobs" aria-hidden="true">
+        {BLOBS.map((b, i) => (
+          <span
+            key={i}
+            className="auth-blob"
+            style={{
+              width: b.size,
+              height: b.size,
+              top: b.top,
+              left: b.left,
+              background: b.color,
+              filter: `blur(${b.blur}px)`,
+              '--drift-x': `${b.tx}px`,
+              '--drift-y': `${b.ty}px`,
+              '--drift-dur': b.dur,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="auth-topbar">
+        <Link to="/" className="auth-wordmark">
+          <Activity size={22} strokeWidth={2.5} />
           Lemmatica.
-        </div>
-        
-        <div style={{ margin: 'auto 0' }}>
-          <h1 style={{ fontSize: 'clamp(3rem, 5vw, 5rem)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.04em', marginBottom: '1.5rem', color: '#fff' }}>
-            Bienvenido <br/> de vuelta.
-          </h1>
-          <p style={{ fontSize: '1.25rem', color: '#a3a3a3', maxWidth: '400px', lineHeight: 1.6 }}>
-            Continúa donde lo dejaste. Tus expedientes clínicos y notas SOAP están listas y resguardadas bajo los más altos estándares de seguridad.
-          </p>
-        </div>
-        
-        <div style={{ fontSize: '0.875rem', color: '#555' }}>
-          Lemmatica © 2026. Cumplimiento médico y cifrado de grado bancario.
-        </div>
+        </Link>
       </div>
 
-      {/* Right Side: White Minimal Form */}
-      <div style={{ flex: '1 1 500px', backgroundColor: '#fff', padding: '4rem 5%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-        <div style={{ width: '100%', maxWidth: '420px' }}>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 600, letterSpacing: '-0.04em', marginBottom: '0.5rem', color: '#000' }}>
-            Iniciar Sesión
-          </h2>
-          <p style={{ color: '#555', marginBottom: '3rem', fontSize: '1.125rem' }}>
-            Ingresa tus credenciales para acceder a tu consultorio.
-          </p>
-          
-          {errorMsg && (
-            <div style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', fontSize: '0.875rem', fontWeight: 500 }}>
-              {errorMsg}
-            </div>
-          )}
+      <motion.div
+        className="auth-card"
+        initial={{ opacity: 0, y: 18, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <div
+          className="auth-card-icon"
+          style={{ background: 'color-mix(in srgb, var(--pop-blue) 18%, transparent)', color: 'var(--pop-blue)' }}
+        >
+          <LogIn size={24} />
+        </div>
 
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: '2rem' }}>
-              <label htmlFor="email" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>
-                Correo Electrónico
-              </label>
-              <input
-                type="email"
-                id="email"
-                style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.25rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
-                placeholder="dr.nombre@hospital.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
-                onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
-                required
-              />
-            </div>
+        <p className="auth-eyebrow pop-blue">Consultorio inteligente</p>
+        <h1 className="auth-title">Bienvenido de vuelta.</h1>
+        <p className="auth-subtitle">
+          Ingresa tus credenciales para continuar con tus expedientes clínicos y tu agenda.
+        </p>
 
-            <div style={{ marginBottom: '3rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <label htmlFor="password" style={{ fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000' }}>
-                  Contraseña
-                </label>
-                <a href="#" style={{ color: '#888', fontSize: '0.875rem', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={e=>e.target.style.color='#000'} onMouseOut={e=>e.target.style.color='#888'}>
-                  ¿Olvidaste tu contraseña?
-                </a>
-              </div>
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  style={{ width: '100%', padding: '1rem 0', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.25rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
-                  onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
-                  required
-                />
-                <button 
-                  type="button" 
-                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                  aria-pressed={showPassword}
-                  style={{ position: 'absolute', right: 0, background: 'none', border: 'none', cursor: 'pointer', color: '#888' }}
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
-                </button>
-              </div>
-            </div>
-
-            <button 
-              type="submit" 
-              disabled={isLoading}
-              style={{ width: '100%', background: '#000', color: '#fff', border: 'none', padding: '1.25rem', fontSize: '1.125rem', fontWeight: 500, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.75rem', transition: 'opacity 0.2s' }} 
-              onMouseOver={e=>e.target.style.opacity=0.8} 
-              onMouseOut={e=>e.target.style.opacity=1}
-            >
-              {isLoading ? 'Autenticando...' : 'Entrar al consultorio'}
-              {!isLoading && <ArrowRight size={20} />}
-            </button>
-          </form>
-
-          <div style={{ textAlign: 'center', marginTop: '3rem', fontSize: '1rem', color: '#555' }}>
-            ¿Eres nuevo en Lemmatica?{' '}
-            <Link to="/register" style={{ color: '#000', textDecoration: 'none', fontWeight: 600, borderBottom: '1px solid #000', paddingBottom: '2px' }}>
-              Crea una cuenta
-            </Link>
+        {errorMsg && (
+          <div className={`auth-banner ${errorType === 'warning' ? 'is-warning' : 'is-error'}`} role="alert">
+            {errorType === 'warning' ? <Lock size={18} /> : <AlertCircle size={18} />}
+            <span>{errorMsg}</span>
           </div>
-        </div>
-      </div>
+        )}
 
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="form-field">
+            <label htmlFor="email" className="form-label">Correo electrónico</label>
+            <input
+              type="email"
+              id="email"
+              className="form-input"
+              placeholder="dr.nombre@hospital.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+            />
+          </div>
+
+          <div className="form-field">
+            <label htmlFor="password" className="form-label">Contraseña</label>
+            <div className="auth-input-wrapper">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                className="form-input"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                className="auth-toggle-btn"
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-pressed={showPassword}
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" className="btn-primary" disabled={isLoading}>
+            {isLoading ? 'Autenticando...' : 'Entrar al consultorio'}
+            {!isLoading && <ArrowRight size={18} />}
+          </button>
+        </form>
+
+        <div className="auth-switch">
+          ¿Eres nuevo en Lemmatica?{' '}
+          <Link to="/register">Crea una cuenta</Link>
+        </div>
+      </motion.div>
+
+      <p className="auth-footnote">Lemmatica © 2026 · Cumplimiento médico y cifrado de grado bancario.</p>
     </div>
   );
 };
 
-export default Lo
+export default Login;
