@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { User, Phone, Mail, Droplet, AlertTriangle, Activity, ArrowLeft, Stethoscope } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../utils/api';
-import './Login.css'; // Reutilizamos los mismos estilos limpios
 
 const NewPatient = () => {
   const navigate = useNavigate();
@@ -85,18 +84,19 @@ const NewPatient = () => {
   };
 
   return (
-    <div className="login-container" style={{ alignItems: 'flex-start', paddingTop: '2rem', paddingBottom: '3rem' }}>
-      <div className="login-content animate-fade-in" style={{ maxWidth: '700px' }}>
-        
-        <button 
+    <div className="page-form" style={{ alignItems: 'flex-start', paddingTop: '2rem', paddingBottom: '3rem' }}>
+      <div className="page-form-content animate-fade-in" style={{ maxWidth: '700px' }}>
+
+        <button
           onClick={() => navigate('/dashboard')}
-          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: '1.5rem', fontWeight: 500 }}
+          className="btn-ghost"
+          style={{ marginBottom: '1.5rem', paddingLeft: 0 }}
         >
           <ArrowLeft size={18} /> Volver al Dashboard
         </button>
 
-        <div className="clean-panel login-card" style={{ padding: '2rem' }}>
-          <div className="login-header" style={{ marginBottom: '1.5rem' }}>
+        <div className="clean-panel form-panel" style={{ padding: '2rem' }}>
+          <div className="form-panel-header" style={{ marginBottom: '1.5rem' }}>
             <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
               <User size={24} color="var(--primary)" />
               Nuevo Paciente

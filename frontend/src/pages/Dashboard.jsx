@@ -1,20 +1,39 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Activity, Users, Plus, Search, Clock, FileText, UserPlus, Settings, X, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../utils/api';
+import './Dashboard.css';
+
+const EASE_OUT = [0.16, 1, 0.3, 1];
+
+const topRowVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: EASE_OUT } },
+};
+
+const contentGridVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
+};
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [showNewConsultModal, setShowNewConsultModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Real data state
   const [doctorProfile, setDoctorProfile] = useState(null);
   const [stats, setStats] = useState({ todayPatients: 0, todayEarnings: 0, totalPatients: 0 });
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [recentConsults, setRecentConsults] = useState([]);
   const [patients, setPatients] = useState([]);
-  
+
   // Fetch dashboard data (la identidad la resuelve el backend a partir del JWT)
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -102,289 +121,252 @@ const Dashboard = () => {
     setShowNewConsultModal(false);
   };
 
-  const filteredSearchPatients = searchQuery.trim() === '' 
-    ? [] 
+  const filteredSearchPatients = searchQuery.trim() === ''
+    ? []
     : patients.filter(p => {
         const fullName = p.name ? p.name.toLowerCase() : '';
-        return fullName.includes(searchQuery.toLowerCase()) || 
+        return fullName.includes(searchQuery.toLowerCase()) ||
                (p.phone && p.phone.includes(searchQuery));
       }).slice(0, 5);
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#fff', fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div className="dashboard-container">
       {/* HEADER TOP BAR */}
-      <header style={{ 
-        display: 'flex', 
-        justifyContent: 'flex-end', 
-        alignItems: 'center', 
-        padding: '1.5rem 3rem',
-        borderBottom: '2px solid #000'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '1rem', fontWeight: 600, color: '#000' }}>
+      <header className="dashboard-header">
+        <div>
+          <p className="dashboard-eyebrow">Panel</p>
+          <h1 className="dashboard-heading">Resumen del consultorio</h1>
+        </div>
+
+        <div className="dashboard-profile">
+          <div className="dashboard-profile-text">
+            <div className="dashboard-profile-name">
               Dr. {doctorProfile?.firstName || 'Médico'} {doctorProfile?.lastName || ''}
             </div>
-            <div style={{ fontSize: '0.75rem', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div className="dashboard-profile-specialty">
               {doctorProfile?.profile?.specialty?.name || 'Especialista'}
             </div>
           </div>
-          <button 
+          <motion.button
+            className="btn-ghost dashboard-settings-btn"
             onClick={() => navigate('/settings')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#000', display: 'flex', alignItems: 'center', transition: 'transform 0.2s' }}
             title="Configuración de Perfil"
-            onMouseOver={e=>e.currentTarget.style.transform='rotate(45deg)'}
-            onMouseOut={e=>e.currentTarget.style.transform='rotate(0deg)'}
+            aria-label="Configuración de perfil"
+            whileHover={{ rotate: 45 }}
+            whileTap={{ scale: 0.92 }}
+            transition={{ duration: 0.2, ease: EASE_OUT }}
           >
-            <Settings size={24} />
-          </button>
+            <Settings size={20} />
+          </motion.button>
         </div>
       </header>
 
-      <main style={{ padding: '3rem', maxWidth: '1400px', margin: '0 auto' }}>
-        
+      <main className="dashboard-main">
+
         {/* TOP ROW: ACTIONS & KPIs */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
-          
+        <motion.div className="stats-grid" variants={topRowVariants} initial="hidden" animate="show">
+
           {/* PRIMARY ACTION */}
-          <div 
+          <motion.div
+            className="cta-card"
+            variants={cardVariants}
+            role="button"
+            tabIndex={0}
             onClick={() => setShowNewConsultModal(true)}
-            style={{ 
-              backgroundColor: '#000', 
-              color: '#fff', 
-              padding: '2.5rem 2rem', 
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              minHeight: '200px',
-              transition: 'opacity 0.2s'
-            }}
-            onMouseOver={e=>e.currentTarget.style.opacity=0.9} 
-            onMouseOut={e=>e.currentTarget.style.opacity=1}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowNewConsultModal(true); } }}
+            whileHover={{ y: -3 }}
+            whileTap={{ scale: 0.98 }}
           >
-            <Plus size={32} />
+            <Plus size={28} />
             <div>
-              <h2 style={{ fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: '0.5rem' }}>
-                Iniciar <br/> Consulta
+              <h2 className="cta-title">
+                Iniciar <br /> Consulta
               </h2>
-              <div style={{ fontSize: '0.875rem', color: '#a3a3a3', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div className="cta-subtitle">
                 Atender paciente <ArrowRight size={16} />
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* STAT 1 */}
-          <div style={{ 
-            border: '2px solid #000', 
-            padding: '2.5rem 2rem', 
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            minHeight: '200px'
-          }}>
-            <Users size={32} color="#000" />
-            <div>
-              <div style={{ fontSize: '4rem', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: 1, color: '#000' }}>
-                {stats.todayPatients}
-              </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '0.5rem' }}>
-                Consultas Hoy
-              </h3>
+          <motion.div className="stat-card" variants={cardVariants}>
+            <div className="stat-info">
+              <h3>Consultas Hoy</h3>
+              <div className="stat-value">{stats.todayPatients}</div>
             </div>
-          </div>
+            <div className="stat-icon">
+              <Users size={22} />
+            </div>
+          </motion.div>
 
           {/* STAT 2 */}
-          <div style={{ 
-            border: '2px solid #000', 
-            padding: '2.5rem 2rem', 
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            minHeight: '200px'
-          }}>
-            <Activity size={32} color="#000" />
-            <div>
-              <div style={{ fontSize: '4rem', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: 1, color: '#000' }}>
-                {stats.totalPatients}
-              </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '0.5rem' }}>
-                Pacientes Totales
-              </h3>
+          <motion.div className="stat-card" variants={cardVariants}>
+            <div className="stat-info">
+              <h3>Pacientes Totales</h3>
+              <div className="stat-value">{stats.totalPatients}</div>
             </div>
-          </div>
-        </div>
+            <div className="stat-icon">
+              <Activity size={22} />
+            </div>
+          </motion.div>
+        </motion.div>
 
         {/* MAIN CONTENT GRID */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '3rem' }}>
-          
+        <motion.div className="dashboard-content-grid" variants={contentGridVariants} initial="hidden" animate="show">
+
           {/* LEFT: HISTORIAL */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '2px solid #000', paddingBottom: '0.5rem' }}>
-              <FileText size={24} color="#000" />
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 600, letterSpacing: '-0.03em', color: '#000' }}>
-                Consultas Recientes
-              </h2>
+          <motion.div className="dashboard-panel" variants={cardVariants}>
+            <div className="panel-header">
+              <FileText size={20} />
+              <h2 className="panel-title">Consultas Recientes</h2>
             </div>
-            
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid #000' }}>
-                  <th style={{ padding: '1rem 0', fontWeight: 600, color: '#555', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>Paciente</th>
-                  <th style={{ padding: '1rem 0', fontWeight: 600, color: '#555', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>Hora</th>
-                  <th style={{ padding: '1rem 0', fontWeight: 600, color: '#555', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentConsults.length > 0 ? recentConsults.map(c => (
-                  <tr key={c.id} style={{ borderBottom: '1px solid #e5e5e5' }}>
-                    <td style={{ padding: '1.5rem 0', fontWeight: 600, color: '#000', fontSize: '1.125rem' }}>{c.patient}</td>
-                    <td style={{ padding: '1.5rem 0', color: '#555' }}>{c.time}</td>
-                    <td style={{ padding: '1.5rem 0' }}>
-                      <span style={{ 
-                        background: c.status === 'Completada' ? '#000' : '#e5e5e5', 
-                        color: c.status === 'Completada' ? '#fff' : '#000', 
-                        padding: '0.25rem 0.75rem', 
-                        fontSize: '0.75rem', 
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
-                      }}>
-                        {c.status}
-                      </span>
-                    </td>
-                  </tr>
-                )) : (
-                  <tr>
-                    <td colSpan="3" style={{ padding: '3rem 0', textAlign: 'center', color: '#888' }}>
-                      Aún no hay consultas registradas.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+
+            {recentConsults.length > 0 ? (
+              <div className="table-scroll">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Paciente</th>
+                      <th>Hora</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentConsults.map(c => (
+                      <tr key={c.id}>
+                        <td style={{ fontWeight: 600 }}>{c.patient}</td>
+                        <td>{c.time}</td>
+                        <td>
+                          <span className={`status-badge ${c.status === 'Completada' ? 'status-completed' : 'status-waiting'}`}>
+                            {c.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="empty-state">
+                <FileText size={32} />
+                <p>Aún no hay consultas registradas.</p>
+              </div>
+            )}
+          </motion.div>
 
           {/* RIGHT: AGENDA */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '2px solid #000', paddingBottom: '0.5rem' }}>
-              <Clock size={24} color="#000" />
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 600, letterSpacing: '-0.03em', color: '#000' }}>
-                Siguientes en Espera
-              </h2>
+          <motion.div className="dashboard-panel" variants={cardVariants}>
+            <div className="panel-header">
+              <Clock size={20} />
+              <h2 className="panel-title">Siguientes en Espera</h2>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {upcomingAppointments.map(app => (
-                <div key={app.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', padding: '1.5rem', border: '1px solid #e5e5e5' }}>
-                  <div style={{ fontWeight: 700, color: '#000', fontSize: '1.125rem', whiteSpace: 'nowrap' }}>
-                    {app.time}
+            {upcomingAppointments.length > 0 ? (
+              <div className="appointment-list">
+                {upcomingAppointments.map(app => (
+                  <div key={app.id} className="appointment-item">
+                    <div className="appointment-time">{app.time}</div>
+                    <div>
+                      <div className="appointment-patient">{app.patient}</div>
+                      <div className="appointment-reason">{app.reason}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div style={{ fontWeight: 600, color: '#000', fontSize: '1.125rem', marginBottom: '0.25rem' }}>{app.patient}</div>
-                    <div style={{ color: '#555', fontSize: '0.875rem', lineHeight: 1.4 }}>{app.reason}</div>
-                  </div>
-                </div>
-              ))}
-              
-              {upcomingAppointments.length === 0 && (
-                <div style={{ padding: '2rem', border: '1px dashed #e5e5e5', color: '#888', textAlign: 'center' }}>
-                  No hay pacientes en espera.
-                </div>
-              )}
-            </div>
-          </div>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state">
+                <Clock size={32} />
+                <p>No hay pacientes en espera.</p>
+              </div>
+            )}
+          </motion.div>
 
-        </div>
+        </motion.div>
       </main>
 
       {/* FULLSCREEN MODAL: INICIAR NUEVA CONSULTA */}
       {showNewConsultModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowNewConsultModal(false)}>
-          <div style={{ backgroundColor: '#fff', width: '100%', maxWidth: '600px', padding: '4rem', position: 'relative' }} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setShowNewConsultModal(false)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', cursor: 'pointer', color: '#000' }}>
-              <X size={32} />
+        <div className="modal-overlay" onClick={() => setShowNewConsultModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button
+              className="btn-ghost modal-close-btn"
+              onClick={() => setShowNewConsultModal(false)}
+              aria-label="Cerrar"
+            >
+              <X size={22} />
             </button>
 
-            <h2 style={{ fontSize: '3rem', fontWeight: 700, letterSpacing: '-0.04em', color: '#000', marginBottom: '1rem', lineHeight: 1 }}>
-              Identificar <br/> Paciente
-            </h2>
-            <p style={{ color: '#555', fontSize: '1.125rem', marginBottom: '3rem' }}>Busca un expediente existente o registra uno nuevo para comenzar a dictar.</p>
+            <div className="consult-modal-header">
+              <h2>Identificar <br /> Paciente</h2>
+              <p>Busca un expediente existente o registra uno nuevo para comenzar a dictar.</p>
+            </div>
 
             <form onSubmit={startConsultation}>
-              <div style={{ position: 'relative', marginBottom: '3rem' }}>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000', marginBottom: '0.5rem' }}>Buscar por Nombre o Teléfono</label>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <Search size={24} color="#000" style={{ position: 'absolute', left: 0 }} />
-                  <input
-                    type="text"
-                    style={{ width: '100%', padding: '1rem 0 1rem 2.5rem', border: 'none', borderBottom: '2px solid #e5e5e5', backgroundColor: 'transparent', fontSize: '1.5rem', color: '#000', outline: 'none', transition: 'border-color 0.2s' }}
-                    placeholder="Ej. Ana L..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={(e) => e.target.style.borderBottom = '2px solid #000'}
-                    onBlur={(e) => e.target.style.borderBottom = '2px solid #e5e5e5'}
-                    autoFocus
-                  />
+              <div className="search-dropdown-wrapper">
+                <div className="form-field">
+                  <label className="form-label" htmlFor="patientSearch">Buscar por Nombre o Teléfono</label>
+                  <div className="input-wrapper">
+                    <Search size={18} className="input-icon" />
+                    <input
+                      id="patientSearch"
+                      type="text"
+                      className="form-input"
+                      placeholder="Ej. Ana L..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
                 </div>
-                
+
                 {searchQuery.trim() !== '' && (
-                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '2px solid #000', marginTop: '0.5rem', zIndex: 10, maxHeight: '250px', overflowY: 'auto' }}>
+                  <div className="search-results">
                     {filteredSearchPatients.length > 0 ? (
                       filteredSearchPatients.map(p => (
-                        <div 
-                          key={p.id} 
+                        <div
+                          key={p.id}
+                          className="search-result-item"
                           onClick={() => {
                             navigate(`/consultation/${p.id}`);
                             setShowNewConsultModal(false);
                           }}
-                          style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #e5e5e5', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                         >
                           <div>
-                            <div style={{ fontWeight: 600, color: '#000', fontSize: '1.125rem' }}>{p.name}</div>
-                            <div style={{ fontSize: '0.875rem', color: '#555' }}>Tel: {p.phone || 'No registrado'}</div>
+                            <div className="search-result-name">{p.name}</div>
+                            <div className="search-result-phone">Tel: {p.phone || 'No registrado'}</div>
                           </div>
-                          <button 
+                          <button
                             type="button"
+                            className="search-result-action"
                             onClick={(e) => {
                               e.stopPropagation();
                               navigate(`/consultation/${p.id}`);
                               setShowNewConsultModal(false);
                             }}
-                            style={{ background: '#000', color: '#fff', border: 'none', padding: '0.5rem 1rem', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' }}
                           >
                             Entrar
                           </button>
                         </div>
                       ))
                     ) : (
-                      <div style={{ padding: '1.5rem', color: '#555', fontSize: '1rem', textAlign: 'center' }}>
-                        No se encontraron coincidencias.
-                      </div>
+                      <div className="search-empty">No se encontraron coincidencias.</div>
                     )}
                   </div>
                 )}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <button 
-                  type="submit" 
-                  style={{ width: '100%', background: '#000', color: '#fff', border: 'none', padding: '1.25rem', fontSize: '1.125rem', fontWeight: 600, cursor: 'pointer', transition: 'opacity 0.2s' }}
-                  onMouseOver={e=>e.target.style.opacity=0.8} 
-                  onMouseOut={e=>e.target.style.opacity=1}
-                >
+              <div className="modal-actions">
+                <button type="submit" className="btn-primary">
                   Continuar a Consulta
                 </button>
-                <div style={{ textAlign: 'center', margin: '0.5rem 0', color: '#888', fontSize: '0.875rem' }}>O</div>
-                <button 
-                  type="button" 
-                  style={{ width: '100%', background: 'transparent', color: '#000', border: '2px solid #000', padding: '1.25rem', fontSize: '1.125rem', fontWeight: 600, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}
+                <div className="modal-divider">O</div>
+                <button
+                  type="button"
+                  className="btn-secondary"
                   onClick={() => {
                     navigate('/patient/new');
                     setShowNewConsultModal(false);
                   }}
-                  onMouseOver={e=>{e.target.style.background='#000'; e.target.style.color='#fff'}} 
-                  onMouseOut={e=>{e.target.style.background='transparent'; e.target.style.color='#000'}}
                 >
                   <UserPlus size={20} />
                   Crear Nuevo Paciente

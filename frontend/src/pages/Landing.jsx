@@ -1,11 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { ArrowRight, Mic, FileText, Lock, Users, Calendar } from 'lucide-react';
+
+// Animación de entrada consistente para todas las secciones (scroll-reveal)
+const EASE = [0.16, 1, 0.3, 1];
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } }
+};
+
+const staggerGroup = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } }
+};
+
+const staggerItem = {
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } }
+};
 
 const Landing = () => {
   const navigate = useNavigate();
-  
+
   const scenarios = [
     {
       p: "Sí doctor, me duele el estómago desde ayer en la noche y he tenido muchos gases.",
@@ -133,44 +152,44 @@ const Landing = () => {
       // Loop infinito internamente controlado por currentIndex
       while (isRunning) {
         const currentScenario = scenarios[currentIndex];
-        
+
         // Escribir Paciente
         while (pIndex <= currentScenario.p.length && isRunning) {
           setTypedP(currentScenario.p.slice(0, pIndex));
           pIndex++;
           await new Promise(r => setTimeout(r, 30)); // Typing speed
         }
-        
+
         if (!isRunning) break;
         await new Promise(r => setTimeout(r, 400)); // Pause
-  
+
         // Escribir Doctor
         while (dIndex <= currentScenario.d.length && isRunning) {
           setTypedD(currentScenario.d.slice(0, dIndex));
           dIndex++;
           await new Promise(r => setTimeout(r, 30));
         }
-        
+
         if (!isRunning) break;
         await new Promise(r => setTimeout(r, 500)); // Pause
-  
+
         if (isRunning) setShowSOAP(true);
-  
+
         // Esperar a que el usuario lea el SOAP final
         await new Promise(r => setTimeout(r, 5000));
-        
+
         if (isRunning) {
           setShowSOAP(false);
           await new Promise(r => setTimeout(r, 500)); // Fade out pause
-          
+
           setTypedP("");
           setTypedD("");
           pIndex = 0;
           dIndex = 0;
-          
+
           currentIndex = (currentIndex + 1) % scenarios.length;
           setScenarioIndex(currentIndex);
-          
+
           await new Promise(r => setTimeout(r, 500)); // Pause before starting next scenario
         }
       }
@@ -192,7 +211,7 @@ const Landing = () => {
     const runRxAnimation = async () => {
       while (isRunning) {
         const currentScenario = prescriptionScenarios[currentIndex];
-        
+
         // P1
         while (p1Index <= currentScenario.p1.length && isRunning) {
           setTypedRxP1(currentScenario.p1.slice(0, p1Index));
@@ -201,7 +220,7 @@ const Landing = () => {
         }
         if (!isRunning) break;
         await new Promise(r => setTimeout(r, 300));
-        
+
         // D1
         while (d1Index <= currentScenario.d1.length && isRunning) {
           setTypedRxD1(currentScenario.d1.slice(0, d1Index));
@@ -228,15 +247,15 @@ const Landing = () => {
         }
         if (!isRunning) break;
         await new Promise(r => setTimeout(r, 800));
-        
+
         if (isRunning) setShowRx(true);
-  
+
         await new Promise(r => setTimeout(r, 5000));
-        
+
         if (isRunning) {
           setShowRx(false);
           await new Promise(r => setTimeout(r, 600));
-          
+
           setTypedRxP1("");
           setTypedRxD1("");
           setTypedRxP2("");
@@ -259,7 +278,7 @@ const Landing = () => {
 
   return (
     <div style={{ backgroundColor: '#fff', color: '#000', fontFamily: 'Inter, system-ui, sans-serif', overflowX: 'hidden' }}>
-      
+
       <style>
         {`
           @keyframes pulse-mic {
@@ -294,50 +313,130 @@ const Landing = () => {
           @keyframes spin-slow {
             100% { transform: rotate(360deg); }
           }
+
+          .lm-nav-link {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: #000;
+            padding: 0.5rem 0.25rem;
+            transition: color 0.2s ease;
+          }
+          .lm-nav-link:hover { color: #737373; }
+
+          .lm-option {
+            padding: clamp(1.25rem, 3vw, 2rem);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: background-color 0.25s, border-color 0.25s, color 0.25s;
+            background-color: transparent;
+            color: #000;
+            border: 1px solid #e5e5e5;
+          }
+          .lm-option:hover { border-color: #a3a3a3; background-color: #fafafa; }
+          .lm-option.lm-option-active { background-color: #000; color: #fff; border-color: #000; }
+          .lm-option.lm-option-active:hover { background-color: #171717; }
+          .lm-option p { color: #555; transition: color 0.25s; }
+          .lm-option.lm-option-active p { color: #a3a3a3; }
+
+          .lm-footer-link {
+            cursor: pointer;
+            transition: color 0.2s ease;
+            color: #888;
+            text-decoration: none;
+          }
+          .lm-footer-link:hover { color: #000; }
+
+          @media (max-width: 640px) {
+            .lm-hero-cta, .lm-final-cta { width: 100%; justify-content: center; }
+          }
         `}
       </style>
 
       {/* Navbar: Ultra minimal */}
-      <nav style={{ padding: '2rem 5%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff' }}>
+      <motion.nav
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: EASE }}
+        style={{ padding: '2rem 5%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff' }}
+      >
         <div style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.05em' }}>
           Lemmatica.
         </div>
-        <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-          <button onClick={() => navigate('/login')} style={{ background: 'none', border: 'none', fontSize: '1rem', fontWeight: 500, cursor: 'pointer', color: '#000' }}>Log in</button>
-          <button onClick={() => navigate('/register')} style={{ background: '#000', color: '#fff', border: 'none', borderRadius: '100px', fontSize: '1rem', fontWeight: 500, padding: '0.75rem 1.5rem', cursor: 'pointer' }}>Get Started</button>
+        <div style={{ display: 'flex', gap: 'clamp(1rem, 4vw, 2rem)', alignItems: 'center' }}>
+          <button className="lm-nav-link" onClick={() => navigate('/login')}>Log in</button>
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ duration: 0.15, ease: EASE }}
+            onClick={() => navigate('/register')}
+            style={{ background: '#000', color: '#fff', border: 'none', borderRadius: '100px', fontSize: 'clamp(0.9rem, 2vw, 1rem)', fontWeight: 500, padding: 'clamp(0.6rem, 2vw, 0.75rem) clamp(1.1rem, 3vw, 1.5rem)', cursor: 'pointer' }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#262626'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = '#000'}
+          >
+            Get Started
+          </motion.button>
         </div>
-      </nav>
+      </motion.nav>
 
       {/* Hero: Huge typography, high contrast, clean */}
       <header style={{ minHeight: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 5%', maxWidth: '1200px', margin: '0 auto' }}>
-        <div>
-          <h1 style={{ fontSize: 'clamp(3.5rem, 8vw, 6rem)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.04em', marginBottom: '2rem', maxWidth: '900px', color: '#000' }}>
+        <motion.div
+          initial="hidden"
+          animate="show"
+          variants={staggerGroup}
+        >
+          <motion.h1
+            variants={staggerItem}
+            style={{ fontSize: 'clamp(3.5rem, 8vw, 6rem)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.04em', marginBottom: '2rem', maxWidth: '900px', color: '#000' }}
+          >
             Tu consulta, <br/> humana de nuevo.
-          </h1>
-          <p style={{ fontSize: 'clamp(1.25rem, 3vw, 1.5rem)', color: '#555', maxWidth: '600px', lineHeight: 1.5, marginBottom: '3rem' }}>
+          </motion.h1>
+          <motion.p
+            variants={staggerItem}
+            style={{ fontSize: 'clamp(1.25rem, 3vw, 1.5rem)', color: '#555', maxWidth: '600px', lineHeight: 1.5, marginBottom: '3rem' }}
+          >
             La IA médica que escribe por ti. Lemmatica escucha tus consultas y redacta el expediente clínico y la receta automáticamente. Recupera hasta 2 horas de tu día y vuelve a disfrutar de la medicina.
-          </p>
-          <button onClick={() => navigate('/register')} style={{ background: '#000', color: '#fff', border: 'none', borderRadius: '100px', fontSize: '1.125rem', fontWeight: 500, padding: '1rem 2.5rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.75rem', transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity = 0.8} onMouseOut={e => e.currentTarget.style.opacity = 1}>
+          </motion.p>
+          <motion.button
+            variants={staggerItem}
+            className="lm-hero-cta"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.15, ease: EASE }}
+            onClick={() => navigate('/register')}
+            style={{ background: '#000', color: '#fff', border: 'none', borderRadius: '100px', fontSize: '1.125rem', fontWeight: 500, padding: '1rem 2.5rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.75rem' }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#262626'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = '#000'}
+          >
             Prueba Lemmatica <ArrowRight size={20} />
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       </header>
 
       {/* Feature 1: Escucha. Entiende. Escribe. */}
-      <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '4rem 5%', backgroundColor: '#0a0a0a', color: '#fff' }}>
-        <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '4rem', alignItems: 'center' }}>
-          <div>
+      <motion.section
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: '-100px' }}
+        variants={staggerGroup}
+        style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '4rem 5%', backgroundColor: '#0a0a0a', color: '#fff' }}
+      >
+        <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(400px, 100%), 1fr))', gap: '4rem', alignItems: 'center' }}>
+          <motion.div variants={fadeUp}>
             <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 600, lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '2rem', color: '#fff' }}>
               Escucha.<br/>Entiende.<br/>Escribe.
             </h2>
             <p style={{ fontSize: '1.25rem', color: '#a3a3a3', lineHeight: 1.6, maxWidth: '450px' }}>
               La IA procesa el audio de la consulta en tiempo real. Entiende el contexto clínico y extrae la información relevante para estructurar una nota SOAP perfecta.
             </p>
-          </div>
-          
+          </motion.div>
+
           {/* Animación de Globos de Transcripción */}
-          <div style={{ height: '600px', backgroundColor: '#171717', borderRadius: '24px', display: 'flex', flexDirection: 'column', padding: '2.5rem', justifyContent: 'flex-start', position: 'relative', overflow: 'hidden' }}>
-             
+          <motion.div variants={fadeUp} style={{ height: '600px', backgroundColor: '#171717', borderRadius: '24px', display: 'flex', flexDirection: 'column', padding: 'clamp(1.5rem, 4vw, 2.5rem)', justifyContent: 'flex-start', position: 'relative', overflow: 'hidden' }}>
+
              {/* Indicador de escucha */}
              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
                <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#262626', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'pulse-mic 2s infinite' }}>
@@ -348,10 +447,10 @@ const Landing = () => {
 
              {/* Conversación */}
              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem', width: '100%', zIndex: 2 }}>
-               
+
                {/* Paciente */}
                <div style={{ padding: '1.25rem', background: '#262626', borderRadius: '16px 16px 16px 0', color: '#e5e5e5', fontSize: '1.125rem', fontFamily: 'monospace', lineHeight: 1.5, alignSelf: 'flex-start', maxWidth: '90%', minHeight: '60px' }}>
-                 <span style={{ color: '#0ea5e9', fontWeight: 'bold', marginRight: '0.5rem' }}>Paciente:</span>
+                 <span style={{ color: 'var(--info)', fontWeight: 'bold', marginRight: '0.5rem' }}>Paciente:</span>
                  {typedP}
                  {typedP.length < scenarios[scenarioIndex].p.length && <span style={{ borderRight: '2px solid #fff', animation: 'blink 1s infinite' }}>&nbsp;</span>}
                </div>
@@ -359,7 +458,7 @@ const Landing = () => {
                {/* Doctor */}
                {typedP.length === scenarios[scenarioIndex].p.length && (
                  <div style={{ padding: '1.25rem', background: '#0a0a0a', border: '1px solid #333', borderRadius: '16px 16px 0 16px', color: '#fff', fontSize: '1.125rem', fontFamily: 'monospace', lineHeight: 1.5, alignSelf: 'flex-end', maxWidth: '90%', minHeight: '60px', animation: 'fade-in-up 0.3s ease-out' }}>
-                   <span style={{ color: '#10b981', fontWeight: 'bold', marginRight: '0.5rem' }}>Doctor:</span>
+                   <span style={{ color: 'var(--success)', fontWeight: 'bold', marginRight: '0.5rem' }}>Doctor:</span>
                    {typedD}
                    {typedD.length < scenarios[scenarioIndex].d.length && <span style={{ borderRight: '2px solid #fff', animation: 'blink 1s infinite' }}>&nbsp;</span>}
                  </div>
@@ -372,30 +471,36 @@ const Landing = () => {
                <strong style={{ color: '#000' }}>Subjetivo (SOAP):</strong><br/>
                <span style={{ color: '#333' }}>{scenarios[scenarioIndex].soap}</span>
              </div>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Feature 2: Aclaración de límites de IA */}
-      <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '4rem 5%', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '4rem', alignItems: 'center' }}>
-          
+      <motion.section
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: '-100px' }}
+        variants={staggerGroup}
+        style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '4rem 5%', maxWidth: '1200px', margin: '0 auto' }}
+      >
+        <div style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(400px, 100%), 1fr))', gap: '4rem', alignItems: 'center' }}>
+
           {/* Animación: De la conversación a la receta */}
-          <div style={{ height: '520px', backgroundColor: '#f4f4f4', borderRadius: '24px', display: 'flex', flexDirection: 'column', padding: '2rem', position: 'relative', overflow: 'hidden' }}>
-            
+          <motion.div variants={fadeUp} style={{ height: '520px', backgroundColor: '#f4f4f4', borderRadius: '24px', display: 'flex', flexDirection: 'column', padding: 'clamp(1.25rem, 4vw, 2rem)', position: 'relative', overflow: 'hidden' }}>
+
             {/* Globos de conversación */}
-            <div style={{ 
-               display: 'flex', 
-               flexDirection: 'column', 
-               gap: '0.75rem', 
-               zIndex: 2, 
+            <div style={{
+               display: 'flex',
+               flexDirection: 'column',
+               gap: '0.75rem',
+               zIndex: 2,
                transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
                transform: showRx ? 'scale(0.9) translateY(-20px)' : 'scale(1) translateY(0)',
                opacity: showRx ? 0.2 : 1
             }}>
               {/* P1 */}
               <div style={{ padding: '0.875rem 1.25rem', background: '#e5e5e5', borderRadius: '16px 16px 16px 0', color: '#000', fontSize: '0.9rem', alignSelf: 'flex-start', maxWidth: '85%', minHeight: '40px' }}>
-                <span style={{ fontWeight: 'bold', color: '#0ea5e9', marginRight: '0.5rem' }}>P:</span>
+                <span style={{ fontWeight: 'bold', color: 'var(--info)', marginRight: '0.5rem' }}>P:</span>
                 {typedRxP1}
                 {typedRxP1.length < prescriptionScenarios[rxScenarioIndex].p1.length && <span style={{ animation: 'blink 1s infinite' }}>|</span>}
               </div>
@@ -403,7 +508,7 @@ const Landing = () => {
               {/* D1 */}
               {typedRxP1.length === prescriptionScenarios[rxScenarioIndex].p1.length && (
                 <div style={{ padding: '0.875rem 1.25rem', background: '#000', borderRadius: '16px 16px 0 16px', color: '#fff', fontSize: '0.9rem', alignSelf: 'flex-end', maxWidth: '85%', minHeight: '40px', animation: 'fade-in-up 0.3s' }}>
-                  <span style={{ fontWeight: 'bold', color: '#10b981', marginRight: '0.5rem' }}>D:</span>
+                  <span style={{ fontWeight: 'bold', color: 'var(--success)', marginRight: '0.5rem' }}>D:</span>
                   {typedRxD1}
                   {typedRxD1.length < prescriptionScenarios[rxScenarioIndex].d1.length && <span style={{ animation: 'blink 1s infinite' }}>|</span>}
                 </div>
@@ -412,7 +517,7 @@ const Landing = () => {
               {/* P2 */}
               {typedRxD1.length === prescriptionScenarios[rxScenarioIndex].d1.length && (
                 <div style={{ padding: '0.875rem 1.25rem', background: '#e5e5e5', borderRadius: '16px 16px 16px 0', color: '#000', fontSize: '0.9rem', alignSelf: 'flex-start', maxWidth: '85%', minHeight: '40px', animation: 'fade-in-up 0.3s' }}>
-                  <span style={{ fontWeight: 'bold', color: '#0ea5e9', marginRight: '0.5rem' }}>P:</span>
+                  <span style={{ fontWeight: 'bold', color: 'var(--info)', marginRight: '0.5rem' }}>P:</span>
                   {typedRxP2}
                   {typedRxP2.length < prescriptionScenarios[rxScenarioIndex].p2.length && <span style={{ animation: 'blink 1s infinite' }}>|</span>}
                 </div>
@@ -421,7 +526,7 @@ const Landing = () => {
               {/* D2 */}
               {typedRxP2.length === prescriptionScenarios[rxScenarioIndex].p2.length && (
                 <div style={{ padding: '0.875rem 1.25rem', background: '#000', borderRadius: '16px 16px 0 16px', color: '#fff', fontSize: '0.9rem', alignSelf: 'flex-end', maxWidth: '85%', minHeight: '40px', animation: 'fade-in-up 0.3s' }}>
-                  <span style={{ fontWeight: 'bold', color: '#10b981', marginRight: '0.5rem' }}>D:</span>
+                  <span style={{ fontWeight: 'bold', color: 'var(--success)', marginRight: '0.5rem' }}>D:</span>
                   {typedRxD2}
                   {typedRxD2.length < prescriptionScenarios[rxScenarioIndex].d2.length && <span style={{ animation: 'blink 1s infinite' }}>|</span>}
                 </div>
@@ -429,24 +534,24 @@ const Landing = () => {
             </div>
 
             {/* Receta Física (Formato Documento) */}
-            <div style={{ 
-              position: 'absolute', 
-              bottom: showRx ? '5%' : '-100%', 
-              left: '50%', 
+            <div style={{
+              position: 'absolute',
+              bottom: showRx ? '5%' : '-100%',
+              left: '50%',
               transform: 'translateX(-50%)',
               width: '85%',
-              background: '#fff', 
-              color: '#000', 
+              background: '#fff',
+              color: '#000',
               border: '2px solid #000',
-              borderRadius: '8px', 
+              borderRadius: '8px',
               padding: '1.5rem',
-              boxShadow: '8px 8px 0px rgba(0,0,0,1)', 
-              transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)', 
-              zIndex: 10 
+              boxShadow: '8px 8px 0px rgba(0,0,0,1)',
+              transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+              zIndex: 10
             }}>
               <div style={{ borderBottom: '2px solid #e5e5e5', paddingBottom: '0.5rem', marginBottom: '1rem', textAlign: 'center' }}>
                 <h3 style={{ fontSize: '1rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Receta y Evaluación Médica</h3>
-                <span style={{ fontSize: '0.65rem', color: '#888', fontWeight: 600 }}>LEMMATICA HEALTHCARE AI</span>
+                <span style={{ fontSize: '0.7rem', color: '#888', fontWeight: 600 }}>LEMMATICA HEALTHCARE AI</span>
               </div>
               <div style={{ fontFamily: 'monospace', fontSize: '0.875rem', lineHeight: 1.5, whiteSpace: 'pre-line', color: '#222', fontWeight: 600 }}>
                 {prescriptionScenarios[rxScenarioIndex].rx}
@@ -455,12 +560,12 @@ const Landing = () => {
                 <div style={{ width: '80px', height: '10px', borderBottom: '2px solid #000', opacity: 0.3 }}></div>
               </div>
             </div>
-            
+
             {/* Elemento de fondo decorativo */}
             <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(0,0,0,0.03) 0%, rgba(255,255,255,0) 70%)', zIndex: 1 }}></div>
 
-          </div>
-          <div>
+          </motion.div>
+          <motion.div variants={fadeUp}>
             <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', fontWeight: 600, lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '2rem', color: '#000' }}>
               De la conversación a la receta.
             </h2>
@@ -468,90 +573,99 @@ const Landing = () => {
               <strong>Deja de ser un capturista de datos y vuelve a ser médico.</strong><br/><br/>
               La tecnología no debería interponerse entre tú y quien confía en ti. Lemmatica escucha, analiza y estructura tu consulta automáticamente, permitiéndote recuperar la mirada y la conexión con tu paciente.
             </p>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Feature 3: Gestión Todo en Uno */}
-      <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '4rem 5%', backgroundColor: '#fff', borderTop: '1px solid #E5E5E5', borderBottom: '1px solid #E5E5E5' }}>
+      <motion.section
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: '-100px' }}
+        variants={staggerGroup}
+        style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '4rem 5%', backgroundColor: '#fff', borderTop: '1px solid #E5E5E5', borderBottom: '1px solid #E5E5E5' }}
+      >
         <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
-          
-          <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
+
+          <motion.div variants={fadeUp} style={{ textAlign: 'center', marginBottom: '5rem' }}>
             <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: '1.5rem', color: '#000' }}>
               Gestión Todo en Uno
             </h2>
             <p style={{ fontSize: '1.25rem', color: '#555', maxWidth: '600px', margin: '0 auto' }}>
               Control absoluto de tu consultorio. Olvídate de tener software desconectado.
             </p>
-          </div>
+          </motion.div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '4rem', alignItems: 'center' }}>
-            
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(400px, 100%), 1fr))', gap: '4rem', alignItems: 'center' }}>
+
             {/* Lista interactiva */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              
+            <motion.div variants={staggerGroup} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
               {/* Opción 1: Pacientes */}
-              <div 
+              <motion.div
+                variants={staggerItem}
+                className={`lm-option${activeFeatureIndex === 0 ? ' lm-option-active' : ''}`}
                 onClick={() => setActiveFeatureIndex(0)}
-                style={{ padding: '2rem', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s', backgroundColor: activeFeatureIndex === 0 ? '#000' : 'transparent', color: activeFeatureIndex === 0 ? '#fff' : '#000', border: activeFeatureIndex === 0 ? '1px solid #000' : '1px solid #e5e5e5' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                  <Users size={28} color={activeFeatureIndex === 0 ? '#fff' : '#000'} />
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0, color: activeFeatureIndex === 0 ? '#fff' : '#000' }}>Control de Pacientes</h3>
+                  <Users size={28} />
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0, color: 'inherit' }}>Control de Pacientes</h3>
                 </div>
-                <p style={{ color: activeFeatureIndex === 0 ? '#a3a3a3' : '#555', lineHeight: 1.6, margin: 0 }}>Directorio centralizado con información demográfica, contactos y métricas de salud fácilmente accesibles.</p>
-              </div>
+                <p style={{ lineHeight: 1.6, margin: 0 }}>Directorio centralizado con información demográfica, contactos y métricas de salud fácilmente accesibles.</p>
+              </motion.div>
 
               {/* Opción 2: Historial */}
-              <div 
+              <motion.div
+                variants={staggerItem}
+                className={`lm-option${activeFeatureIndex === 1 ? ' lm-option-active' : ''}`}
                 onClick={() => setActiveFeatureIndex(1)}
-                style={{ padding: '2rem', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s', backgroundColor: activeFeatureIndex === 1 ? '#000' : 'transparent', color: activeFeatureIndex === 1 ? '#fff' : '#000', border: activeFeatureIndex === 1 ? '1px solid #000' : '1px solid #e5e5e5' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                  <FileText size={28} color={activeFeatureIndex === 1 ? '#fff' : '#000'} />
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0, color: activeFeatureIndex === 1 ? '#fff' : '#000' }}>Historial Clínico</h3>
+                  <FileText size={28} />
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0, color: 'inherit' }}>Historial Clínico</h3>
                 </div>
-                <p style={{ color: activeFeatureIndex === 1 ? '#a3a3a3' : '#555', lineHeight: 1.6, margin: 0 }}>Notas SOAP y recetas almacenadas de forma segura y cronológica en bases de datos inalterables.</p>
-              </div>
+                <p style={{ lineHeight: 1.6, margin: 0 }}>Notas SOAP y recetas almacenadas de forma segura y cronológica en bases de datos inalterables.</p>
+              </motion.div>
 
               {/* Opción 3: Agenda */}
-              <div 
+              <motion.div
+                variants={staggerItem}
+                className={`lm-option${activeFeatureIndex === 2 ? ' lm-option-active' : ''}`}
                 onClick={() => setActiveFeatureIndex(2)}
-                style={{ padding: '2rem', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s', backgroundColor: activeFeatureIndex === 2 ? '#000' : 'transparent', color: activeFeatureIndex === 2 ? '#fff' : '#000', border: activeFeatureIndex === 2 ? '1px solid #000' : '1px solid #e5e5e5' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                  <Calendar size={28} color={activeFeatureIndex === 2 ? '#fff' : '#000'} />
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0, color: activeFeatureIndex === 2 ? '#fff' : '#000' }}>Gestión de Citas</h3>
+                  <Calendar size={28} />
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0, color: 'inherit' }}>Gestión de Citas</h3>
                 </div>
-                <p style={{ color: activeFeatureIndex === 2 ? '#a3a3a3' : '#555', lineHeight: 1.6, margin: 0 }}>Agenda inteligente conectada a tus expedientes para un flujo de trabajo continuo.</p>
-              </div>
+                <p style={{ lineHeight: 1.6, margin: 0 }}>Agenda inteligente conectada a tus expedientes para un flujo de trabajo continuo.</p>
+              </motion.div>
 
-            </div>
+            </motion.div>
 
             {/* Pantalla interactiva visual */}
-            <div style={{ height: '500px', backgroundColor: '#f4f4f4', borderRadius: '24px', padding: '3rem', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              
+            <motion.div variants={fadeUp} style={{ height: '500px', backgroundColor: '#f4f4f4', borderRadius: '24px', padding: 'clamp(1.5rem, 4vw, 3rem)', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+
               {/* Pacientes UI */}
-              <div style={{ width: '100%', opacity: activeFeatureIndex === 0 ? 1 : 0, transform: activeFeatureIndex === 0 ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.5s', position: 'absolute', padding: '3rem', pointerEvents: activeFeatureIndex === 0 ? 'auto' : 'none' }}>
+              <div style={{ width: '100%', opacity: activeFeatureIndex === 0 ? 1 : 0, transform: activeFeatureIndex === 0 ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.5s', position: 'absolute', padding: 'clamp(1.5rem, 4vw, 3rem)', pointerEvents: activeFeatureIndex === 0 ? 'auto' : 'none' }}>
                 <div style={{ width: '100%', height: '40px', background: '#fff', borderRadius: '8px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', padding: '0 1rem', color: '#a3a3a3', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
                   Buscar paciente...
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div style={{ padding: '1rem', background: '#fff', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#0ea5e9', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>CL</div>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--info)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>CL</div>
                       <div><div style={{ fontWeight: 600 }}>Carlos López</div><div style={{ fontSize: '0.8rem', color: '#888' }}>42 años • O+</div></div>
                     </div>
                   </div>
                   <div style={{ padding: '1rem', background: '#fff', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#10b981', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>JS</div>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--success)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>JS</div>
                       <div><div style={{ fontWeight: 600 }}>Julia Silva</div><div style={{ fontSize: '0.8rem', color: '#888' }}>45 años • A-</div></div>
                     </div>
                   </div>
                   <div style={{ padding: '1rem', background: '#fff', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#f59e0b', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>RP</div>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--warning)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>RP</div>
                       <div><div style={{ fontWeight: 600 }}>Roberto Pérez</div><div style={{ fontSize: '0.8rem', color: '#888' }}>1 año • B+</div></div>
                     </div>
                   </div>
@@ -559,7 +673,7 @@ const Landing = () => {
               </div>
 
               {/* Historial Clínico UI */}
-              <div style={{ width: '100%', opacity: activeFeatureIndex === 1 ? 1 : 0, transform: activeFeatureIndex === 1 ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.5s', position: 'absolute', padding: '3rem', pointerEvents: activeFeatureIndex === 1 ? 'auto' : 'none' }}>
+              <div style={{ width: '100%', opacity: activeFeatureIndex === 1 ? 1 : 0, transform: activeFeatureIndex === 1 ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.5s', position: 'absolute', padding: 'clamp(1.5rem, 4vw, 3rem)', pointerEvents: activeFeatureIndex === 1 ? 'auto' : 'none' }}>
                 <div style={{ background: '#fff', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
                   <div style={{ borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1rem' }}>
                     <div style={{ fontSize: '0.8rem', color: '#888', fontWeight: 600 }}>14 MAYO 2026</div>
@@ -576,14 +690,14 @@ const Landing = () => {
                       <span style={{ fontWeight: 'bold', width: '20px' }}>A:</span> <span style={{ color: '#555' }}>Faringoamigdalitis aguda.</span>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #eee' }}>
-                      <span style={{ fontWeight: 'bold', width: '20px', color: '#10b981' }}>Rx:</span> <span style={{ color: '#10b981', fontWeight: 600 }}>Amoxicilina 500mg</span>
+                      <span style={{ fontWeight: 'bold', width: '20px', color: 'var(--success)' }}>Rx:</span> <span style={{ color: 'var(--success)', fontWeight: 600 }}>Amoxicilina 500mg</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Agenda UI */}
-              <div style={{ width: '100%', opacity: activeFeatureIndex === 2 ? 1 : 0, transform: activeFeatureIndex === 2 ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.5s', position: 'absolute', padding: '3rem', pointerEvents: activeFeatureIndex === 2 ? 'auto' : 'none' }}>
+              <div style={{ width: '100%', opacity: activeFeatureIndex === 2 ? 1 : 0, transform: activeFeatureIndex === 2 ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.5s', position: 'absolute', padding: 'clamp(1.5rem, 4vw, 3rem)', pointerEvents: activeFeatureIndex === 2 ? 'auto' : 'none' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.5rem', marginBottom: '1.5rem' }}>
                   {['L','M','X','J','V','S','D'].map((day, i) => (
                     <div key={i} style={{ textAlign: 'center', fontSize: '0.8rem', fontWeight: 600, color: '#888' }}>{day}</div>
@@ -596,28 +710,34 @@ const Landing = () => {
                 </div>
                 <div style={{ background: '#fff', borderRadius: '12px', padding: '1rem', borderLeft: '4px solid #000', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
                   <div style={{ fontSize: '0.8rem', color: '#888', fontWeight: 600 }}>16:00 - 16:30</div>
-                  <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>Carlos López</div>
+                  <div style={{ fontWeight: 700, fontSize: '1.125rem' }}>Carlos López</div>
                   <div style={{ fontSize: '0.8rem', color: '#555' }}>Consulta de Seguimiento</div>
                 </div>
               </div>
 
-            </div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Trust - Minimalist Iteration */}
-      <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: 'clamp(2rem, 5vh, 4rem) 5%', backgroundColor: '#fff', color: '#000', borderTop: '1px solid #E5E5E5' }}>
-        <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: 'clamp(2rem, 4vw, 4rem)', alignItems: 'center' }}>
-          
-          <div>
+      <motion.section
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: '-100px' }}
+        variants={staggerGroup}
+        style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: 'clamp(2rem, 5vh, 4rem) 5%', backgroundColor: '#fff', color: '#000', borderTop: '1px solid #E5E5E5' }}
+      >
+        <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(350px, 100%), 1fr))', gap: 'clamp(2rem, 4vw, 4rem)', alignItems: 'center' }}>
+
+          <motion.div variants={fadeUp}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
               <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#f4f4f4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Lock size={20} color="#000" />
               </div>
               <span style={{ fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', fontSize: '0.875rem', color: '#888' }}>Privacidad por Diseño</span>
             </div>
-            
+
             <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '2rem' }}>
               Lo que se dice en consulta, se queda en consulta.
             </h2>
@@ -625,43 +745,43 @@ const Landing = () => {
               La tecnología debe protegerte, no exponerte. Lemmatica opera bajo una arquitectura de confianza cero (Zero-Trust) cumpliendo con los estándares de salud más estrictos.
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#000', marginTop: '0.5rem' }}></div>
+            <motion.div variants={staggerGroup} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              <motion.div variants={staggerItem} style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#000', marginTop: '0.5rem', flexShrink: 0 }}></div>
                 <div>
                   <h4 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.5rem' }}>Bases de Datos Ciegas</h4>
                   <p style={{ color: '#555', lineHeight: 1.5, margin: 0 }}>Almacenamos la identidad de tus pacientes en una bóveda separada de sus diagnósticos. En el backend, tus expedientes son estadísticamente anónimos.</p>
                 </div>
-              </div>
-              <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#000', marginTop: '0.5rem' }}></div>
+              </motion.div>
+              <motion.div variants={staggerItem} style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#000', marginTop: '0.5rem', flexShrink: 0 }}></div>
                 <div>
                   <h4 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.5rem' }}>Entorno Privado y Aislado</h4>
                   <p style={{ color: '#555', lineHeight: 1.5, margin: 0 }}>Tus consultas no se comparten con terceros ni alimentan modelos de IA públicos. Todo el procesamiento se realiza en nuestra infraestructura propia y anonimizada.</p>
                 </div>
-              </div>
-            </div>
-          </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
 
           {/* Abstract Security Animation */}
-          <div style={{ height: '400px', backgroundColor: '#f4f4f4', borderRadius: '24px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            
+          <motion.div variants={fadeUp} style={{ height: '400px', backgroundColor: '#f4f4f4', borderRadius: '24px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+
             {/* Círculos concéntricos de escudo */}
             <div style={{ position: 'absolute', width: '250px', height: '250px', borderRadius: '50%', border: '1px solid #e5e5e5', animation: 'spin-slow 20s linear infinite' }}>
-               <div style={{ position: 'absolute', top: '-4px', left: '50%', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div>
+               <div style={{ position: 'absolute', top: '-4px', left: '50%', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)' }}></div>
             </div>
             <div style={{ position: 'absolute', width: '350px', height: '350px', borderRadius: '50%', border: '1px solid #e5e5e5', animation: 'spin-slow 30s linear infinite reverse' }}>
-               <div style={{ position: 'absolute', bottom: '-4px', left: '20%', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div>
+               <div style={{ position: 'absolute', bottom: '-4px', left: '20%', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)' }}></div>
             </div>
-            
+
             {/* Núcleo de documentos encriptados */}
             <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '70%' }}>
-              
+
               {/* Doc 1 */}
               <div style={{ padding: '1.5rem', background: '#fff', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', animation: 'float 5s ease-in-out infinite' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
                   <div style={{ width: '40%', height: '10px', background: '#e5e5e5', borderRadius: '4px' }}></div>
-                  <Lock size={16} color="#10b981" />
+                  <Lock size={16} color="var(--success)" />
                 </div>
                 <div style={{ height: '6px', background: '#f4f4f4', borderRadius: '4px', width: '100%', marginBottom: '0.75rem' }}></div>
                 <div style={{ height: '6px', background: '#f4f4f4', borderRadius: '4px', width: '80%' }}></div>
@@ -671,7 +791,7 @@ const Landing = () => {
               <div style={{ padding: '1.5rem', background: '#fff', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', animation: 'float 5s ease-in-out infinite 2.5s' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
                   <div style={{ width: '60%', height: '10px', background: '#e5e5e5', borderRadius: '4px' }}></div>
-                  <Lock size={16} color="#10b981" />
+                  <Lock size={16} color="var(--success)" />
                 </div>
                 <div style={{ height: '6px', background: '#f4f4f4', borderRadius: '4px', width: '90%', marginBottom: '0.75rem' }}></div>
                 <div style={{ height: '6px', background: '#f4f4f4', borderRadius: '4px', width: '70%' }}></div>
@@ -679,27 +799,43 @@ const Landing = () => {
 
             </div>
 
-          </div>
+          </motion.div>
 
         </div>
-      </section>
+      </motion.section>
 
       {/* Final CTA - "Vuelve a ser médico no se ve ponlo negro" -> Text black, Background white */}
-      <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10rem 5%', textAlign: 'center', backgroundColor: '#fff', color: '#000', borderTop: '2px solid #000' }}>
-        <h2 style={{ fontSize: 'clamp(3rem, 6vw, 5rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '3rem', color: '#000' }}>
+      <motion.section
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: '-100px' }}
+        variants={staggerGroup}
+        style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10rem 5%', textAlign: 'center', backgroundColor: '#fff', color: '#000', borderTop: '2px solid #000' }}
+      >
+        <motion.h2 variants={fadeUp} style={{ fontSize: 'clamp(3rem, 6vw, 5rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '3rem', color: '#000' }}>
           Vuelve a ser médico.
-        </h2>
-        <button onClick={() => navigate('/register')} style={{ background: '#000', color: '#fff', border: 'none', borderRadius: '100px', fontSize: '1.25rem', fontWeight: 500, padding: '1.25rem 3.5rem', cursor: 'pointer', transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity = 0.8} onMouseOut={e => e.currentTarget.style.opacity = 1}>
+        </motion.h2>
+        <motion.button
+          variants={fadeUp}
+          className="lm-final-cta"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ duration: 0.15, ease: EASE }}
+          onClick={() => navigate('/register')}
+          style={{ background: '#000', color: '#fff', border: 'none', borderRadius: '100px', fontSize: '1.25rem', fontWeight: 500, padding: '1.25rem 3.5rem', cursor: 'pointer' }}
+          onMouseEnter={e => e.currentTarget.style.backgroundColor = '#262626'}
+          onMouseLeave={e => e.currentTarget.style.backgroundColor = '#000'}
+        >
           Comenzar ahora
-        </button>
-      </section>
+        </motion.button>
+      </motion.section>
 
       {/* Footer */}
-      <footer style={{ padding: '3rem 5%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eee', fontSize: '0.875rem', color: '#888' }}>
+      <footer style={{ padding: '3rem 5%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eee', fontSize: '0.875rem', color: '#888', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ fontWeight: 600, color: '#000' }}>Lemmatica © 2026</div>
         <div style={{ display: 'flex', gap: '2rem' }}>
-          <Link to="/terminos" style={{ cursor: 'pointer', transition: 'color 0.2s', color: '#888', textDecoration: 'none' }} onMouseOver={e=>e.target.style.color='#000'} onMouseOut={e=>e.target.style.color='#888'}>Términos y Condiciones</Link>
-          <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e=>e.target.style.color='#000'} onMouseOut={e=>e.target.style.color='#888'}>Contacto</span>
+          <Link to="/terminos" className="lm-footer-link">Términos y Condiciones</Link>
+          <span className="lm-footer-link">Contacto</span>
         </div>
       </footer>
     </div>
@@ -707,4 +843,3 @@ const Landing = () => {
 };
 
 export default Landing;
-
