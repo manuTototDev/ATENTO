@@ -25,6 +25,4 @@ Lemmatica es propiedad de **Lemma Sistemas Inteligentes S.A. de C.V.**
 /lemmatica-ai
 ├── /frontend        # Interfaz médico (React.js + Vite)
 └── /backend         # API, WebSockets, DB y Servicios de IA
-    ├── /db          # Esquema Postgres
-    └── /services    # Integración Gemini
-```
+    ├── /db   

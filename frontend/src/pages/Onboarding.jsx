@@ -480,4 +480,4 @@ const Onboarding = () => {
     </div>
   );
 };
-export default Onboarding;
+export default Onboardin

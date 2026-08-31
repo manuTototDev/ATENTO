@@ -315,9 +315,29 @@ const TermsAndConditions = () => {
           </p>
         </div>
 
-      </div>
-    </div>
-  );
-};
+            <Section icon={Globe} title="Cláusula 16 · Límite de Responsabilidad por Fallas de Terceros">
+              <p>Lemmatica no será responsable por interrupciones en el servicio ocasionadas por caídas globales de servidores de infraestructura externa (como AWS o Xertica) o bloqueos en las APIs de comunicación (como Meta/WhatsApp), ni por fallas de conectividad ajenas a nuestro control razonable.</p>
+            </Section>
 
-export default TermsAndConditions;
+            <Section icon={Lock} title="Cláusula 17 · Ventanas de Mantenimiento">
+              <p>Nos reservamos el derecho de suspender temporalmente el acceso a la plataforma para realizar actualizaciones de código, parches de seguridad o mejoras operativas, dando aviso previo en la interfaz salvo en el caso de parches de seguridad urgentes.</p>
+            </Section>
+
+            <Section icon={Scale} title="Cláusula 18 · Límite Financiero de Responsabilidad">
+              <p>En caso de que un tribunal determine alguna responsabilidad económica de Lemma Sistemas Inteligentes hacia el usuario, esta quedará estrictamente topada al monto equivalente a las mensualidades pagadas por el usuario en los últimos 3 meses de servicio, salvo en casos de dolo o mala fe acreditados.</p>
+            </Section>
+
+            <Section icon={AlertTriangle} title="Cláusula 19 · Prohibición de Ingeniería Inversa">
+              <p>Queda estrictamente prohibido copiar, descompilar, extraer el código fuente o replicar los modelos de IA propietarios que dan vida a Lemmatica. Su violación constituye una infracción a la Ley Federal del Derecho de Autor y a la Ley Federal de Protección a la Propiedad Industrial.</p>
+            </Section>
+
+            <Section icon={Shield} title="Cláusula 20 · Suspensión por Uso Indebido">
+              <p>Nos reservamos el derecho unilateral de suspender o dar de baja cuentas que realicen actividades sospechosas, inyección de código malicioso o vulneración perimetral del sistema, notificando al usuario cuando las circunstancias lo permitan.</p>
+            </Section>
+
+            <Section icon={Shield} title="Limitación General de Responsabilidad">
+              <p style={{ marginBottom: '1rem' }}>Lemmatica no será responsable por:</p>
+              <Bullet>Decisiones médicas tomadas con base en las notas o documentos generados por la plataforma.</Bullet>
+              <Bullet>Pérdida de datos causada por fuerza mayor, fallas de terceros proveedores de infraestructura, o negligencia del usuario en la gestión de sus credenciales.</Bullet>
+              <Bullet>Interrupciones del servicio debidas a mantenimiento programado o eventos imprevistos.</Bullet>
+              <Bullet>Daños indirectos, incidentales, especiales o co
