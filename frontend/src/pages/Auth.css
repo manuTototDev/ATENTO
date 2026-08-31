@@ -1,22 +1,27 @@
 /* ==========================================
-   Auth (Login / Register) — composición fresca
-   Tarjeta flotante sobre fondo --ink con "manchas
-   de color" del moodboard de marca (pops difuminados
-   en mix-blend-mode: screen). Reemplaza el patrón de
-   split-screen negro/blanco usado en versiones previas.
+   Auth (Login / Register) — split izquierda/derecha,
+   con la identidad v4: panel --ink con "manchas de
+   color" del moodboard de marca a la izquierda,
+   formulario sobre --paper a la derecha.
    ========================================== */
 
-.auth-scene {
-  position: relative;
+.auth-split {
+  display: flex;
   min-height: 100vh;
-  width: 100%;
+  flex-wrap: wrap;
+}
+
+.auth-side-cover {
+  position: relative;
+  flex: 1 1 480px;
+  min-height: 50vh;
   background: var(--ink);
+  color: #fff;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 6.5rem var(--space-4) var(--space-7);
+  justify-content: space-between;
+  padding: var(--space-6) var(--space-6) var(--space-7);
 }
 
 .auth-blobs {
@@ -40,15 +45,9 @@
   50% { transform: translate(var(--drift-x, 30px), var(--drift-y, 20px)) scale(1.08); }
 }
 
-.auth-topbar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 2;
-  display: flex;
-  justify-content: center;
-  padding: var(--space-5) var(--space-6);
+.auth-side-cover > * {
+  position: relative;
+  z-index: 1;
 }
 
 .auth-wordmark {
@@ -61,35 +60,17 @@
   font-weight: 700;
   font-size: 1.15rem;
   letter-spacing: -0.02em;
+  width: fit-content;
 }
 
 .auth-wordmark svg {
   color: var(--pop-blue);
 }
 
-.auth-card {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 440px;
-  background: var(--paper);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  padding: var(--space-7) var(--space-6);
-}
-
-.auth-card.auth-card-wide {
-  max-width: 560px;
-}
-
-.auth-card-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: var(--space-4);
+.auth-cover-body {
+  margin: auto 0;
+  padding: var(--space-6) 0;
+  max-width: 460px;
 }
 
 .auth-eyebrow {
@@ -97,17 +78,58 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
-.auth-title {
+.auth-cover-body .auth-title {
   font-family: var(--font-display);
-  font-size: clamp(1.5rem, 3vw, 1.9rem);
+  font-size: clamp(2.25rem, 4.5vw, 3.25rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin-bottom: var(--space-4);
+  color: #fff;
+}
+
+.auth-cover-body .auth-subtitle {
+  color: #C7C0BD;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  max-width: 400px;
+}
+
+.auth-footnote {
+  color: rgba(254, 250, 252, 0.5);
+  font-size: 0.8rem;
+}
+
+.auth-side-form {
+  flex: 1 1 480px;
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-7) var(--space-6);
+}
+
+.auth-form-inner {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-form-inner.auth-form-wide {
+  max-width: 480px;
+}
+
+.auth-form-inner .auth-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2rem);
   letter-spacing: -0.02em;
   margin-bottom: 0.4rem;
+  color: var(--text-dark);
 }
 
-.auth-subtitle {
+.auth-form-inner .auth-subtitle {
   color: var(--text-muted);
   font-size: 0.95rem;
   line-height: 1.5;
@@ -297,13 +319,4 @@
   text-decoration: none;
   border-bottom: 1px solid var(--text-dark);
   padding-bottom: 1px;
-}
-
-.auth-footnote {
-  position: relative;
-  z-index: 2;
-  margin-top: var(--space-6);
-  color: rgba(254, 250, 252, 0.5);
-  font-size: 0.8rem;
-  text-align: center;
 }
