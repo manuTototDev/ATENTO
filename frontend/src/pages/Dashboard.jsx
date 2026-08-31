@@ -135,7 +135,7 @@ const Dashboard = () => {
       <header className="dashboard-header">
         <div>
           <p className="dashboard-eyebrow">Panel</p>
-          <h1 className="dashboard-heading">Resumen del consultorio</h1>
+          <h1 className="dashboard-heading font-display">Resumen del consultorio</h1>
         </div>
 
         <div className="dashboard-profile">
@@ -177,8 +177,10 @@ const Dashboard = () => {
             whileHover={{ y: -3 }}
             whileTap={{ scale: 0.98 }}
           >
-            <Plus size={28} />
-            <div>
+            <div className="cta-icon">
+              <Plus size={26} />
+            </div>
+            <div className="cta-body">
               <h2 className="cta-title">
                 Iniciar <br /> Consulta
               </h2>

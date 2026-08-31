@@ -6,12 +6,20 @@ import { apiFetch } from '../utils/api';
 
 // Mapa presentacional: valores reales del backend (SCHEDULED/COMPLETED/CANCELLED)
 // hacia la variante visual correspondiente del sistema de diseño.
+// Agendada/completada comparten el teal de marca (accent) para reforzar identidad;
+// se diferencian por intensidad (tenue vs. sólido). Cancelada usa el color de error.
 const STATUS_META = {
-  SCHEDULED: { label: 'Programada', className: 'status-scheduled' },
-  COMPLETED: { label: 'Completada', className: 'status-completed' },
+  SCHEDULED: {
+    label: 'Programada',
+    style: { backgroundColor: 'var(--accent-light)', color: 'var(--accent-hover)', border: '1px solid rgba(13, 148, 136, 0.25)' },
+  },
+  COMPLETED: {
+    label: 'Completada',
+    style: { backgroundColor: 'var(--accent)', color: '#fff', border: '1px solid var(--accent)' },
+  },
   CANCELLED: {
     label: 'Cancelada',
-    style: { backgroundColor: 'var(--error-bg)', color: 'var(--error)', border: '1px solid #FECACA' },
+    style: { backgroundColor: 'var(--error-bg)', color: 'var(--error)', border: '1px solid rgba(220, 38, 38, 0.25)' },
   },
 };
 
@@ -157,7 +165,7 @@ const CalendarView = () => {
         }}
       >
         <div>
-          <h1 style={{ fontSize: '1.75rem', marginBottom: 'var(--space-1)' }}>Agenda Médica</h1>
+          <h1 className="font-display" style={{ fontSize: '2.1rem', marginBottom: 'var(--space-1)' }}>Agenda Médica</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
             Gestiona tus próximas citas y disponibilidad.
           </p>
@@ -193,9 +201,10 @@ const CalendarView = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
         className="dashboard-panel"
+        style={{ boxShadow: 'var(--shadow-sm)' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-5)' }}>
-          <Clock size={20} />
+          <Clock size={20} color="var(--accent)" />
           <h2 className="panel-title">Próximas Citas</h2>
         </div>
 
@@ -210,22 +219,54 @@ const CalendarView = () => {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-            {orderedDayKeys.map((dayKey, groupIndex) => (
+            {orderedDayKeys.map((dayKey, groupIndex) => {
+              const isToday = dayKey === new Date().toDateString();
+              return (
               <div key={dayKey}>
-                {/* Encabezado de fecha: separa la "navegación de fecha" de la lista */}
+                {/* Encabezado de fecha: separa la "navegación de fecha" de la lista.
+                    El día actual se destaca con el acento teal de marca. */}
                 <div
                   style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--space-2)',
                     fontSize: '0.75rem',
                     fontWeight: 600,
-                    color: 'var(--text-muted)',
+                    color: isToday ? 'var(--accent-hover)' : 'var(--text-muted)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
                     paddingBottom: 'var(--space-2)',
                     marginBottom: 'var(--space-3)',
-                    borderBottom: '1px solid var(--border)',
+                    borderBottom: isToday ? '2px solid var(--accent)' : '1px solid var(--border)',
                   }}
                 >
+                  {isToday && (
+                    <span
+                      style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--accent)',
+                        flexShrink: 0,
+                      }}
+                    />
+                  )}
                   {formatGroupLabel(dayKey)}
+                  {isToday && (
+                    <span
+                      style={{
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        color: '#fff',
+                        backgroundColor: 'var(--accent)',
+                        padding: '0.1rem 0.5rem',
+                        borderRadius: 'var(--radius-full)',
+                        letterSpacing: '0.05em',
+                      }}
+                    >
+                      Hoy
+                    </span>
+                  )}
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
@@ -285,7 +326,8 @@ const CalendarView = () => {
                   })}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </motion.div>

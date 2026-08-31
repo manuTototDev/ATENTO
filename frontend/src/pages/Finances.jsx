@@ -101,13 +101,14 @@ const Finances = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-color)', fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--surface-alt)', fontFamily: 'var(--font-body)' }}>
       {/* HEADER TOP BAR */}
       <header style={{
         display: 'flex',
         justifyContent: 'flex-end',
         alignItems: 'center',
         padding: 'clamp(1rem, 3vw, 1.5rem) clamp(1.25rem, 5vw, 3rem)',
+        backgroundColor: 'var(--surface)',
         borderBottom: '1px solid var(--border)',
         flexWrap: 'wrap',
         gap: '1rem',
@@ -123,14 +124,14 @@ const Finances = () => {
           </div>
           <motion.button
             onClick={() => navigate('/settings')}
-            whileHover={{ rotate: 45, backgroundColor: 'var(--input-bg)' }}
+            whileHover={{ rotate: 45, backgroundColor: 'var(--accent-light)', color: 'var(--accent)' }}
             whileTap={{ scale: 0.94 }}
             transition={{ duration: 0.2, ease: EASE }}
             style={{
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: 'var(--text-dark)',
+              color: 'var(--text-muted)',
               display: 'flex',
               alignItems: 'center',
               padding: '0.4rem',
@@ -153,7 +154,7 @@ const Finances = () => {
 
         {/* PAGE HEADER */}
         <motion.div variants={fadeUp} transition={{ duration: 0.4, ease: EASE }} style={{ marginBottom: 'clamp(2rem, 6vw, 4rem)' }}>
-          <h1 style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: 'var(--text-dark)', margin: 0 }}>
+          <h1 className="font-display" style={{ fontSize: 'clamp(2.25rem, 6vw, 3.25rem)', fontWeight: 600, lineHeight: 1.05, color: 'var(--text-dark)', margin: 0 }}>
             Finanzas.
           </h1>
         </motion.div>
@@ -171,15 +172,28 @@ const Finances = () => {
               flexDirection: 'column',
               gap: '1rem',
               justifyContent: 'center',
+              backgroundColor: 'var(--surface)',
+              boxShadow: 'var(--shadow-sm)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <DollarSign size={24} color="var(--success)" />
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-dark)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '44px',
+                height: '44px',
+                flexShrink: 0,
+                borderRadius: 'var(--radius-full)',
+                backgroundColor: 'var(--accent-light)',
+              }}>
+                <DollarSign size={22} color="var(--accent)" />
+              </div>
+              <h2 style={{ fontSize: '0.9rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>
                 Ingresos del Mes
               </h2>
             </div>
-            <div style={{ fontSize: 'clamp(2.5rem, 8vw, 5rem)', fontWeight: 800, letterSpacing: '-0.05em', color: 'var(--text-dark)', lineHeight: 1 }}>
+            <div style={{ fontSize: 'clamp(2.5rem, 8vw, 5rem)', fontWeight: 800, letterSpacing: '-0.05em', color: 'var(--text-dark)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
               ${totalEarnings.toLocaleString('es-MX')}
             </div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '1.125rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -193,10 +207,21 @@ const Finances = () => {
             variants={fadeUp}
             transition={{ duration: 0.4, ease: EASE }}
             className="dashboard-panel"
-            style={{ flex: '2 1 420px', padding: 'clamp(1.5rem, 4vw, 2.5rem)' }}
+            style={{ flex: '2 1 420px', padding: 'clamp(1.5rem, 4vw, 2.5rem)', backgroundColor: 'var(--surface)', boxShadow: 'var(--shadow-md)' }}
           >
-            <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
-              <SettingsIcon size={22} color="var(--text-dark)" />
+            <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.875rem', borderBottom: '1px solid var(--border)', paddingBottom: '1.25rem' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40px',
+                height: '40px',
+                flexShrink: 0,
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--accent-light)',
+              }}>
+                <SettingsIcon size={20} color="var(--accent)" />
+              </div>
               <h2 style={{ fontSize: '1.375rem', fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-dark)', margin: 0 }}>
                 Tabulador de Precios
               </h2>
@@ -208,7 +233,7 @@ const Finances = () => {
                 {/* BASE */}
                 <div>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-dark)', marginBottom: '0.5rem' }}>
-                    <Sun size={18} color="var(--text-dark)" /> Costo Base (Lunes a Viernes)
+                    <Sun size={18} color="var(--accent)" /> Costo Base (Lunes a Viernes)
                   </label>
                   <div style={{ position: 'relative' }}>
                     <span style={{ position: 'absolute', left: '0', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dark)', fontSize: '1.25rem', fontWeight: 700 }}>$</span>
@@ -224,9 +249,9 @@ const Finances = () => {
                 </div>
 
                 {/* NOCTURNA */}
-                <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 'clamp(1.25rem, 4vw, 2rem)' }}>
+                <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--surface-alt)', padding: 'clamp(1.25rem, 4vw, 2rem)' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-dark)', marginBottom: '1.5rem' }}>
-                    <Moon size={18} color="var(--text-dark)" /> Tarifa Nocturna
+                    <Moon size={18} color="var(--accent)" /> Tarifa Nocturna
                   </label>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -260,9 +285,9 @@ const Finances = () => {
               </div>
 
               {/* FIN DE SEMANA */}
-              <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 'clamp(1.25rem, 4vw, 2rem)' }}>
+              <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--surface-alt)', padding: 'clamp(1.25rem, 4vw, 2rem)' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-dark)', marginBottom: '1.5rem' }}>
-                  <CalendarDays size={18} color="var(--text-dark)" /> Fines de Semana
+                  <CalendarDays size={18} color="var(--accent)" /> Fines de Semana
                 </label>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>

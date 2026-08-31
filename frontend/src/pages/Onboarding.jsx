@@ -245,13 +245,13 @@ const Onboarding = () => {
           gap: 0.75rem;
           margin-bottom: 1.5rem;
           padding-bottom: 0.75rem;
-          border-bottom: 2px solid var(--text-dark);
+          border-bottom: 1px solid var(--border);
         }
         .obd-section-badge {
           width: 30px;
           height: 30px;
           border-radius: var(--radius-sm);
-          background: var(--text-dark);
+          background: var(--primary);
           color: #fff;
           display: flex;
           align-items: center;
@@ -278,10 +278,10 @@ const Onboarding = () => {
           background: var(--input-bg);
           transition: border-color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
         }
-        .obd-dropzone:hover, .obd-dropzone:focus-visible { border-color: var(--text-dark); background: #fff; }
+        .obd-dropzone:hover, .obd-dropzone:focus-visible { border-color: var(--accent); background: var(--accent-light); }
         .obd-dropzone-title { font-size: 1rem; font-weight: 500; color: var(--text-dark); margin-top: 0.9rem; }
         .obd-dropzone-sub { font-size: 0.875rem; color: var(--text-muted); margin-top: 0.5rem; }
-        .obd-dropzone-change { font-size: 0.875rem; color: var(--text-dark); font-weight: 600; border-bottom: 1px solid var(--text-dark); margin-top: 0.9rem; }
+        .obd-dropzone-change { font-size: 0.875rem; color: var(--accent-hover); font-weight: 600; border-bottom: 1px solid var(--accent-hover); margin-top: 0.9rem; }
         .obd-logo-preview { max-height: 100px; object-fit: contain; margin-bottom: 0.25rem; }
         .obd-spin { animation: obd-spin 0.8s linear infinite; }
         @keyframes obd-spin { to { transform: rotate(360deg); } }

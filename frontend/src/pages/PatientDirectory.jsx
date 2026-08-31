@@ -87,7 +87,7 @@ const PatientDirectory = () => {
       {/* PAGE HEADER */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem', marginBottom: 'var(--space-6)' }}>
         <div>
-          <h1 style={{ fontSize: '1.75rem', marginBottom: '0.25rem' }}>Directorio de Pacientes</h1>
+          <h1 className="font-display" style={{ fontSize: '2.1rem', marginBottom: '0.25rem', color: 'var(--primary)' }}>Directorio de Pacientes</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
             {patients.length} {patients.length === 1 ? 'paciente registrado' : 'pacientes registrados'}
           </p>
@@ -121,8 +121,8 @@ const PatientDirectory = () => {
       </div>
 
       {/* TABLE */}
-      <div className="clean-panel" style={{ overflowX: 'auto' }}>
-        <table className="data-table" style={{ minWidth: '640px' }}>
+      <div className="clean-panel" style={{ overflowX: 'auto', boxShadow: 'var(--shadow-sm)', borderRadius: 'var(--radius-lg)' }}>
+        <table className="data-table patient-directory-table" style={{ minWidth: '640px' }}>
           <thead>
             <tr>
               <th>Nombre Completo</th>
@@ -176,7 +176,7 @@ const PatientDirectory = () => {
                       <motion.button
                         onClick={() => navigate(`/patients/${p.id}`)}
                         title="Ver Expediente"
-                        whileHover={{ scale: 1.08, backgroundColor: 'var(--input-bg)', color: 'var(--text-dark)' }}
+                        whileHover={{ scale: 1.08, backgroundColor: 'var(--accent-light)', color: 'var(--accent)' }}
                         whileTap={{ scale: 0.92 }}
                         style={iconBtnStyle}
                       >
@@ -184,7 +184,7 @@ const PatientDirectory = () => {
                       </motion.button>
                       <motion.button
                         title="Editar Datos"
-                        whileHover={{ scale: 1.08, backgroundColor: 'var(--input-bg)', color: 'var(--text-dark)' }}
+                        whileHover={{ scale: 1.08, backgroundColor: 'var(--accent-light)', color: 'var(--accent)' }}
                         whileTap={{ scale: 0.92 }}
                         style={iconBtnStyle}
                       >
@@ -207,6 +207,12 @@ const PatientDirectory = () => {
           )}
         </table>
       </div>
+
+      <style>{`
+        .patient-directory-table tr:hover td {
+          background-color: var(--accent-light) !important;
+        }
+      `}</style>
 
       {/* MODAL: ELIMINAR PACIENTE */}
       <AnimatePresence>

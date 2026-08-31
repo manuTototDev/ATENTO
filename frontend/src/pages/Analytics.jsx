@@ -45,7 +45,7 @@ const Analytics = () => {
     <div style={{ padding: 'var(--space-6)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 'var(--space-6)' }}>
         <div>
-          <h1 style={{ fontSize: '1.75rem', marginBottom: 'var(--space-1)' }}>Reportes y Finanzas</h1>
+          <h1 className="font-display" style={{ fontSize: '2.1rem', marginBottom: 'var(--space-1)' }}>Reportes y Finanzas</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
             Un vistazo a tus ingresos y actividad de consultorio.
           </p>
@@ -62,6 +62,7 @@ const Analytics = () => {
             gap: 'var(--space-2)',
             padding: 'var(--space-7)',
             textAlign: 'center',
+            boxShadow: 'var(--shadow-sm)',
           }}
         >
           <AlertTriangle size={28} color="var(--error)" />
@@ -95,6 +96,7 @@ const Analytics = () => {
               initial="initial"
               animate="animate"
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              style={{ boxShadow: 'var(--shadow-sm)' }}
             >
               <div className="stat-info">
                 <h3>Ingresos Acumulados</h3>
@@ -119,7 +121,7 @@ const Analytics = () => {
                   </div>
                 )}
               </div>
-              <div className="stat-icon" style={{ backgroundColor: 'var(--success-bg)', color: 'var(--success)' }}>
+              <div className="stat-icon" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent)' }}>
                 <DollarSign size={24} />
               </div>
             </motion.div>
@@ -130,6 +132,7 @@ const Analytics = () => {
               initial="initial"
               animate="animate"
               transition={{ duration: 0.3, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+              style={{ boxShadow: 'var(--shadow-sm)' }}
             >
               <div className="stat-info">
                 <h3>Pacientes Únicos</h3>
@@ -137,7 +140,7 @@ const Analytics = () => {
                   {stats.totalPatients}
                 </div>
               </div>
-              <div className="stat-icon" style={{ backgroundColor: 'var(--info-bg)', color: 'var(--info)' }}>
+              <div className="stat-icon" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent)' }}>
                 <Users size={24} />
               </div>
             </motion.div>
@@ -148,6 +151,7 @@ const Analytics = () => {
               initial="initial"
               animate="animate"
               transition={{ duration: 0.3, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              style={{ boxShadow: 'var(--shadow-sm)' }}
             >
               <div className="stat-info">
                 <h3>Citas Agendadas</h3>
@@ -155,7 +159,7 @@ const Analytics = () => {
                   {stats.totalAppointments}
                 </div>
               </div>
-              <div className="stat-icon" style={{ backgroundColor: 'var(--warning-bg)', color: 'var(--warning)' }}>
+              <div className="stat-icon" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent)' }}>
                 <Calendar size={24} />
               </div>
             </motion.div>
@@ -166,6 +170,7 @@ const Analytics = () => {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            style={{ boxShadow: 'var(--shadow-sm)' }}
           >
             <h2 className="panel-title" style={{ marginBottom: 'var(--space-5)' }}>Evolución de Ingresos</h2>
 
@@ -179,15 +184,21 @@ const Analytics = () => {
               <div style={{ display: 'flex', alignItems: 'flex-end', height: '200px', gap: 'var(--space-4)', borderBottom: '1px solid var(--border)', paddingBottom: 'var(--space-2)' }}>
                 {monthlyRevenue.map((rev, i) => {
                   const max = Math.max(...monthlyRevenue.map(r => r.value), 1);
-                  const height = Math.max((rev.value / max) * 100, 5); // min 5% de altura visible
+                  const barMaxPx = 160; // el contenedor no tiene altura resuelta para que % funcione, así que animamos px
+                  const heightPx = Math.max((rev.value / max) * barMaxPx, 6);
 
                   return (
                     <div key={rev.name} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-2)' }}>
                       <motion.div
                         initial={{ height: 0 }}
-                        animate={{ height: `${height}%` }}
+                        animate={{ height: heightPx }}
                         transition={{ duration: 0.4, delay: i * 0.04, ease: [0.16, 1, 0.3, 1] }}
-                        style={{ width: '100%', maxWidth: '60px', backgroundColor: 'var(--primary)', borderRadius: 'var(--radius-sm) var(--radius-sm) 0 0' }}
+                        style={{
+                          width: '100%',
+                          maxWidth: '60px',
+                          background: 'linear-gradient(180deg, var(--accent) 0%, var(--accent-hover) 100%)',
+                          borderRadius: 'var(--radius-sm) var(--radius-sm) 0 0',
+                        }}
                       />
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{rev.name}</div>
                       <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-dark)' }}>${rev.value.toLocaleString('es-MX')}</div>

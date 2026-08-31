@@ -356,7 +356,7 @@ const Consultation = () => {
         {/* PAGE HEADER */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-5)', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h1 style={{ fontSize: 'clamp(2.25rem, 5vw, 3.5rem)', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: 'var(--text-dark)', margin: '0 0 var(--space-3) 0' }}>
+            <h1 className="font-display" style={{ fontSize: 'clamp(2.25rem, 5vw, 3.5rem)', lineHeight: 1, color: 'var(--text-dark)', margin: '0 0 var(--space-3) 0' }}>
               Consulta.
             </h1>
             <h2 style={{ fontSize: '1.35rem', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '-0.02em', margin: 0 }}>
@@ -384,7 +384,8 @@ const Consultation = () => {
             background: isRecording ? 'var(--primary)' : 'var(--card-bg)',
             borderColor: isRecording ? 'var(--primary)' : 'var(--border)',
             color: isRecording ? '#fff' : 'var(--text-dark)',
-            transition: `background-color var(--duration-slow) var(--ease-in-out), color var(--duration-slow) var(--ease-in-out), border-color var(--duration-slow) var(--ease-in-out)`
+            boxShadow: isRecording ? 'var(--shadow-lg)' : 'var(--shadow-md)',
+            transition: `background-color var(--duration-slow) var(--ease-in-out), color var(--duration-slow) var(--ease-in-out), border-color var(--duration-slow) var(--ease-in-out), box-shadow var(--duration-slow) var(--ease-in-out)`
           }}
         >
           <span aria-live="polite" style={srOnlyStyle}>{voiceStatusLabel}</span>
@@ -467,7 +468,7 @@ const Consultation = () => {
         </section>
 
         {/* NOTAS SOAP */}
-        <div className="dashboard-panel" style={{ padding: 'var(--space-6)' }}>
+        <div className="dashboard-panel" style={{ padding: 'var(--space-6)', boxShadow: 'var(--shadow-sm)' }}>
           <h2 className="panel-title" style={{ fontSize: '1.4rem', borderBottom: '1px solid var(--border)', paddingBottom: 'var(--space-4)', marginBottom: 'var(--space-5)' }}>
             Expediente Clínico (SOAP)
           </h2>
@@ -507,7 +508,7 @@ const Consultation = () => {
         </div>
 
         {/* TRATAMIENTO */}
-        <div className="dashboard-panel" style={{ padding: 'var(--space-6)' }}>
+        <div className="dashboard-panel" style={{ padding: 'var(--space-6)', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-4)', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: 'var(--space-4)', marginBottom: 'var(--space-5)' }}>
             <h2 className="panel-title" style={{ fontSize: '1.4rem' }}>
               Plan de Tratamiento
@@ -591,7 +592,7 @@ const Consultation = () => {
         </div>
 
         {/* INDICACIONES */}
-        <div className="dashboard-panel" style={{ padding: 'var(--space-6)' }}>
+        <div className="dashboard-panel" style={{ padding: 'var(--space-6)', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-4)', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: 'var(--space-4)', marginBottom: 'var(--space-5)' }}>
             <h2 className="panel-title" style={{ fontSize: '1.4rem' }}>
               Indicaciones Generales
@@ -639,7 +640,7 @@ const Consultation = () => {
               type="checkbox"
               checked={isVerified}
               onChange={(e) => setIsVerified(e.target.checked)}
-              style={{ width: '1.35rem', height: '1.35rem', accentColor: 'var(--primary)' }}
+              style={{ width: '1.35rem', height: '1.35rem', accentColor: 'var(--accent)' }}
             />
             He verificado que la transcripción y el plan de tratamiento son correctos.
           </label>

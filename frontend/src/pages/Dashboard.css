@@ -23,14 +23,13 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-subtle);
+  color: var(--accent);
   margin-bottom: var(--space-1);
 }
 
 .dashboard-heading {
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-size: 1.75rem;
+  letter-spacing: -0.01em;
   color: var(--text-dark);
 }
 
@@ -79,9 +78,11 @@
 }
 
 .cta-card {
-  background: var(--primary);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(150deg, var(--primary) 0%, var(--primary-light) 100%);
   color: #fff;
-  border: 1px solid var(--primary);
+  border: 1px solid rgba(13, 148, 136, 0.3);
   border-radius: var(--radius-lg);
   padding: var(--space-6) var(--space-5);
   cursor: pointer;
@@ -89,11 +90,47 @@
   flex-direction: column;
   justify-content: space-between;
   min-height: 190px;
+  box-shadow: var(--shadow-lg);
+  transition: box-shadow var(--duration-base) var(--ease-out);
+}
+
+.cta-card::after {
+  content: '';
+  position: absolute;
+  top: -35%;
+  right: -15%;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(13, 148, 136, 0.4) 0%, rgba(13, 148, 136, 0) 70%);
+  pointer-events: none;
+}
+
+.cta-card:hover {
+  box-shadow: var(--shadow-lg), 0 0 32px rgba(13, 148, 136, 0.28);
 }
 
 .cta-card:focus-visible {
-  outline: 2px solid #fff;
+  outline: 2px solid var(--accent);
   outline-offset: -4px;
+}
+
+.cta-icon {
+  position: relative;
+  z-index: 1;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: rgba(13, 148, 136, 0.2);
+  color: var(--accent);
+}
+
+.cta-body {
+  position: relative;
+  z-index: 1;
 }
 
 .cta-title {
@@ -107,7 +144,7 @@
 
 .cta-subtitle {
   font-size: 0.875rem;
-  color: #A3A3A3;
+  color: rgba(240, 253, 250, 0.7);
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -123,11 +160,13 @@
   justify-content: space-between;
   gap: var(--space-4);
   min-height: 190px;
-  transition: border-color var(--duration-base) var(--ease-out);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
 }
 
 .stat-card:hover {
-  border-color: var(--text-dark);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
 }
 
 .stat-info h3 {
@@ -148,10 +187,10 @@
 }
 
 .stat-icon {
-  background: var(--input-bg);
+  background: var(--accent-light);
   padding: var(--space-3);
   border-radius: var(--radius-md);
-  color: var(--primary);
+  color: var(--accent);
   display: flex;
   flex-shrink: 0;
 }
@@ -164,6 +203,15 @@
   align-items: start;
 }
 
+.dashboard-content-grid .dashboard-panel {
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--duration-base) var(--ease-out);
+}
+
+.dashboard-content-grid .dashboard-panel:hover {
+  box-shadow: var(--shadow-md);
+}
+
 .panel-header {
   display: flex;
   align-items: center;
@@ -171,10 +219,12 @@
   margin-bottom: var(--space-5);
   padding-bottom: var(--space-4);
   border-bottom: 1px solid var(--border);
+  color: var(--accent);
 }
 
 .panel-header .panel-title {
   font-size: 1.15rem;
+  color: var(--text-dark);
 }
 
 .table-scroll {
@@ -195,12 +245,13 @@
   padding: var(--space-4);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  transition: border-color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out);
+  transition: border-color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
 }
 
 .appointment-item:hover {
-  border-color: var(--text-dark);
-  background-color: var(--input-bg);
+  border-color: var(--accent);
+  background-color: var(--accent-light);
+  box-shadow: var(--shadow-sm);
 }
 
 .appointment-time {
@@ -302,7 +353,7 @@
 }
 
 .search-result-action {
-  background: var(--primary);
+  background: var(--accent);
   color: #fff;
   border: none;
   border-radius: var(--radius-sm);
@@ -315,7 +366,7 @@
 }
 
 .search-result-action:hover {
-  background-color: var(--primary-light);
+  background-color: var(--accent-hover);
 }
 
 .search-empty {

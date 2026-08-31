@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, User, FileText } from 'lucide-react';
+import { ArrowLeft, User, FileText, Droplet, Phone, AlertTriangle, Activity, Stethoscope } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { apiFetch } from '../utils/api';
@@ -105,33 +105,54 @@ const PatientDetail = () => {
           initial="hidden"
           animate="visible"
           variants={fadeUp}
+          style={{ boxShadow: 'var(--shadow-md)' }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: 'var(--space-6)' }}>
-            <div style={{ width: '72px', height: '72px', borderRadius: 'var(--radius-full)', background: 'var(--input-bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--space-4)' }}>
-              <User size={32} color="var(--primary)" />
+            <div style={{ width: '76px', height: '76px', borderRadius: 'var(--radius-full)', background: 'var(--accent-light)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--space-4)' }}>
+              <User size={32} color="var(--accent)" />
             </div>
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '0.15rem' }}>{patient.firstName} {patient.lastName}</h2>
+            <h2 className="font-display" style={{ fontSize: '1.6rem', marginBottom: '0.2rem', color: 'var(--primary)' }}>{patient.firstName} {patient.lastName}</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{age} años · {patient.gender}</p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', fontSize: '0.875rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-3)', paddingBottom: 'var(--space-3)', borderBottom: '1px solid var(--border)' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Sangre</span>
-              <span style={{ fontWeight: 600, color: 'var(--error)' }}>{patient.bloodType || 'N/A'}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-3)', paddingBottom: 'var(--space-3)', borderBottom: '1px solid var(--border)' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Teléfono</span>
-              <span style={{ fontWeight: 600, textAlign: 'right' }}>{patient.phone || 'N/A'}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-3)', paddingBottom: 'var(--space-3)', borderBottom: '1px solid var(--border)' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Alergias</span>
-              <span style={{ fontWeight: 600, color: 'var(--error)', textAlign: 'right' }}>
-                {patient.allergies?.length > 0 ? patient.allergies.join(', ') : 'Ninguna registrada'}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-3)', paddingBottom: 'var(--space-3)', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)' }}>
+                <Droplet size={14} /> Sangre
+              </span>
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', fontWeight: 600, fontSize: '0.8rem',
+                color: 'var(--error)', background: 'var(--error-bg)', padding: '0.15rem 0.6rem', borderRadius: 'var(--radius-full)'
+              }}>
+                {patient.bloodType || 'N/A'}
               </span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-3)' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Enf. Crónicas</span>
-              <span style={{ fontWeight: 600, textAlign: 'right' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-3)', paddingBottom: 'var(--space-3)', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)' }}>
+                <Phone size={14} /> Teléfono
+              </span>
+              <span style={{ fontWeight: 600, textAlign: 'right', color: 'var(--text-dark)' }}>{patient.phone || 'N/A'}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-3)', paddingBottom: 'var(--space-3)', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', flexShrink: 0, paddingTop: '0.15rem' }}>
+                <AlertTriangle size={14} /> Alergias
+              </span>
+              {patient.allergies?.length > 0 ? (
+                <span style={{
+                  fontWeight: 600, fontSize: '0.8rem', textAlign: 'right', color: 'var(--warning)',
+                  background: 'var(--warning-bg)', padding: '0.15rem 0.6rem', borderRadius: 'var(--radius-full)'
+                }}>
+                  {patient.allergies.join(', ')}
+                </span>
+              ) : (
+                <span style={{ fontWeight: 500, textAlign: 'right', color: 'var(--text-subtle)' }}>Ninguna registrada</span>
+              )}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', flexShrink: 0, paddingTop: '0.15rem' }}>
+                <Activity size={14} /> Enf. Crónicas
+              </span>
+              <span style={{ fontWeight: 600, textAlign: 'right', color: patient.chronicDiseases?.length > 0 ? 'var(--text-dark)' : 'var(--text-subtle)' }}>
                 {patient.chronicDiseases?.length > 0 ? patient.chronicDiseases.join(', ') : 'Ninguna registrada'}
               </span>
             </div>
@@ -144,7 +165,7 @@ const PatientDetail = () => {
             whileHover={{ y: -1 }}
             whileTap={{ scale: 0.98 }}
           >
-            Iniciar Consulta
+            <Stethoscope size={18} /> Iniciar Consulta
           </motion.button>
         </motion.div>
 
@@ -155,13 +176,20 @@ const PatientDetail = () => {
           initial="hidden"
           animate="visible"
           variants={fadeUp}
+          style={{ boxShadow: 'var(--shadow-md)' }}
         >
           <h2 className="panel-title" style={{ marginBottom: 'var(--space-5)' }}>Historial Clínico</h2>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
             {patient.consultations && patient.consultations.length > 0 ? (
               patient.consultations.map(consult => (
-                <div key={consult.id} style={{ padding: 'var(--space-4)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', background: 'var(--input-bg)' }}>
+                <div
+                  key={consult.id}
+                  style={{
+                    padding: 'var(--space-4)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)',
+                    background: 'var(--surface-alt)', transition: 'box-shadow var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out)'
+                  }}
+                >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: 'var(--space-2)' }}>
                     <strong style={{ color: 'var(--primary)' }}>{formatDate(consult.createdAt)}</strong>
                     <span className="status-badge status-completed">Completada</span>

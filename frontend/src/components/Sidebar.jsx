@@ -51,8 +51,7 @@ const Sidebar = () => {
           <Activity size={24} strokeWidth={2.5} />
           <h1 className="logo-text">Lemmatica.</h1>
           <button
-            className="sidebar-menu-toggle"
-            style={{ marginLeft: 'auto', background: 'transparent' }}
+            className="sidebar-close-btn"
             onClick={() => setOpen(false)}
             aria-label="Cerrar menú"
           >

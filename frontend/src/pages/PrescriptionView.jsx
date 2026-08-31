@@ -59,7 +59,7 @@ const PrescriptionView = () => {
   const fieldLabelStyle = { color: 'var(--text-muted)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.2rem' };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--input-bg)' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--surface-alt)' }}>
 
       {/* HEADER / ACTIONS (No se imprime) */}
       <div className="no-print" style={{

@@ -251,12 +251,10 @@ const Settings = () => {
           border-radius: var(--radius-sm);
           transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
         }
-        .stg-back:hover { color: var(--text-dark); background-color: var(--input-bg); }
+        .stg-back:hover { color: var(--accent-hover); background-color: var(--accent-light); }
         .stg-title {
           font-size: clamp(2.25rem, 5vw, 3.5rem);
-          font-weight: 700;
-          letter-spacing: -0.03em;
-          line-height: 1.05;
+          line-height: 1.08;
           margin: 0 0 1rem;
           color: var(--text-dark);
         }
@@ -279,7 +277,7 @@ const Settings = () => {
           max-width: 780px;
         }
         .stg-banner svg { flex-shrink: 0; }
-        .stg-banner.is-success { background: var(--success-bg); color: var(--success); }
+        .stg-banner.is-success { background: var(--accent-light); color: var(--accent-hover); }
         .stg-banner.is-error { background: var(--error-bg); color: var(--error); }
         .stg-form-wrap { max-width: 780px; }
         .stg-section {
@@ -288,7 +286,10 @@ const Settings = () => {
           padding: 2rem clamp(1.25rem, 4vw, 2.5rem);
           margin-bottom: 1.75rem;
           background: var(--surface);
+          box-shadow: var(--shadow-sm);
+          transition: box-shadow var(--duration-base) var(--ease-out);
         }
+        .stg-section:hover { box-shadow: var(--shadow-md); }
         .stg-section-head {
           display: flex;
           align-items: center;
@@ -304,7 +305,7 @@ const Settings = () => {
           width: 30px;
           height: 30px;
           border-radius: var(--radius-sm);
-          background: var(--text-dark);
+          background: var(--primary);
           color: #fff;
           flex-shrink: 0;
         }
@@ -347,8 +348,12 @@ const Settings = () => {
           transition: border-color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
         }
         .stg-select { appearance: none; cursor: pointer; }
-        .stg-input:hover, .stg-select:hover { border-color: var(--border-focus); }
-        .stg-input:focus, .stg-select:focus { border-color: var(--border-focus); background: #fff; }
+        .stg-input:hover, .stg-select:hover { border-color: var(--accent); }
+        .stg-input:focus, .stg-select:focus {
+          border-color: var(--accent);
+          background: #fff;
+          box-shadow: 0 0 0 4px var(--accent-ring);
+        }
         .stg-fetching {
           position: absolute;
           right: 0.9rem;
@@ -371,12 +376,12 @@ const Settings = () => {
           background: var(--input-bg);
           transition: border-color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
         }
-        .stg-dropzone:hover, .stg-dropzone:focus-visible { border-color: var(--text-dark); background: #fff; }
+        .stg-dropzone:hover, .stg-dropzone:focus-visible { border-color: var(--accent); background: var(--accent-light); }
         .stg-dropzone-title { font-size: 1rem; font-weight: 600; color: var(--text-dark); margin-top: 0.9rem; }
         .stg-dropzone-sub { font-size: 0.825rem; color: var(--text-muted); margin-top: 0.35rem; }
         .stg-dropzone-change {
-          font-size: 0.825rem; font-weight: 600; color: var(--text-dark);
-          border-bottom: 1px solid var(--text-dark); padding-bottom: 2px; margin-top: 0.9rem;
+          font-size: 0.825rem; font-weight: 600; color: var(--accent-hover);
+          border-bottom: 1px solid var(--accent-hover); padding-bottom: 2px; margin-top: 0.9rem;
         }
         .stg-logo-preview { max-height: 90px; object-fit: contain; }
         .stg-submit { max-width: 780px; }
@@ -400,7 +405,7 @@ const Settings = () => {
           Volver al Dashboard
         </button>
 
-        <h1 className="stg-title">Tus Ajustes.</h1>
+        <h1 className="stg-title font-display">Tus Ajustes.</h1>
         <p className="stg-subtitle">
           Actualiza tu información profesional y de contacto. Esta información se usará para generar el membrete automático de tus recetas y expedientes.
         </p>

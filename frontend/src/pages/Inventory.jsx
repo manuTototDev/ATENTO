@@ -71,14 +71,14 @@ const Inventory = () => {
   };
 
   return (
-    <div style={{ padding: 'clamp(1.25rem, 4vw, 2rem)' }}>
+    <div style={{ padding: 'clamp(1.25rem, 4vw, 2rem)', minHeight: '100vh', backgroundColor: 'var(--surface-alt)' }}>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: EASE }}
         style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}
       >
-        <h1 style={{ fontSize: '1.5rem', color: 'var(--text-dark)' }}>Inventario Médico</h1>
+        <h1 className="font-display" style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: 600, color: 'var(--text-dark)' }}>Inventario Médico</h1>
         <button className="btn-primary" onClick={() => setShowModal(true)} style={{ width: 'auto' }}>
           <Plus size={18} /> Agregar Medicamento
         </button>
@@ -89,7 +89,7 @@ const Inventory = () => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.05, ease: EASE }}
-        style={{ padding: 0, overflow: 'hidden' }}
+        style={{ padding: 0, overflow: 'hidden', backgroundColor: 'var(--surface)', boxShadow: 'var(--shadow-sm)' }}
       >
         <div style={{ overflowX: 'auto' }}>
           <table className="data-table" style={{ minWidth: '640px' }}>
@@ -110,7 +110,18 @@ const Inventory = () => {
                 <tr>
                   <td colSpan="4" style={{ padding: 0, border: 'none' }}>
                     <div className="empty-state">
-                      <PackageSearch size={30} strokeWidth={1.5} />
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '64px',
+                        height: '64px',
+                        borderRadius: 'var(--radius-full)',
+                        backgroundColor: 'var(--accent-light)',
+                        marginBottom: '0.25rem',
+                      }}>
+                        <PackageSearch size={28} strokeWidth={1.5} color="var(--accent)" />
+                      </div>
                       <div style={{ fontWeight: 600, color: 'var(--text-dark)' }}>No hay medicamentos registrados</div>
                       <div style={{ fontSize: '0.85rem' }}>Agrega el primero para llevar el control de tu inventario.</div>
                     </div>
