@@ -132,7 +132,7 @@ const steps = [
   {
     icon: Mic, tone: 'blue', num: '01',
     title: 'Escucha',
-    text: 'Activa el micrófono al iniciar la consulta. Lemmatica transcribe la conversación en tiempo real, sin que tengas que dejar de ver a tu paciente.',
+    text: 'Activa el micrófono al iniciar la consulta. Escrivo transcribe la conversación en tiempo real, sin que tengas que dejar de ver a tu paciente.',
   },
   {
     icon: Stethoscope, tone: 'green', num: '02',
@@ -297,7 +297,7 @@ const Landing = () => {
   return (
     <div className="lp">
       <nav className={`lp-nav${isScrolled ? ' is-scrolled' : ''}`}>
-        <button className="lp-logo" onClick={() => navigate('/')}>Lemmatica.</button>
+        <button className="lp-logo" onClick={() => navigate('/')}>Escrivo.</button>
         <div className="lp-nav-actions">
           <button className="lp-btn lp-btn-ghost" onClick={() => navigate('/login')}>Iniciar sesión</button>
           <button className="lp-btn lp-btn-dark" onClick={() => navigate('/register')}>
@@ -317,11 +317,11 @@ const Landing = () => {
               Tu consulta, <br /><span className="lp-accent">humana</span> de nuevo.
             </motion.h1>
             <motion.p variants={fadeUp} className="lp-lead">
-              La IA que escribe por ti. Lemmatica escucha tu consulta, redacta la nota SOAP, actualiza el expediente y prepara la receta y el cobro automáticamente. Recupera hasta 2 horas de tu día.
+              La IA que escribe por ti. Escrivo escucha tu consulta, redacta la nota SOAP, actualiza el expediente y prepara la receta y el cobro automáticamente. Recupera hasta 2 horas de tu día.
             </motion.p>
             <motion.div variants={fadeUp} className="lp-hero-actions">
               <button className="lp-btn lp-btn-dark lp-btn-lg" onClick={() => navigate('/register')}>
-                Prueba Lemmatica <ArrowRight size={20} />
+                Prueba Escrivo <ArrowRight size={20} />
               </button>
               <span className="lp-hero-trust"><ShieldCheck size={16} /> Sin tarjeta de crédito</span>
             </motion.div>
@@ -450,7 +450,7 @@ const Landing = () => {
             <div className="lp-rx-doc" style={{ bottom: showRx ? '5%' : '-110%', opacity: showRx ? 1 : 0 }}>
               <div className="lp-rx-doc-head">
                 <h3>Receta y evaluación médica</h3>
-                <span>LEMMATICA HEALTHCARE AI</span>
+                <span>ESCRIVO HEALTHCARE AI</span>
               </div>
               <div className="lp-rx-doc-body">{prescriptionScenarios[rxScenarioIndex].rx}</div>
               <div className="lp-rx-doc-cost"><Receipt size={14} /> Cobro calculado automáticamente según tu tabulador</div>
@@ -461,7 +461,7 @@ const Landing = () => {
             <div className="lp-eyebrow">De la conversación a la receta</div>
             <h2>Deja de ser capturista y vuelve a ser médico.</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.65, marginTop: '1.25rem' }}>
-              La tecnología no debería interponerse entre tú y quien confía en ti. Lemmatica escucha, analiza y estructura tu consulta, dejándote recuperar la mirada y la conexión con tu paciente.
+              La tecnología no debería interponerse entre tú y quien confía en ti. Escrivo escucha, analiza y estructura tu consulta, dejándote recuperar la mirada y la conexión con tu paciente.
             </p>
             <div className="lp-rx-billing-note">
               <TrendingUp size={20} color="var(--pop-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
@@ -585,7 +585,7 @@ const Landing = () => {
               Lo que se dice en consulta, se queda en consulta.
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.65, marginTop: '1.25rem' }}>
-              La tecnología debe protegerte, no exponerte. Lemmatica opera bajo cifrado de grado clínico y cumple con los estándares de protección de datos de salud más estrictos.
+              La tecnología debe protegerte, no exponerte. Escrivo opera bajo cifrado de grado clínico y cumple con los estándares de protección de datos de salud más estrictos.
             </p>
 
             <div className="lp-trust-list">
@@ -659,7 +659,7 @@ const Landing = () => {
 
       <footer className="lp-footer">
         <div className="lp-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', width: '100%' }}>
-          <div className="lp-footer-brand">Lemmatica © 2026</div>
+          <div className="lp-footer-brand">Escrivo © 2026</div>
           <div className="lp-footer-links">
             <Link to="/terminos">Términos y Condiciones</Link>
             <span>Contacto</span>

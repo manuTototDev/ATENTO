@@ -126,18 +126,18 @@ const Register = () => {
 
         <Link to="/" className="auth-wordmark">
           <Activity size={22} strokeWidth={2.5} />
-          Lemmatica.
+          Escrivo.
         </Link>
 
         <div className="auth-cover-body">
-          <p className="auth-eyebrow pop-gold">Únete a Lemmatica</p>
+          <p className="auth-eyebrow pop-gold">Únete a Escrivo</p>
           <h1 className="auth-title">Crea tu cuenta.</h1>
           <p className="auth-subtitle">
             Recupera hasta 2 horas diarias de tu tiempo y devuelve el lado humano a tu práctica médica.
           </p>
         </div>
 
-        <p className="auth-footnote">Lemmatica © 2026 · Cumplimiento médico y cifrado de extremo a extremo.</p>
+        <p className="auth-footnote">Escrivo © 2026 · Cumplimiento médico y cifrado de extremo a extremo.</p>
       </motion.div>
 
       <div className="auth-side-form">
@@ -281,7 +281,7 @@ const Register = () => {
                     Términos y Condiciones, Política de Privacidad y Política de Uso de IA
                     <ExternalLink size={13} />
                   </Link>{' '}
-                  de Lemmatica, incluyendo el almacenamiento, procesamiento y tratamiento de mis datos profesionales y los datos de pacientes bajo mi responsabilidad, conforme a la LFPDPPP.
+                  de Escrivo, incluyendo el almacenamiento, procesamiento y tratamiento de mis datos profesionales y los datos de pacientes bajo mi responsabilidad, conforme a la LFPDPPP.
                 </span>
               </label>
               {termsError && (

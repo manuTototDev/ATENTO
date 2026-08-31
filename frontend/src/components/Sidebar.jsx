@@ -42,7 +42,7 @@ const Sidebar = () => {
       <aside className={`sidebar${open ? ' open' : ''}`}>
         <div className="sidebar-logo">
           <Activity size={24} strokeWidth={2.5} />
-          <h1 className="logo-text">Lemmatica.</h1>
+          <h1 className="logo-text">Escrivo.</h1>
           <button className="sidebar-close-btn" onClick={() => setOpen(false)} aria-label="Cerrar menú">
             <X size={20} />
           </button>

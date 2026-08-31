@@ -211,7 +211,7 @@ const Onboarding = () => {
       <div className="onboarding-shell">
         <div className="onboarding-brand">
           <Activity size={22} strokeWidth={2.5} />
-          <span className="font-display">Lemmatica.</span>
+          <span className="font-display">Escrivo.</span>
         </div>
 
         <div className="onboarding-progress">

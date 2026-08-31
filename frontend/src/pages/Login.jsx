@@ -81,7 +81,7 @@ const Login = () => {
 
         <Link to="/" className="auth-wordmark">
           <Activity size={22} strokeWidth={2.5} />
-          Lemmatica.
+          Escrivo.
         </Link>
 
         <div className="auth-cover-body">
@@ -92,7 +92,7 @@ const Login = () => {
           </p>
         </div>
 
-        <p className="auth-footnote">Lemmatica © 2026 · Cumplimiento médico y cifrado de grado bancario.</p>
+        <p className="auth-footnote">Escrivo © 2026 · Cumplimiento médico y cifrado de grado bancario.</p>
       </motion.div>
 
       <div className="auth-side-form">
@@ -159,7 +159,7 @@ const Login = () => {
           </form>
 
           <div className="auth-switch">
-            ¿Eres nuevo en Lemmatica?{' '}
+            ¿Eres nuevo en Escrivo?{' '}
             <Link to="/register">Crea una cuenta</Link>
           </div>
         </motion.div>
